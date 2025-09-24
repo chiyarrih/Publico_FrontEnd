@@ -28,13 +28,13 @@ const LoginPage = () => {
       <div className="mx-auto flex justify-center pt-24 px-4">
         <div className="w-[360px]">
           <div className="w-full text-center mb-3">
-            <span className="text-[13px] font-semibold text-[#2563eb]">Publicoo</span>
+            <span className="text-[13px] font-semibold text-[#2563eb]">Publico</span>
           </div>
 
           <div className="bg-white rounded-lg shadow border border-slate-200">
             <div className="p-5 relative">
               <h1 className="text-[15px] font-semibold text-center mb-4">
-                Log In to Publicoo
+                Log In to Publico
               </h1>
 
               <form className="space-y-3" onSubmit={onSubmit}>

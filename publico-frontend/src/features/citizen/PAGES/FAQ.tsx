@@ -16,7 +16,7 @@ export default function FAQ() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-lg font-semibold text-slate-900">Frequently Asked Questions</h1>
+    
       <Card>
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
           <Input placeholder="Search FAQs..." value={query} onChange={(e)=>setQuery(e.target.value)} />

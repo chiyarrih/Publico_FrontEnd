@@ -3,71 +3,91 @@ import { Card, Progress } from "../../../shared/ui";
 import { statusData, transpoProjects } from "../data/demo";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
 
-const BarRow: React.FC<{ name: string; dept: string; pct: number; color: string }> = ({ name, dept, pct, color }) => (
+type ProjectRowProps = { name: string; dept: string; pct: number; color: string };
+
+const ProjectRow: React.FC<ProjectRowProps> = ({ name, dept, pct, color }) => (
   <div className="space-y-1">
-    <div className="text-[13px] text-slate-900">{name}</div>
-    <div className="text-[11px] text-slate-500">{dept}</div>
-    <div className="mt-1 flex items-center gap-2">
-      <Progress pct={pct} color={color} />
-      <div className="w-10 text-right text-[11px] text-slate-500">{pct}%</div>
+    <div className="truncate text-sm font-medium text-slate-900">{name}</div>
+    <div className="truncate text-xs text-slate-500">{dept}</div>
+    <div className="mt-2 grid grid-cols-[1fr,2.25rem] items-center gap-2 pr-2">
+      <div className="min-w-0">
+        <Progress pct={pct} color={color} />
+      </div>
+      <span className="justify-self-end text-[11px] tabular-nums text-slate-600">{pct}%</span>
     </div>
   </div>
 );
 
 export default function Transparency() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <Card>
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-          <div>
-            <div className="mb-3 text-sm font-semibold text-slate-900">Project Status Overview</div>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="grid gap-9 lg:grid-cols-2">
+          {/* Donut + Legend */}
+          <section className="py-2 sm:py-3">
+            <h2 className="mb-3 pl-2 sm:pl-3 py-1.5 sm:py-2 text-base font-semibold text-slate-900">
+              Project Status Overview
+            </h2>
+
+            <div className="grid gap-4 sm:grid-cols-2">
               <div className="h-64">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
-                    <Pie data={statusData} dataKey="value" cx="50%" cy="50%" innerRadius={45} outerRadius={70} label>
-                      {statusData.map((s, i) => <Cell key={i} fill={s.color} />)}
+                    <Pie data={statusData} dataKey="value" cx="50%" cy="50%" innerRadius={52} outerRadius={84} label>
+                      {statusData.map((s, i) => (
+                        <Cell key={i} fill={s.color} />
+                      ))}
                     </Pie>
                     <Tooltip />
                   </PieChart>
                 </ResponsiveContainer>
               </div>
-              <ul className="self-center space-y-2 text-[12px]">
+
+              <ul className="flex flex-col justify-center space-y-2.5 text-[13px] pr-2">
                 {statusData.map((s) => (
-                  <li key={s.name} className="flex items-center gap-2">
-                    <span className="inline-block h-3 w-3 rounded-full" style={{ backgroundColor: s.color }} />
-                    <span className="text-slate-600">{s.name}: <span className="font-medium text-slate-900">{s.value}%</span></span>
+                  <li key={s.name} className="grid grid-cols-[auto,1fr,2.25rem] items-center gap-2">
+                    <span className="h-3 w-3 rounded-full" style={{ backgroundColor: s.color }} />
+                    <span className="min-w-0 truncate text-slate-700">{s.name}</span>
+                    <span className="justify-self-end font-medium tabular-nums text-slate-900">{s.value}%</span>
                   </li>
                 ))}
               </ul>
             </div>
-          </div>
+          </section>
 
-          <div>
-            <div className="mb-3 text-sm font-semibold text-slate-900">Key Projects</div>
+          {/* Key Projects */}
+          <section className="py-2 sm:py-3 pr-2 sm:pr-4">
+            <h2 className="mb-3 pl-2 sm:pl-3 py-1.5 sm:py-2 text-base font-semibold text-slate-900">Key Projects</h2>
             <div className="space-y-4">
-              {transpoProjects.map((p) => <BarRow key={p.name} {...p} />)}
+              {transpoProjects.map((p) => (
+                <ProjectRow key={p.name} {...p} />
+              ))}
             </div>
-          </div>
+          </section>
         </div>
       </Card>
 
-      <Card title="Blockchain Verification" right={<span className="pill pill-green text-[11px]">100% Verified</span>}>
-        <p className="mt-2 text-sm text-slate-600">
-          All data presented in this portal is verified and secured on the blockchain. Each transaction,
-          budget allocation, and project update is immutably recorded to ensure complete transparency.
+      {/* Blockchain Verification */}
+      <Card
+        title="Blockchain Verification"
+        right={<span className="rounded bg-green-100 px-2 py-1 text-xs font-medium text-green-700">100% Verified</span>}
+      >
+        <p className="text-sm text-slate-600">
+          All information here is secured on-chain. Every transaction, budget allocation, and project update is written
+          immutably for full public transparency.
         </p>
 
-        <div className="mt-4 rounded border border-slate-200 bg-slate-50 p-3">
-          <div className="mb-2 flex items-center justify-between text-[12px] text-slate-600">
-            <span>Latest Block Hash</span><span>Updated 3 minutes ago</span>
+        <div className="mt-5 rounded-md border border-slate-200 bg-slate-50 p-4">
+          <div className="mb-2 flex items-center justify-between text-xs text-slate-600">
+            <span>Latest Block Hash</span>
+            <span>Updated 3 minutes ago</span>
           </div>
-          <input
-            readOnly
-            value="0xa1f0c8d2a9b0ee98f1a21b3c7af7e2a0e4cef7fbcedf7acb5f1e3df45c0b6ef6"
-            className="w-full rounded border border-slate-300 bg-white px-2 py-2 font-mono text-[12px] text-slate-700"
-          />
-          <p className="mt-2 text-[12px] text-slate-500">You can verify this data on the public blockchain explorer.</p>
+          <div className="overflow-x-auto">
+            <code className="block w-full rounded bg-white px-3 py-2 font-mono text-xs text-slate-800">
+              0xa1f0c8d2a9b0ee98f1a21b3c7af7e2a0e4cef7fbcedf7acb5f1e3df45c0b6ef6
+            </code>
+          </div>
+          <p className="mt-2 text-xs text-slate-500">Verify this on the public blockchain explorer.</p>
         </div>
       </Card>
     </div>

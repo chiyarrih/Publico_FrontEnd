@@ -1,5 +1,5 @@
-import React from "react";
-import { NavLink, Outlet, useLocation } from "react-router-dom";
+import React, { useState, useRef, useEffect } from "react";
+import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 
 /** ---------- Small icon set (inline SVG so no deps) ---------- */
 const I = {
@@ -10,14 +10,18 @@ const I = {
   ),
   bell: () => (
     <svg width="18" height="18" viewBox="0 0 24 24" className="text-slate-500">
-      <path d="M15 17h5l-1.4-1.4A2 2 0 0 1 18 14.2V11a6 6 0 1 0-12 0v3.2a2 2 0 0 1-.6 1.4L4 17h5"
-        fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      <path d="M15 17h5l-1.4-1.4A2 2 0 0 1 18 14.2V11a6 6 0 1 0-12 0v3.2a2 2 0 0 1-.6 1.4L4 17h5" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
       <path d="M10 19a2 2 0 0 0 4 0" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
     </svg>
   ),
   chevronL: () => (
     <svg width="16" height="16" viewBox="0 0 24 24" className="text-slate-500">
       <path d="M15 6l-6 6 6 6" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  ),
+  chevronDown: () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" className="text-slate-500">
+      <path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
     </svg>
   ),
   dashboard: () => (
@@ -65,17 +69,14 @@ const I = {
   ),
 };
 
-/** ---------- NavLink class helper ---------- */
+/** ---------- helpers ---------- */
 function linkClass({ isActive }: { isActive: boolean }) {
   return [
-    "flex items-center gap-3 rounded px-3 py-2 text-sm transition",
-    isActive
-      ? "bg-slate-100 text-slate-900"
-      : "text-slate-700 hover:bg-slate-50 hover:text-slate-900",
+    "flex items-center gap-3 rounded-md px-4 py-2 text-sm font-medium transition",
+    isActive ? "bg-blue-50 text-blue-700" : "text-slate-600 hover:bg-slate-50 hover:text-slate-900",
   ].join(" ");
 }
 
-/** ---------- Page title from route ---------- */
 const titleMap: Record<string, string> = {
   "/agency": "Agency Dashboard",
   "/agency/": "Agency Dashboard",
@@ -88,50 +89,86 @@ const titleMap: Record<string, string> = {
   "/agency/support": "Contact Support",
 };
 
-export default function AgencyLayout() {
+function usePageTitle() {
   const { pathname } = useLocation();
-  const title =
-    titleMap[pathname] ??
+  return titleMap[pathname] ??
     (pathname.startsWith("/agency/") ? pathname.split("/").slice(-1)[0].replace(/-/g, " ") : "Agency");
+}
+
+export default function AgencyLayout() {
+  const title = usePageTitle();
+  const navigate = useNavigate();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // close dropdown on outside click
+  useEffect(() => {
+    const onDown = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false);
+    };
+    document.addEventListener("mousedown", onDown);
+    return () => document.removeEventListener("mousedown", onDown);
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    navigate("/agency/login");
+  };
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      {/* Thin dark bar at very top */}
-    
-      {/* Brand + controls bar */}
-      <header className="sticky top-0 z-10 border-b bg-white">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
+    <div className="min-h-screen w-full bg-slate-50">
+      {/* Header (fixed 64px) */}
+      <header className="sticky top-0 z-10 h-16 w-full border-b bg-white shadow-sm">
+        <div className="flex h-full items-center justify-between px-6">
+          {/* Brand pinned left */}
           <div className="flex items-center gap-3">
-            <button className="rounded p-1 hover:bg-slate-100"><I.chevronL /></button>
-            <span className="text-[15px] font-semibold text-blue-600">Publicoo</span>
-            <span className="text-[12px] text-slate-500">• Agency Portal</span>
+            <span className="text-lg font-bold text-blue-600">Publicoo</span>
+            <span className="text-sm text-slate-500">• Agency Portal</span>
           </div>
-          <div className="flex items-center gap-4">
-            <button className="rounded p-1 hover:bg-slate-100"><I.menu /></button>
-            <button className="rounded p-1 hover:bg-slate-100"><I.bell /></button>
-            <div className="flex items-center gap-2">
-              <span className="hidden text-xs text-slate-500 sm:block">Agency User (Full Access)</span>
-              <div className="h-7 w-7 rounded-full bg-slate-200" />
-            </div>
+
+          {/* Actions + profile */}
+          <div className="relative flex items-center gap-3" ref={menuRef}>
+            <button className="rounded p-2 hover:bg-slate-100"><I.menu /></button>
+            <button className="rounded p-2 hover:bg-slate-100 relative">
+              <I.bell />
+              <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-rose-500" />
+            </button>
+            <button
+              onClick={() => setMenuOpen(v => !v)}
+              className="flex items-center gap-2 rounded p-2 hover:bg-slate-100"
+            >
+              <span className="hidden text-xs text-slate-600 sm:block">Agency User — Full Access</span>
+              <div className="h-8 w-8 rounded-full bg-slate-200" />
+              <I.chevronDown />
+            </button>
+
+            {menuOpen && (
+              <div className="absolute right-0 top-12 w-40 rounded-md border border-slate-200 bg-white shadow-lg">
+                <button
+                  onClick={handleLogout}
+                  className="block w-full px-4 py-2 text-left text-sm text-slate-700 hover:bg-slate-50"
+                >
+                  Logout
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </header>
 
-      {/* Shell */}
-      <div className="mx-auto grid max-w-7xl grid-cols-1 gap-6 px-4 py-6 lg:grid-cols-[260px,1fr]">
-        {/* Sidebar */}
-        <aside className="lg:sticky lg:top-[104px]">
-          <div className="rounded-lg border border-slate-200 bg-white p-2">
-            {/* user card */}
-            <div className="mb-2 flex items-center gap-3 rounded-md bg-slate-50 px-3 py-3">
-              <div className="h-9 w-9 rounded-full bg-slate-200" />
+      {/* Shell under header: full-width, stable padding/height */}
+      <div className="grid min-h-[calc(100vh-4rem)] w-full grid-cols-1 lg:grid-cols-[260px,1fr]">
+        {/* Sidebar (sticky, scrollable) */}
+        <aside className="hidden border-r border-slate-200 bg-white lg:block">
+          <div className="sticky top-16 h-[calc(100vh-4rem)] overflow-auto p-6">
+            <div className="mb-6 flex items-center gap-3">
+              <div className="h-10 w-10 rounded-full bg-slate-200" />
               <div>
-                <div className="text-[13px] font-medium text-slate-900">Agency User</div>
-                <div className="text-[11px] text-slate-500">Full Access</div>
+                <div className="text-sm font-medium text-slate-900">Agency User</div>
+                <div className="text-xs text-slate-500">Full Access</div>
               </div>
             </div>
 
-            {/* nav */}
             <nav className="space-y-1">
               <NavLink to="/agency" end className={linkClass}>
                 <I.dashboard /> <span>Dashboard</span>
@@ -161,33 +198,33 @@ export default function AgencyLayout() {
           </div>
         </aside>
 
-        {/* Main content */}
-        <main className="space-y-4">
-          {/* page header row */}
-          <div className="rounded-lg border border-slate-200 bg-white px-4 py-3">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <h1 className="text-[15px] font-semibold text-slate-900">{title}</h1>
-                <div className="mt-0.5 text-[11px] text-slate-500">
-                  Agency:{" "}
-                  <button className="text-blue-600 hover:underline">
-                    Department of Transportation
-                  </button>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <button className="rounded border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50">
-                  Monthly View
+        {/* Main content (constant padding; content height won’t “shrink”) */}
+        <main className="flex min-h-[calc(100vh-4rem)] flex-col px-8 py-8">
+          {/* Page header row */}
+          <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h1 className="text-xl font-semibold text-slate-900">{title}</h1>
+              <div className="mt-1 text-xs text-slate-500">
+                Agency:&nbsp;
+                <button className="text-blue-600 hover:underline">
+                  Department of Transportation
                 </button>
-                <div className="text-[12px] text-slate-500">
-                  Last updated: {new Date().toLocaleDateString()}
-                </div>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <button className="rounded border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50">
+                Monthly View
+              </button>
+              <div className="text-xs text-slate-500">
+                Last updated: {new Date().toLocaleDateString()}
               </div>
             </div>
           </div>
 
-          {/* routed page content */}
-          <Outlet />
+          {/* Routed page content */}
+          <div className="flex-1 min-h-0">
+            <Outlet />
+          </div>
         </main>
       </div>
     </div>
