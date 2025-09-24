@@ -1,158 +1,152 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { setRole } from "../utils/auth";
 
-type Role = "citizen" | "agency";
-
-interface LoginForm {
-  email: string;
-  password: string;
-  role: Role;
-  remember: boolean;
-}
-
-export default function LoginPage() {
-  // keep all form state in one place so it's easy to read
-  
-  const [form, setForm] = useState<LoginForm>({
+/** Minimal, “can’t-misclick” login card */
+const LoginPage: React.FC = () => {
+  const navigate = useNavigate();
+  const [form, setForm] = useState({
     email: "",
     password: "",
     role: "citizen",
     remember: false,
   });
 
-  // tiny helpers so our JSX stays clean
-  const updateField = (name: keyof LoginForm, value: string | boolean) =>
-    setForm((prev) => ({ ...prev, [name]: value }));
-
-  // one handler for text inputs (email/password)
-  const onTextChange = (e: React.ChangeEvent<HTMLInputElement>) =>
-    updateField(e.target.name as keyof LoginForm, e.target.value);
-
-  // two tiny helpers for checkbox and radio for clarity
-  const onCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) =>
-    updateField(e.target.name as keyof LoginForm, e.target.checked);
-
-  const onRoleChange = (e: React.ChangeEvent<HTMLInputElement>) =>
-    updateField("role", e.target.value as Role);
-
-  const onSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    // very light guardrails; keep UX friendly
-    if (!form.email || !form.password) {
-      alert("Please enter your email and password.");
-      return;
-    }
-
-    // 👉 TODO: call your login API here
-    // await axios.post('/auth/login', form)
-    console.log("Login payload:", form);
+  const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value, type, checked } = e.target;
+    setForm((s) => ({ ...s, [name]: type === "checkbox" ? checked : value }));
   };
 
+  const onSubmit = (e: React.FormEvent) => e.preventDefault();
+
   return (
-    <div className="min-h-screen grid place-items-center bg-blue-50">
-      <main className="bg-white w-full max-w-md rounded-lg shadow p-8">
-        {/* tiny brand line to match your mock */}
-        <p className="text-center text-blue-700 font-semibold mb-3">Publico</p>
-        <h1 className="text-center text-xl font-bold text-gray-800 mb-6">
-          Log In to Publico
-        </h1>
-
-        <form onSubmit={onSubmit} className="space-y-4" aria-label="Login form">
-          {/* EMAIL */}
-          <label className="block">
-            <span className="sr-only">Email</span>
-            <input
-              className="w-full border rounded-md p-2 focus:outline-blue-500"
-              type="email"
-              name="email"
-              placeholder="Email"
-              value={form.email}
-              onChange={onTextChange}
-              autoComplete="email"
-              required
-            />
-          </label>
-
-          {/* PASSWORD */}
-          <label className="block">
-            <span className="sr-only">Password</span>
-            <input
-              className="w-full border rounded-md p-2 focus:outline-blue-500"
-              type="password"
-              name="password"
-              placeholder="Password"
-              value={form.password}
-              onChange={onTextChange}
-              autoComplete="current-password"
-              required
-            />
-          </label>
-
-           {/* ROLE PICKER */}
-          <fieldset className="flex flex-col gap-2 text-sm">
-            <legend className="sr-only">Login as</legend>
-            <span className="mb-1 font-medium text-gray-700">I am:</span>
-            <div className="flex items-center gap-6">
-              <label className="inline-flex items-center gap-2">
-                <input
-                  type="radio"
-                  name="role"
-                  value="citizen"
-                  checked={form.role === "citizen"}
-                  onChange={onRoleChange}
-                />
-                <span>Citizen</span>
-              </label>
-
-              <label className="inline-flex items-center gap-2">
-                <input
-                  type="radio"
-                  name="role"
-                  value="agency"
-                  checked={form.role === "agency"}
-                  onChange={onRoleChange}
-                />
-                <span>Agency Representative</span>
-              </label>
-            </div>
-          </fieldset>
-
-          {/* REMEMBER / FORGOT */}
-          <div className="flex items-center justify-between text-sm">
-            <label className="inline-flex items-center gap-2">
-              <input
-                type="checkbox"
-                name="remember"
-                checked={form.remember}
-                onChange={onCheckboxChange}
-              />
-              <span>Remember me</span>
-            </label>
-
-            {/* wire this up later */}
-            <button type="button" className="text-blue-600 hover:underline">
-              Forgot password?
-            </button>
+    <div className="min-h-screen w-full bg-[#eaf1ff]">
+      <div className="mx-auto flex justify-center pt-24 px-4">
+        <div className="w-[360px]">
+          {/* Brand */}
+          <div className="w-full text-center mb-3">
+            <span className="text-[13px] font-semibold text-[#2563eb]">Publicoo</span>
           </div>
 
-          {/* SUBMIT */}
-          <button
-            type="submit"
-            className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700"
-          >
-            Log In
-          </button>
-        </form>
+          <div className="bg-white rounded-lg shadow border border-slate-200">
+            <div className="p-5 relative">
+              {/* Simple “role” debug tag so you KNOW what it thinks you are */}
+              <div className="absolute right-2 top-2 text-[10px] px-2 py-0.5 rounded bg-slate-100 text-slate-600">
+                role: {localStorage.getItem("auth_role") || "none"}
+              </div>
 
-        {/* LINK TO SIGNUP */}
-        <p className="text-center text-sm mt-4">
-          Don’t have an account?{" "}
-          <Link to="/signup" className="text-blue-600 hover:underline">
-            Sign up
-          </Link>
-        </p>
-      </main>
+              <h1 className="text-[15px] font-semibold text-center mb-4">
+                Log In to Publicoo
+              </h1>
+
+              <form className="space-y-3" onSubmit={onSubmit}>
+                <label className="block">
+                  <span className="block text-[12px] text-slate-700 mb-1">Email</span>
+                  <input
+                    type="email"
+                    name="email"
+                    value={form.email}
+                    onChange={onChange}
+                    required
+                    className="w-full h-8 rounded border border-slate-300 px-2 text-[13px] outline-none focus:ring-2 focus:ring-[#2563eb]/40"
+                  />
+                </label>
+
+                <label className="block">
+                  <span className="block text-[12px] text-slate-700 mb-1">Password</span>
+                  <input
+                    type="password"
+                    name="password"
+                    value={form.password}
+                    onChange={onChange}
+                    required
+                    className="w-full h-8 rounded border border-slate-300 px-2 text-[13px] outline-none focus:ring-2 focus:ring-[#2563eb]/40"
+                  />
+                </label>
+
+                <div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[12px] text-slate-700">I am a:</span>
+                    <Link to="#" className="text-[12px] text-[#2563eb] hover:underline">
+                      Forgot password?
+                    </Link>
+                  </div>
+                  <div className="mt-1 flex items-center gap-4 text-[12px]">
+                    <label className="inline-flex items-center gap-1">
+                      <input
+                        className="accent-[#2563eb]"
+                        type="radio"
+                        name="role"
+                        value="citizen"
+                        checked={form.role === "citizen"}
+                        onChange={onChange}
+                      />{" "}
+                      Citizen
+                    </label>
+                    <label className="inline-flex items-center gap-1">
+                      <input
+                        className="accent-[#2563eb]"
+                        type="radio"
+                        name="role"
+                        value="agency"
+                        checked={form.role === "agency"}
+                        onChange={onChange}
+                      />{" "}
+                      Agency Representative
+                    </label>
+                  </div>
+                </div>
+
+                <label className="inline-flex items-center gap-2 text-[12px]">
+                  <input
+                    className="accent-[#2563eb]"
+                    type="checkbox"
+                    name="remember"
+                    checked={form.remember}
+                    onChange={onChange}
+                  />
+                  Remember me
+                </label>
+
+                <button
+                  type="submit"
+                  className="w-full h-9 rounded bg-[#2563eb] text-white text-[13px] font-medium hover:bg-[#1d4fd8] transition"
+                >
+                  Log In
+                </button>
+
+                {/* Continue as Guest — absolutely isolated click target */}
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setRole("guest");
+                    navigate("/app/dashboard"); // guest area
+                  }}
+                  className="mt-2 w-full h-9 rounded border border-slate-300 text-[13px] font-medium hover:bg-slate-50 transition"
+                >
+                  Continue as Guest
+                </button>
+              </form>
+
+              {/* ✅ form is closed above */}
+
+              {/* Spacer so nothing can overlap the guest button */}
+              <div className="h-2" />
+
+              <p className="mt-3 text-center text-[12px] text-slate-600 pointer-events-auto">
+                Don&apos;t have an account?{" "}
+                <Link to="/signup" className="text-[#2563eb] hover:underline">
+                  Sign up
+                </Link>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
-}
+};
+
+export default LoginPage;
