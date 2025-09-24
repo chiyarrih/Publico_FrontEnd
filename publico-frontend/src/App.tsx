@@ -1,74 +1,99 @@
 import React, { Suspense, lazy } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 
-import LoginPage from "./PAGES/LoginPage";
-import SignupPage from "./PAGES/SignupPage";
-import Alerts from "./PAGES/Alerts";
-import FAQ from "./PAGES/FAQ";
-import Ledger from "./PAGES/Ledger";
-import Profile from "./PAGES/Profile";
-import Transparency from "./PAGES/Transparency";
-import Support from "./PAGES/Support";
+/* ---------- Always-on pages (keep static) ---------- */
+import LoginPage from "./features/citizen/PAGES/LoginPage";
+import SignupPage from "./features/citizen/PAGES/SignupPage";
 
+/* ---------- Layouts & guard (small, safe to keep static) ---------- */
 import GuestRoute from "./routes/GuestRoute";
-import AppLayout from "./components/Layout";
-import Loading from "./components/Loading";
-import ErrorBoundary from "./components/ErrorBoundary";
+import AppLayout from "./features/citizen/components/Layout";
+import AgencyLayout from "./features/agency/layout/AgencyLayout";
 
-// IMPORTANT: your current rich dashboard (with Recharts)
-const RichDashboard = lazy(() => import("./PAGES/Dashboard"));
+/* ---------- Shared debug wrappers ---------- */
+import Loading from "./shared/components/layout/Loading";
+import ErrorBoundary from "./shared/components/layout/ErrorBoundary";
 
-// Tiny safe fallback dashboard (always works)
-const SafeDashboard: React.FC = () => (
-  <div className="card p-6">
-    <h1 className="text-lg font-semibold">Dashboard</h1>
-    <p className="text-slate-600 text-sm mt-2">
-      If charts fail to load, you’ll see this instead. Check console for errors.
-    </p>
-  </div>
-);
+/* ---------- Lazy citizen pages ---------- */
+const CitizenDashboard = lazy(() => import("./features/citizen/PAGES/Dashboard"));
+const Alerts         = lazy(() => import("./features/citizen/PAGES/Alerts"));
+const FAQ            = lazy(() => import("./features/citizen/PAGES/FAQ"));
+const Ledger         = lazy(() => import("./features/citizen/PAGES/Ledger"));
+const Profile        = lazy(() => import("./features/citizen/PAGES/Profile"));
+const Transparency   = lazy(() => import("./features/citizen/PAGES/Transparency"));
+const Support        = lazy(() => import("./features/citizen/PAGES/Support"));
 
-const DashboardWrapper: React.FC = () => (
-  <ErrorBoundary>
-    <Suspense fallback={<Loading label="Loading dashboard..." />}>
-      <RichDashboard />
-    </Suspense>
-  </ErrorBoundary>
-);
+/* ---------- Lazy agency pages (likely culprit) ---------- */
+const AgencyDashboard = lazy(() => import("./features/agency/pages/AgencyDashboard"));
+const Budgets         = lazy(() => import("./features/agency/pages/Budgets"));
+const Documents       = lazy(() => import("./features/agency/pages/Documents"));
+const Transactions    = lazy(() => import("./features/agency/pages/Transactions"));
+const SmartAlerts     = lazy(() => import("./features/agency/pages/SmartAlerts"));
+const FAQs            = lazy(() => import("./features/agency/pages/FAQs"));
+const ContactSupport  = lazy(() => import("./features/agency/pages/ContactSupport"));
+const AgencyProfile   = lazy(() => import("./features/agency/pages/Profile"));
 
-const App: React.FC = () => {
+/* Helper to show component-level crashes instead of white screen */
+function Safe({ children }: React.PropsWithChildren) {
   return (
-    <Routes>
-      {/* auth */}
-      <Route path="/" element={<Navigate to="/login" replace />} />
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/signup" element={<SignupPage />} />
-
-      {/* protected app */}
-      <Route
-        path="/app"
-        element={
-          <GuestRoute>
-            <AppLayout />
-          </GuestRoute>
-        }
-      >
-        <Route index element={<Navigate to="dashboard" replace />} />
-        {/* If the rich dashboard throws, ErrorBoundary will render a message; as an extra guard,
-            duplicate route to a safe one you can switch to quickly by replacing element below */}
-        <Route path="dashboard" element={<DashboardWrapper />} />
-        <Route path="alerts" element={<Alerts />} />
-        <Route path="faq" element={<FAQ />} />
-        <Route path="ledger" element={<Ledger />} />
-        <Route path="profile" element={<Profile />} />
-        <Route path="transparency" element={<Transparency />} />
-        <Route path="support" element={<Support />} />
-      </Route>
-
-      {/* fallback */}
-      <Route path="*" element={<Navigate to="/login" replace />} />
-    </Routes>
+    <ErrorBoundary>
+      <Suspense fallback={<Loading />}>{children}</Suspense>
+    </ErrorBoundary>
   );
-};
+}
 
-export default App;
+export default function App() {
+  return (
+    <ErrorBoundary>
+      <Suspense fallback={<Loading label="Loading app..." />}>
+        <Routes>
+          {/* auth */}
+          <Route path="/" element={<Navigate to="/login" replace />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/signup" element={<SignupPage />} />
+
+          {/* citizen app */}
+          <Route
+            path="/app"
+            element={
+              <GuestRoute>
+                <AppLayout />
+              </GuestRoute>
+            }
+          >
+            <Route index element={<Navigate to="dashboard" replace />} />
+            <Route path="dashboard"    element={<Safe><CitizenDashboard /></Safe>} />
+            <Route path="alerts"       element={<Safe><Alerts /></Safe>} />
+            <Route path="faq"          element={<Safe><FAQ /></Safe>} />
+            <Route path="ledger"       element={<Safe><Ledger /></Safe>} />
+            <Route path="profile"      element={<Safe><Profile /></Safe>} />
+            <Route path="transparency" element={<Safe><Transparency /></Safe>} />
+            <Route path="support"      element={<Safe><Support /></Safe>} />
+          </Route>
+
+          {/* agency portal */}
+          <Route
+            path="/agency"
+            element={
+              <GuestRoute>
+                <AgencyLayout />
+              </GuestRoute>
+            }
+          >
+            <Route index              element={<Safe><AgencyDashboard /></Safe>} />
+            <Route path="budgets"     element={<Safe><Budgets /></Safe>} />
+            <Route path="documents"   element={<Safe><Documents /></Safe>} />
+            <Route path="transactions"element={<Safe><Transactions /></Safe>} />
+            <Route path="alerts"      element={<Safe><SmartAlerts /></Safe>} />
+            <Route path="faqs"        element={<Safe><FAQs /></Safe>} />
+            <Route path="support"     element={<Safe><ContactSupport /></Safe>} />
+            <Route path="profile"     element={<Safe><AgencyProfile /></Safe>} />
+          </Route>
+
+          {/* fallback */}
+          <Route path="*" element={<Navigate to="/login" replace />} />
+        </Routes>
+      </Suspense>
+    </ErrorBoundary>
+  );
+}

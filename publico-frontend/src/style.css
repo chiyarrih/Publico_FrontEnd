@@ -4,6 +4,7 @@
 
 html, body, #root { height: 100%; }
 
+/* your design tokens */
 @layer components {
   .card { @apply rounded-lg border border-slate-200 bg-white; }
 
@@ -18,10 +19,4 @@ html, body, #root { height: 100%; }
 
   .progress { @apply w-full h-2 rounded bg-slate-200 overflow-hidden; }
   .progress-bar { @apply h-full rounded; }
-  .card { @apply rounded-lg border border-slate-200 bg-white; }
-  .pill { @apply inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium; }
-  .pill-green  { @apply bg-emerald-100 text-emerald-700; }
-  .pill-yellow { @apply bg-amber-100 text-amber-700; }
-  .pill-red    { @apply bg-rose-100 text-rose-700; }
 }
-
