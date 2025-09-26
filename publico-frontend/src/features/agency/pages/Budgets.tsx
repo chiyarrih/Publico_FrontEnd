@@ -2,164 +2,105 @@ import React from "react";
 
 type Status = "Approved" | "In Review" | "Pending" | "Rejected";
 
-const proposals = [
-  {
-    title: "Downtown Bridge Repair",
-    dept: "Transportation",
-    timeline: "2023-09-01 to 2024-02-28",
-    amount: "₱2,800,000",
-    status: "Approved" as Status,
-    submitted: "2023-08-15",
-  },
-  {
-    title: "City Park Renovation",
-    dept: "Parks & Recreation",
-    timeline: "2023-10-01 to 2024-05-30",
-    amount: "₱1,200,000",
-    status: "In Review" as Status,
-    submitted: "2023-08-10",
-  },
-  {
-    title: "Public Library Expansion",
-    dept: "Education",
-    timeline: "2023-11-01 to 2024-12-15",
-    amount: "₱3,500,000",
-    status: "Pending" as Status,
-    submitted: "2023-07-22",
-  },
-  {
-    title: "Smart Traffic Light System",
-    dept: "Transportation",
-    timeline: "2023-09-15 to 2024-03-30",
-    amount: "₱950,000",
-    status: "Rejected" as Status,
-    submitted: "2023-08-05",
-  },
+const rows = [
+  { title: "Downtown Bridge Repair", dept: "Transportation", timeline: "2023-09-01 to 2024-02-28", amount: "₱2,800,000", status: "Approved" as Status, submitted: "2023-08-15" },
+  { title: "City Park Renovation", dept: "Parks & Recreation", timeline: "2023-10-01 to 2024-05-30", amount: "₱1,200,000", status: "In Review" as Status, submitted: "2023-08-10" },
+  { title: "Public Library Expansion", dept: "Education", timeline: "2023-11-01 to 2024-12-15", amount: "₱3,500,000", status: "Pending" as Status, submitted: "2023-07-22" },
+  { title: "Smart Traffic Light System", dept: "Transportation", timeline: "2023-09-15 to 2024-03-30", amount: "₱950,000", status: "Rejected" as Status, submitted: "2023-08-05" },
 ];
 
-const StatusChip: React.FC<{ s: Status }> = ({ s }) => {
-  const map: Record<Status, string> = {
-    Approved: "bg-emerald-100 text-emerald-700",
-    "In Review": "bg-blue-100 text-blue-700",
-    Pending: "bg-amber-100 text-amber-700",
-    Rejected: "bg-rose-100 text-rose-700",
-  };
-  return <span className={`text-xs px-2 py-0.5 rounded ${map[s]}`}>{s}</span>;
+/* inline SVGs (no deps) */
+const I = {
+  search: () => <svg viewBox="0 0 24 24" className="h-4 w-4 text-slate-400"><path d="M21 21l-4.35-4.35M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15z" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>,
+  money:  () => <svg viewBox="0 0 24 24" className="h-4 w-4 text-slate-400"><path d="M3 6h18v12H3z" fill="none" stroke="currentColor" strokeWidth="1.5"/><path d="M7 12h10M12 9v6" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>,
+  dept:   () => <svg viewBox="0 0 24 24" className="h-4 w-4 text-slate-400"><path d="M3 21h18M5 21V7l7-4 7 4v14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>,
+  cal:    () => <svg viewBox="0 0 24 24" className="h-4 w-4 text-slate-400"><path d="M7 3v4M17 3v4M3 9h18M5 21h14a2 2 0 0 0 2-2V9H3v10a2 2 0 0 0 2 2z" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>,
+  check:  () => <svg viewBox="0 0 24 24" className="h-4 w-4 text-emerald-600"><path d="M20 6L9 17l-5-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+  chev:   () => <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 text-slate-500"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>,
 };
 
-const Budgets: React.FC = () => {
-  const [tab, setTab] = React.useState<"proposals" | "new">("proposals");
-  const [q, setQ] = React.useState("");
+const Chip: React.FC<{ s: Status }> = ({ s }) => {
+  const m: Record<Status, string> = {
+    Approved:  "bg-emerald-100 text-emerald-700",
+    "In Review":"bg-blue-100 text-blue-700",
+    Pending:   "bg-amber-100 text-amber-700",
+    Rejected:  "bg-rose-100 text-rose-700",
+  };
+  return <span className={`rounded px-2 py-0.5 text-xs ${m[s]}`}>{s}</span>;
+};
 
-  const filtered = proposals.filter(
-    (p) =>
-      p.title.toLowerCase().includes(q.toLowerCase()) ||
-      p.dept.toLowerCase().includes(q.toLowerCase())
-  );
+export default function Budgets() {
+  const [tab, setTab] = React.useState<"proposals"|"new">("proposals");
+  const [q, setQ] = React.useState("");
+  const [status, setStatus] = React.useState<"All" | Status>("All");
+  const [dept, setDept] = React.useState("All Departments");
+
+  const data = rows
+    .filter(r => (status === "All" ? true : r.status === status))
+    .filter(r => (dept === "All Departments" ? true : r.dept === dept))
+    .filter(r => [r.title, r.dept].some(t => t.toLowerCase().includes(q.toLowerCase())));
 
   return (
     <div className="space-y-4">
-      {/* Header strip */}
-      <div className="bg-white border border-slate-200 rounded-lg p-4">
-        <div className="flex items-center justify-between">
-          <div className="text-lg font-semibold">Project Proposals</div>
-          <button
-            onClick={() => setTab("new")}
-            className="h-9 px-3 rounded bg-blue-600 text-white text-sm hover:bg-blue-700"
-          >
-            + New Proposal
-          </button>
+      {/* Top card with title, tabs, controls */}
+      <div className="rounded-lg border border-slate-200 bg-white p-4">
+        <div className="flex items-center justify-between gap-3">
+          <div className="text-lg font-semibold text-slate-900">Project Proposals</div>
+          <button onClick={()=>setTab("new")} className="h-9 rounded bg-blue-600 px-3 text-sm text-white hover:bg-blue-700">+ New Proposal</button>
         </div>
 
         {/* Tabs */}
         <div className="mt-4 flex items-center gap-6 text-sm">
-          <button
-            className={`pb-2 border-b-2 ${
-              tab === "proposals"
-                ? "border-blue-600 text-blue-700"
-                : "border-transparent text-slate-500"
-            }`}
-            onClick={() => setTab("proposals")}
-          >
-            Proposals
-          </button>
-          <button
-            className={`pb-2 border-b-2 ${
-              tab === "new"
-                ? "border-blue-600 text-blue-700"
-                : "border-transparent text-slate-500"
-            }`}
-            onClick={() => setTab("new")}
-          >
-            New Proposal
-          </button>
+          <button onClick={()=>setTab("proposals")} className={`pb-2 border-b-2 ${tab==="proposals"?"border-blue-600 text-blue-700":"border-transparent text-slate-500"}`}>Proposals</button>
+          <button onClick={()=>setTab("new")}       className={`pb-2 border-b-2 ${tab==="new"      ?"border-blue-600 text-blue-700":"border-transparent text-slate-500"}`}>New Proposal</button>
         </div>
 
-        {/* Search + filters */}
-        {tab === "proposals" && (
-          <div className="mt-3 flex items-center gap-2">
-            <div className="relative flex-1">
-              <input
-                value={q}
-                onChange={(e) => setQ(e.target.value)}
-                placeholder="Search proposals..."
-                className="h-9 w-full rounded border border-slate-300 px-3 text-sm"
-              />
+        {/* Search + Filters (only on Proposals tab) */}
+        {tab==="proposals" && (
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <div className="relative flex-1 min-w-[220px]">
+              <input value={q} onChange={e=>setQ(e.target.value)} placeholder="Search proposals..." className="h-9 w-full rounded border border-slate-300 pl-8 pr-3 text-sm" />
+              <span className="pointer-events-none absolute inset-y-0 left-2 flex items-center"><I.search/></span>
             </div>
-            <select className="h-9 rounded border border-slate-300 px-2 text-sm">
-              <option>All Statuses</option>
-              <option>Approved</option>
-              <option>In Review</option>
-              <option>Pending</option>
-              <option>Rejected</option>
+            <select value={status} onChange={e=>setStatus(e.target.value as any)} className="h-9 rounded border border-slate-300 px-2 text-sm">
+              <option>All</option><option>Approved</option><option>In Review</option><option>Pending</option><option>Rejected</option>
             </select>
-            <select className="h-9 rounded border border-slate-300 px-2 text-sm">
-              <option>All Departments</option>
-              <option>Transportation</option>
-              <option>Parks & Recreation</option>
-              <option>Education</option>
-              <option>Finance</option>
-              <option>IT</option>
+            <select value={dept} onChange={e=>setDept(e.target.value)} className="h-9 rounded border border-slate-300 px-2 text-sm">
+              <option>All Departments</option><option>Transportation</option><option>Parks & Recreation</option><option>Education</option><option>Finance</option><option>IT</option>
             </select>
           </div>
         )}
       </div>
 
-      {/* Content */}
-      {tab === "proposals" ? (
+      {/* Main content */}
+      {tab==="proposals" ? (
         <>
-          <div className="bg-white border border-slate-200 rounded-lg divide-y">
-            {filtered.map((p) => (
-              <div key={p.title} className="p-4">
+          <div className="divide-y rounded-lg border border-slate-200 bg-white">
+            {data.map((r)=>(
+              <div key={r.title} className="p-4">
                 <div className="flex items-start justify-between gap-4">
+                  {/* left */}
                   <div className="min-w-0">
-                    <div className="font-medium text-slate-800">{p.title}</div>
-                    <div className="mt-1 flex flex-wrap items-center gap-3 text-xs text-slate-500">
-                      <span className="inline-flex items-center gap-1">
-                        <span className="inline-block w-2 h-2 rounded-full bg-slate-300" />
-                        {p.dept}
-                      </span>
-                      <span className="inline-flex items-center gap-1">
-                        <span className="inline-block w-2 h-2 rounded-full bg-slate-300" />
-                        Timeline: {p.timeline}
-                      </span>
+                    <div className="truncate text-[15px] font-medium text-slate-900">{r.title}</div>
+                    <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500">
+                      <span className="inline-flex items-center gap-1"><I.dept/>{r.dept}</span>
+                      <span className="inline-flex items-center gap-1"><I.cal/>Timeline: {r.timeline}</span>
                     </div>
                   </div>
 
-                  <div className="text-right shrink-0">
-                    <div className="text-sm font-semibold">{p.amount}</div>
-                    <div className="mt-1 flex items-center justify-end gap-3">
-                      <div className="text-xs text-slate-500">
-                        <span className="inline-flex items-center gap-1">
-                          <span className="inline-block w-2 h-2 rounded-full bg-slate-300" />
-                          Submitted:
-                        </span>{" "}
-                        {p.submitted}
-                      </div>
-                      <StatusChip s={p.status} />
+                  {/* right */}
+                  <div className="shrink-0 text-right">
+                    <div className="flex items-center justify-end gap-2 text-sm font-semibold text-slate-900">
+                      <I.money/>{r.amount}
                     </div>
-                    <button className="mt-2 text-sm text-blue-600 hover:underline">
-                      View Details
+                    <div className="mt-1 flex items-center justify-end gap-3">
+                      <div className="text-xs text-slate-500 inline-flex items-center gap-1">
+                        <I.cal/> Submitted: {r.submitted}
+                      </div>
+                      <Chip s={r.status}/>
+                    </div>
+                    <button className="mt-2 inline-flex items-center gap-1 text-sm text-blue-600 hover:underline">
+                      View Details <I.chev/>
                     </button>
                   </div>
                 </div>
@@ -167,74 +108,55 @@ const Budgets: React.FC = () => {
             ))}
           </div>
 
-          <div className="bg-white border border-slate-200 rounded-lg p-3 text-xs text-slate-600">
-            ✅ All proposals are securely recorded on the blockchain for complete transparency and auditability.
+          {/* footer notice */}
+          <div className="rounded-lg border border-slate-200 bg-white p-3 text-xs text-slate-600">
+            <span className="mr-2 inline-flex items-center justify-center rounded-full bg-emerald-50 p-1"><I.check/></span>
+            All proposals are securely recorded on the blockchain for complete transparency and auditability.
           </div>
         </>
       ) : (
-        /* New Proposal form (mock) */
-        <div className="bg-white border border-slate-200 rounded-lg p-4">
-          <div className="text-sm font-medium mb-3">Create New Proposal</div>
+        /* New Proposal (compact mock to match style) */
+        <div className="rounded-lg border border-slate-200 bg-white p-4">
+          <div className="mb-3 text-sm font-medium text-slate-800">Create New Proposal</div>
           <form className="grid grid-cols-2 gap-3">
             <label className="col-span-2 text-xs">
-              <span className="block mb-1 text-slate-700">Project Title</span>
-              <input className="w-full h-9 rounded border border-slate-300 px-2 text-sm" placeholder="e.g., Riverside Flood Barrier" />
+              <span className="mb-1 block text-slate-700">Project Title</span>
+              <input className="h-9 w-full rounded border border-slate-300 px-2 text-sm" placeholder="e.g., Riverside Flood Barrier" />
             </label>
             <label className="text-xs">
-              <span className="block mb-1 text-slate-700">Department</span>
-              <select className="w-full h-9 rounded border border-slate-300 px-2 text-sm">
-                <option>Transportation</option>
-                <option>Education</option>
-                <option>Health</option>
-                <option>IT</option>
-                <option>Finance</option>
-                <option>Parks & Recreation</option>
+              <span className="mb-1 block text-slate-700">Department</span>
+              <select className="h-9 w-full rounded border border-slate-300 px-2 text-sm">
+                <option>Transportation</option><option>Education</option><option>Health</option><option>IT</option><option>Finance</option><option>Parks & Recreation</option>
               </select>
             </label>
             <label className="text-xs">
-              <span className="block mb-1 text-slate-700">Estimated Budget (₱)</span>
-              <input className="w-full h-9 rounded border border-slate-300 px-2 text-sm" placeholder="1,500,000" />
+              <span className="mb-1 block text-slate-700">Estimated Budget (₱)</span>
+              <input className="h-9 w-full rounded border border-slate-300 px-2 text-sm" placeholder="1,500,000" />
             </label>
-
-            <div className="col-span-2 grid grid-cols-2 gap-3">
-              <label className="text-xs">
-                <span className="block mb-1 text-slate-700">Start Date</span>
-                <input type="date" className="w-full h-9 rounded border border-slate-300 px-2 text-sm" />
-              </label>
-              <label className="text-xs">
-                <span className="block mb-1 text-slate-700">End Date</span>
-                <input type="date" className="w-full h-9 rounded border border-slate-300 px-2 text-sm" />
-              </label>
-            </div>
-
+            <label className="text-xs">
+              <span className="mb-1 block text-slate-700">Start Date</span>
+              <input type="date" className="h-9 w-full rounded border border-slate-300 px-2 text-sm" />
+            </label>
+            <label className="text-xs">
+              <span className="mb-1 block text-slate-700">End Date</span>
+              <input type="date" className="h-9 w-full rounded border border-slate-300 px-2 text-sm" />
+            </label>
             <label className="col-span-2 text-xs">
-              <span className="block mb-1 text-slate-700">Objectives</span>
-              <textarea className="w-full min-h-[90px] rounded border border-slate-300 px-2 py-2 text-sm" placeholder="Describe the objectives and expected outcomes…" />
+              <span className="mb-1 block text-slate-700">Objectives</span>
+              <textarea className="min-h-[90px] w-full rounded border border-slate-300 px-2 py-2 text-sm" placeholder="Describe the objectives and expected outcomes…" />
             </label>
-
-            <div className="col-span-2 text-xs">
-              <div className="rounded border border-dashed border-slate-300 p-5 text-center text-slate-600">
+            <div className="col-span-2">
+              <div className="rounded border border-dashed border-slate-300 p-5 text-center text-xs text-slate-600">
                 Upload supporting docs (PDF, JPG, PNG up to 10MB)
               </div>
             </div>
-
             <div className="col-span-2 flex items-center gap-2">
-              <button type="button" className="h-9 px-4 rounded bg-blue-600 text-white text-sm hover:bg-blue-700">
-                Submit Proposal
-              </button>
-              <button
-                type="button"
-                onClick={() => setTab("proposals")}
-                className="h-9 px-4 rounded border border-slate-300 text-sm hover:bg-slate-50"
-              >
-                Cancel
-              </button>
+              <button type="button" className="h-9 rounded bg-blue-600 px-4 text-sm text-white hover:bg-blue-700">Submit Proposal</button>
+              <button type="button" onClick={()=>setTab("proposals")} className="h-9 rounded border border-slate-300 px-4 text-sm hover:bg-slate-50">Cancel</button>
             </div>
           </form>
         </div>
       )}
     </div>
   );
-};
-
-export default Budgets;
+}

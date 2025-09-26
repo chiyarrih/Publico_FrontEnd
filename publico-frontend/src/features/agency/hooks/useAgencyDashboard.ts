@@ -37,10 +37,10 @@ export function useAgencyDashboard() {
   ];
 
   const projects: Project[] = [
-    { name: "City Park Renovation",     dept: "Parks & Recreation", pct: 65, color: "#3b82f6", budget: "₱1.2M", spent: "₱780K" },
-    { name: "Public Library Expansion", dept: "Education",          pct: 30, color: "#f59e0b", budget: "₱3.5M", spent: "₱1.05M" },
-    { name: "Road Infrastructure Repair", dept: "Transportation",   pct: 90, color: "#22c55e", budget: "₱6.8M", spent: "₱5.2M" },
-    { name: "Water Treatment Facility", dept: "Utilities",          pct: 10, color: "#94a3b8", budget: "₱3.1M", spent: "₱310K" },
+    { name: "City Park Renovation",       dept: "Parks & Recreation", pct: 65, color: "#3b82f6", budget: "₱1.2M", spent: "₱780K" },
+    { name: "Public Library Expansion",   dept: "Education",          pct: 30, color: "#f59e0b", budget: "₱3.5M", spent: "₱1.05M" },
+    { name: "Road Infrastructure Repair", dept: "Transportation",     pct: 90, color: "#22c55e", budget: "₱6.8M", spent: "₱5.2M" },
+    { name: "Water Treatment Facility",   dept: "Utilities",          pct: 10, color: "#94a3b8", budget: "₱3.1M", spent: "₱310K" },
   ];
 
   const submitBudget = (payload: any) => {

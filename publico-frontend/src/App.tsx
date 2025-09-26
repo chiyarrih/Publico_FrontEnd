@@ -5,10 +5,11 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import LoginPage from "./features/citizen/PAGES/LoginPage";
 import SignupPage from "./features/citizen/PAGES/SignupPage";
 
-/* ---------- Layouts & guard (small, safe to keep static) ---------- */
+/* ---------- Layouts & guard ---------- */
 import GuestRoute from "./routes/GuestRoute";
 import AppLayout from "./features/citizen/components/Layout";
 import AgencyLayout from "./features/agency/layout/AgencyLayout";
+import AdminLayout from "./features/admin/layout/AdminLayout";
 
 /* ---------- Shared debug wrappers ---------- */
 import Loading from "./shared/components/layout/Loading";
@@ -23,7 +24,7 @@ const Profile        = lazy(() => import("./features/citizen/PAGES/Profile"));
 const Transparency   = lazy(() => import("./features/citizen/PAGES/Transparency"));
 const Support        = lazy(() => import("./features/citizen/PAGES/Support"));
 
-/* ---------- Lazy agency pages (likely culprit) ---------- */
+/* ---------- Lazy agency pages ---------- */
 const AgencyDashboard = lazy(() => import("./features/agency/pages/AgencyDashboard"));
 const Budgets         = lazy(() => import("./features/agency/pages/Budgets"));
 const Documents       = lazy(() => import("./features/agency/pages/Documents"));
@@ -32,6 +33,14 @@ const SmartAlerts     = lazy(() => import("./features/agency/pages/SmartAlerts")
 const FAQs            = lazy(() => import("./features/agency/pages/FAQs"));
 const ContactSupport  = lazy(() => import("./features/agency/pages/ContactSupport"));
 const AgencyProfile   = lazy(() => import("./features/agency/pages/Profile"));
+
+/* ---------- Lazy admin pages (NEW) ---------- */
+const AdminDashboard     = lazy(() => import("./features/admin/pages/Dashboard"));
+const AdminRequests      = lazy(() => import("./features/admin/pages/BudgetRequests"));
+const AdminAnalytics     = lazy(() => import("./features/admin/pages/Analytics"));
+const AdminTransactions  = lazy(() => import("./features/admin/pages/Transactions"));
+const AdminSmartAlerts   = lazy(() => import("./features/admin/pages/SmartAlerts"));
+const AdminProfile       = lazy(() => import("./features/admin/pages/Profile"));
 
 /* Helper to show component-level crashes instead of white screen */
 function Safe({ children }: React.PropsWithChildren) {
@@ -80,14 +89,31 @@ export default function App() {
               </GuestRoute>
             }
           >
-            <Route index              element={<Safe><AgencyDashboard /></Safe>} />
-            <Route path="budgets"     element={<Safe><Budgets /></Safe>} />
-            <Route path="documents"   element={<Safe><Documents /></Safe>} />
-            <Route path="transactions"element={<Safe><Transactions /></Safe>} />
-            <Route path="alerts"      element={<Safe><SmartAlerts /></Safe>} />
-            <Route path="faqs"        element={<Safe><FAQs /></Safe>} />
-            <Route path="support"     element={<Safe><ContactSupport /></Safe>} />
-            <Route path="profile"     element={<Safe><AgencyProfile /></Safe>} />
+            <Route index               element={<Safe><AgencyDashboard /></Safe>} />
+            <Route path="budgets"      element={<Safe><Budgets /></Safe>} />
+            <Route path="documents"    element={<Safe><Documents /></Safe>} />
+            <Route path="transactions" element={<Safe><Transactions /></Safe>} />
+            <Route path="alerts"       element={<Safe><SmartAlerts /></Safe>} />
+            <Route path="faqs"         element={<Safe><FAQs /></Safe>} />
+            <Route path="support"      element={<Safe><ContactSupport /></Safe>} />
+            <Route path="profile"      element={<Safe><AgencyProfile /></Safe>} />
+          </Route>
+
+          {/* admin portal (NEW) */}
+          <Route
+            path="/admin"
+            element={
+              <GuestRoute>
+                <AdminLayout />
+              </GuestRoute>
+            }
+          >
+            <Route index               element={<Safe><AdminDashboard /></Safe>} />
+            <Route path="requests"     element={<Safe><AdminRequests /></Safe>} />
+            <Route path="analytics"    element={<Safe><AdminAnalytics /></Safe>} />
+            <Route path="transactions" element={<Safe><AdminTransactions /></Safe>} />
+            <Route path="alerts"       element={<Safe><AdminSmartAlerts /></Safe>} />
+            <Route path="profile"      element={<Safe><AdminProfile /></Safe>} />
           </Route>
 
           {/* fallback */}
