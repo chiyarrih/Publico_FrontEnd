@@ -2,45 +2,45 @@ import React, { Suspense, lazy } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 
 /* ---------- Always-on pages (keep static) ---------- */
-import LoginPage from "./features/citizen/PAGES/LoginPage";
-import SignupPage from "./features/citizen/PAGES/SignupPage";
+import LoginPage from "./features/citizen/view/PAGES/LoginPage";
+import SignupPage from "./features/citizen/view/PAGES/SignupPage";
 
 /* ---------- Layouts & guard ---------- */
 import GuestRoute from "./routes/GuestRoute";
-import AppLayout from "./features/citizen/components/Layout";
-import AgencyLayout from "./features/agency/layout/AgencyLayout";
-import AdminLayout from "./features/admin/layout/AdminLayout";
+import AppLayout from "./features/citizen/view/components/Layout";
+import AgencyLayout from "./features/agency/view/layout/AgencyLayout";
+import AdminLayout from "./features/admin/view/layout/AdminLayout";
 
 /* ---------- Shared debug wrappers ---------- */
 import Loading from "./shared/components/layout/Loading";
 import ErrorBoundary from "./shared/components/layout/ErrorBoundary";
 
 /* ---------- Lazy citizen pages ---------- */
-const CitizenDashboard = lazy(() => import("./features/citizen/PAGES/Dashboard"));
-const Alerts         = lazy(() => import("./features/citizen/PAGES/Alerts"));
-const FAQ            = lazy(() => import("./features/citizen/PAGES/FAQ"));
-const Ledger         = lazy(() => import("./features/citizen/PAGES/Ledger"));
-const Profile        = lazy(() => import("./features/citizen/PAGES/Profile"));
-const Transparency   = lazy(() => import("./features/citizen/PAGES/Transparency"));
-const Support        = lazy(() => import("./features/citizen/PAGES/Support"));
+const CitizenDashboard = lazy(() => import("./features/citizen/view/PAGES/Dashboard"));
+const Alerts         = lazy(() => import("./features/citizen/view/PAGES/Alerts"));
+const FAQ            = lazy(() => import("./features/citizen/view/PAGES/FAQ"));
+const Ledger         = lazy(() => import("./features/citizen/view/PAGES/Ledger"));
+const Profile        = lazy(() => import("./features/citizen/view/PAGES/Profile"));
+const Transparency   = lazy(() => import("./features/citizen/view/PAGES/Transparency"));
+const Support        = lazy(() => import("./features/citizen/view/PAGES/Support"));
 
 /* ---------- Lazy agency pages ---------- */
-const AgencyDashboard = lazy(() => import("./features/agency/pages/AgencyDashboard"));
-const Budgets         = lazy(() => import("./features/agency/pages/Budgets"));
-const Documents       = lazy(() => import("./features/agency/pages/Documents"));
-const Transactions    = lazy(() => import("./features/agency/pages/Transactions"));
-const SmartAlerts     = lazy(() => import("./features/agency/pages/SmartAlerts"));
-const FAQs            = lazy(() => import("./features/agency/pages/FAQs"));
-const ContactSupport  = lazy(() => import("./features/agency/pages/ContactSupport"));
-const AgencyProfile   = lazy(() => import("./features/agency/pages/Profile"));
+const AgencyDashboard = lazy(() => import("./features/agency/view/pages/AgencyDashboard"));
+const Budgets         = lazy(() => import("./features/agency/view/pages/Budgets"));
+const Documents       = lazy(() => import("./features/agency/view/pages/Documents"));
+const Transactions    = lazy(() => import("./features/agency/view/pages/Transactions"));
+const SmartAlerts     = lazy(() => import("./features/agency/view/pages/SmartAlerts"));
+const FAQs            = lazy(() => import("./features/agency/view/pages/FAQs"));
+const ContactSupport  = lazy(() => import("./features/agency/view/pages/ContactSupport"));
+const AgencyProfile   = lazy(() => import("./features/agency/view/pages/Profile"));
 
 /* ---------- Lazy admin pages (NEW) ---------- */
-const AdminDashboard     = lazy(() => import("./features/admin/pages/Dashboard"));
-const AdminRequests      = lazy(() => import("./features/admin/pages/BudgetRequests"));
-const AdminAnalytics     = lazy(() => import("./features/admin/pages/Analytics"));
-const AdminTransactions  = lazy(() => import("./features/admin/pages/Transactions"));
-const AdminSmartAlerts   = lazy(() => import("./features/admin/pages/SmartAlerts"));
-const AdminProfile       = lazy(() => import("./features/admin/pages/Profile"));
+const AdminDashboard     = lazy(() => import("./features/admin/view/pages/Dashboard"));
+const AdminRequests      = lazy(() => import("./features/admin/view/pages/BudgetRequests"));
+const AdminAnalytics     = lazy(() => import("./features/admin/view/pages/Analytics"));
+const AdminTransactions  = lazy(() => import("./features/admin/view/pages/Transactions"));
+const AdminSmartAlerts   = lazy(() => import("./features/admin/view/pages/SmartAlerts"));
+const AdminProfile       = lazy(() => import("./features/admin/view/pages/Profile"));
 
 /* Helper to show component-level crashes instead of white screen */
 function Safe({ children }: React.PropsWithChildren) {

@@ -1,4 +1,4 @@
-import type { BudgetRequest, TxnRow, AlertRow } from "../types/admin";
+import type { BudgetRequest, TxnRow, AlertRow } from "../model/types/admin";
 
 export const api = {
   async getDashboard(){

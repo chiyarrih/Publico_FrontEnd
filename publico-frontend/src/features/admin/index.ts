@@ -1,7 +1,7 @@
-export { default as AdminLayout } from "./layout/AdminLayout";
-export { default as AdminDashboard } from "./pages/Dashboard";
-export { default as AdminBudgetRequests } from "./pages/BudgetRequests";
-export { default as AdminAnalytics } from "./pages/Analytics";
-export { default as AdminTransactions } from "./pages/Transactions";
-export { default as AdminSmartAlerts } from "./pages/SmartAlerts";
-export { default as AdminProfile } from "./pages/Profile";
+export { default as AdminLayout } from "./view/layout/AdminLayout";
+export { default as AdminDashboard } from "./view/pages/Dashboard";
+export { default as AdminBudgetRequests } from "./view/pages/BudgetRequests";
+export { default as AdminAnalytics } from "./view/pages/Analytics";
+export { default as AdminTransactions } from "./view/pages/Transactions";
+export { default as AdminSmartAlerts } from "./view/pages/SmartAlerts";
+export { default as AdminProfile } from "./view/pages/Profile";
