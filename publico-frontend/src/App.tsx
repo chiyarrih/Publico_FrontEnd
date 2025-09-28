@@ -7,6 +7,12 @@ import SignupPage from "./features/citizen/view/PAGES/SignupPage";
 
 /* ---------- Layouts & guard ---------- */
 import GuestRoute from "./routes/GuestRoute";
+import { 
+  ProtectedRoute, 
+  AdminRoute, 
+  AgencyRoute, 
+  CitizenRoute
+} from './routes/ProtectedRoute';
 import AppLayout from "./features/citizen/view/components/Layout";
 import AgencyLayout from "./features/agency/view/layout/AgencyLayout";
 import AdminLayout from "./features/admin/view/layout/AdminLayout";
@@ -56,68 +62,97 @@ export default function App() {
     <ErrorBoundary>
       <Suspense fallback={<Loading label="Loading app..." />}>
         <Routes>
-          {/* auth */}
+          {/* Public Routes */}
           <Route path="/" element={<Navigate to="/login" replace />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/signup" element={<SignupPage />} />
-
-          {/* citizen app */}
-          <Route
-            path="/app"
+          <Route 
+            path="/login" 
             element={
               <GuestRoute>
-                <AppLayout />
+                <LoginPage />
               </GuestRoute>
+            } 
+          />
+          <Route 
+            path="/signup" 
+            element={
+              <GuestRoute>
+                <SignupPage />
+              </GuestRoute>
+            } 
+          />
+
+          {/* Citizen Routes */}
+          <Route 
+            path="/citizen" 
+            element={
+              <CitizenRoute>
+                <AppLayout />
+              </CitizenRoute>
             }
           >
             <Route index element={<Navigate to="dashboard" replace />} />
-            <Route path="dashboard"    element={<Safe><CitizenDashboard /></Safe>} />
-            <Route path="alerts"       element={<Safe><Alerts /></Safe>} />
-            <Route path="faq"          element={<Safe><FAQ /></Safe>} />
-            <Route path="ledger"       element={<Safe><Ledger /></Safe>} />
-            <Route path="profile"      element={<Safe><Profile /></Safe>} />
+            <Route path="dashboard" element={<Safe><CitizenDashboard /></Safe>} />
+            <Route path="alerts" element={<Safe><Alerts /></Safe>} />
+            <Route path="faq" element={<Safe><FAQ /></Safe>} />
+            <Route path="ledger" element={<Safe><Ledger /></Safe>} />
+            <Route path="profile" element={<Safe><Profile /></Safe>} />
             <Route path="transparency" element={<Safe><Transparency /></Safe>} />
-            <Route path="support"      element={<Safe><Support /></Safe>} />
+            <Route path="support" element={<Safe><Support /></Safe>} />
           </Route>
 
-          {/* agency portal */}
-          <Route
-            path="/agency"
+          {/* Legacy /app route redirect */}
+          <Route path="/app/*" element={<Navigate to="/citizen" replace />} />
+
+          {/* Agency Routes */}
+          <Route 
+            path="/agency" 
             element={
-              <GuestRoute>
+              <AgencyRoute>
                 <AgencyLayout />
-              </GuestRoute>
+              </AgencyRoute>
             }
           >
-            <Route index               element={<Safe><AgencyDashboard /></Safe>} />
-            <Route path="budgets"      element={<Safe><Budgets /></Safe>} />
-            <Route path="documents"    element={<Safe><Documents /></Safe>} />
+            <Route index element={<Navigate to="dashboard" replace />} />
+            <Route path="dashboard" element={<Safe><AgencyDashboard /></Safe>} />
+            <Route path="budgets" element={<Safe><Budgets /></Safe>} />
+            <Route path="documents" element={<Safe><Documents /></Safe>} />
             <Route path="transactions" element={<Safe><Transactions /></Safe>} />
-            <Route path="alerts"       element={<Safe><SmartAlerts /></Safe>} />
-            <Route path="faqs"         element={<Safe><FAQs /></Safe>} />
-            <Route path="support"      element={<Safe><ContactSupport /></Safe>} />
-            <Route path="profile"      element={<Safe><AgencyProfile /></Safe>} />
+            <Route path="alerts" element={<Safe><SmartAlerts /></Safe>} />
+            <Route path="faqs" element={<Safe><FAQs /></Safe>} />
+            <Route path="support" element={<Safe><ContactSupport /></Safe>} />
+            <Route path="profile" element={<Safe><AgencyProfile /></Safe>} />
           </Route>
 
-          {/* admin portal (NEW) */}
-          <Route
-            path="/admin"
+          {/* Admin Routes */}
+          <Route 
+            path="/admin" 
             element={
-              <GuestRoute>
+              <AdminRoute>
                 <AdminLayout />
-              </GuestRoute>
+              </AdminRoute>
             }
           >
-            <Route index               element={<Safe><AdminDashboard /></Safe>} />
-            <Route path="requests"     element={<Safe><AdminRequests /></Safe>} />
-            <Route path="analytics"    element={<Safe><AdminAnalytics /></Safe>} />
+            <Route index element={<Navigate to="dashboard" replace />} />
+            <Route path="dashboard" element={<Safe><AdminDashboard /></Safe>} />
+            <Route path="requests" element={<Safe><AdminRequests /></Safe>} />
+            <Route path="analytics" element={<Safe><AdminAnalytics /></Safe>} />
             <Route path="transactions" element={<Safe><AdminTransactions /></Safe>} />
-            <Route path="alerts"       element={<Safe><AdminSmartAlerts /></Safe>} />
-            <Route path="profile"      element={<Safe><AdminProfile /></Safe>} />
+            <Route path="alerts" element={<Safe><AdminSmartAlerts /></Safe>} />
+            <Route path="profile" element={<Safe><AdminProfile /></Safe>} />
           </Route>
 
-          {/* fallback */}
-          <Route path="*" element={<Navigate to="/login" replace />} />
+          {/* Error Routes */}
+          <Route path="/unauthorized" element={<div className="p-8 text-center">
+            <h1 className="text-2xl font-bold text-red-600">Unauthorized</h1>
+            <p className="mt-2 text-gray-600">You don't have permission to access this page.</p>
+          </div>} />
+          <Route path="/404" element={<div className="p-8 text-center">
+            <h1 className="text-2xl font-bold">Page Not Found</h1>
+            <p className="mt-2 text-gray-600">The page you're looking for doesn't exist.</p>
+          </div>} />
+
+          {/* Catch All */}
+          <Route path="*" element={<Navigate to="/404" replace />} />
         </Routes>
       </Suspense>
     </ErrorBoundary>

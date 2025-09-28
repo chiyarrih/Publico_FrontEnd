@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { setRole } from "../../../../utils/auth"; // << fixed path
+import { Link } from "react-router-dom";
+import { useAuth } from "../../controller/hooks/useAuth";
+import { setRole, setPortalRole } from "../../../../utils/auth";
 
 const LoginPage = () => {
-  const navigate = useNavigate();
+  const { login, isLoading, error, clearError } = useAuth();
   const [form, setForm] = useState({
     email: "",
     password: "",
@@ -14,13 +15,19 @@ const LoginPage = () => {
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
     setForm((s) => ({ ...s, [name]: type === "checkbox" ? checked : value }));
+    if (error) clearError();
   };
 
-  const onSubmit = (e: React.FormEvent) => {
+  const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // no backend yet — mock login:
-    setRole("user");
-    navigate(form.portal === "agency" ? "/agency" : "/app/dashboard", { replace: true });
+    
+    // Store portal role for routing after login
+    setPortalRole(form.portal);
+    
+    await login({
+      email: form.email,
+      password: form.password,
+    });
   };
 
   return (
@@ -36,6 +43,12 @@ const LoginPage = () => {
               <h1 className="text-[15px] font-semibold text-center mb-4">
                 Log In to Publico
               </h1>
+
+              {error && (
+                <div className="bg-red-50 border border-red-200 rounded px-3 py-2 text-[12px] text-red-600 mb-3">
+                  {error}
+                </div>
+              )}
 
               <form className="space-y-3" onSubmit={onSubmit}>
                 <label className="block">
@@ -108,18 +121,21 @@ const LoginPage = () => {
 
                 <button
                   type="submit"
-                  className="w-full h-9 rounded bg-[#2563eb] text-white text-[13px] font-medium hover:bg-[#1d4fd8] transition"
+                  disabled={isLoading}
+                  className="w-full h-9 rounded bg-[#2563eb] text-white text-[13px] font-medium hover:bg-[#1d4fd8] transition disabled:bg-gray-400 disabled:cursor-not-allowed"
                 >
-                  Log In
+                  {isLoading ? 'Logging in...' : 'Log In'}
                 </button>
 
                 <button
                   type="button"
+                  disabled={isLoading}
                   onClick={() => {
                     setRole("guest");
-                    navigate(form.portal === "agency" ? "/agency" : "/app/dashboard", { replace: true });
+                    setPortalRole(form.portal);
+                    window.location.href = form.portal === "agency" ? "/agency" : "/citizen/dashboard";
                   }}
-                  className="mt-2 w-full h-9 rounded border border-slate-300 text-[13px] font-medium hover:bg-slate-50 transition"
+                  className="mt-2 w-full h-9 rounded border border-slate-300 text-[13px] font-medium hover:bg-slate-50 transition disabled:bg-gray-100 disabled:cursor-not-allowed"
                 >
                   Continue as Guest
                 </button>

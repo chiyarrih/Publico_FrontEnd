@@ -1,5 +1,27 @@
+import { apiClient } from '../../../config/api';
+import { User } from '../../../shared/types/auth';
 import type { BudgetRequest, TxnRow, AlertRow } from "../model/types/admin";
 
+export class AdminService {
+  // Get all citizens
+  static async getAllCitizens(): Promise<{ citizens: User[] }> {
+    return apiClient.get<{ citizens: User[] }>('/auth/getAll');
+  }
+
+  // Get crypto balance
+  static async getCryptoBalance(address: string): Promise<{
+    address: string;
+    balanceWei: string;
+    balanceEth: string;
+  }> {
+    return apiClient.get(`/balance/${address}`);
+  }
+
+  // Budget management endpoints would go here
+  // ... other admin-specific methods
+}
+
+// Keep legacy api object for backward compatibility
 export const api = {
   async getDashboard(){
     return {

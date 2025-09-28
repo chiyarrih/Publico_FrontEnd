@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { logout } from '../../../../utils/auth';
 
 /* ====================== inline icons (no deps) ====================== */
 const I = {
@@ -201,7 +202,7 @@ export default function AgencyLayout() {
             </button>
             {menuOpen && (
               <div className="absolute right-0 top-12 w-40 rounded-md border border-slate-200 bg-white shadow-lg">
-                <button onClick={()=>{localStorage.removeItem("token"); navigate("/agency/login");}}
+                <button onClick={logout}
                         className="block w-full px-4 py-2 text-left text-sm text-slate-700 hover:bg-slate-50">Logout</button>
               </div>
             )}

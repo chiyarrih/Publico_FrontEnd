@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { logout } from '../../../../utils/auth';
 
 /* icons */
 const Icon = {
@@ -94,8 +95,7 @@ export default function AppLayout() {
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    navigate("/citizen/login");
+    logout();
   };
 
   const isTransparency = pathname.startsWith("/app/transparency");

@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { logout } from '../../../../utils/auth';
 
 const ProfileMenu: React.FC = () => {
   const [open, setOpen] = useState(false);
@@ -7,12 +8,7 @@ const ProfileMenu: React.FC = () => {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    // ✅ clear auth storage
-    localStorage.removeItem("token"); 
-    sessionStorage.removeItem("token");
-
-    // ✅ redirect to login
-    navigate("/citizen/login");
+    logout();
   };
 
   // close menu if clicked outside
