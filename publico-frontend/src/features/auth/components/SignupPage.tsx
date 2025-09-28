@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { useAuth } from "../../controller/hooks/useAuth";
-import { RegisterCitizenRequest, RegisterAgencyRequest } from "../../../../shared/types/auth";
-import { validateEmail, validatePassword } from "../../../../utils/auth";
+import { useAuth } from "../hooks/useAuth";
+import { RegisterCitizenRequest, RegisterAgencyRequest } from "../../../shared/types/auth";
+import { validateEmail, validatePassword } from "../../../utils/auth";
 
 const SignupPage: React.FC = () => {
   const { register, isLoading, error, clearError } = useAuth();

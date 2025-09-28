@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { useAuth } from "../../controller/hooks/useAuth";
-import { setRole, setPortalRole } from "../../../../utils/auth";
+import { useAuth } from "../hooks/useAuth";
+import { setRole, setPortalRole } from "../../../utils/auth";
 
 const LoginPage = () => {
   const { login, isLoading, error, clearError } = useAuth();

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AuthService } from '../../services/citizenApi';
+import { AuthService } from '../services/authApi';
 import { 
   LoginRequest, 
   RegisterRequest, 
@@ -8,7 +8,7 @@ import {
   UserRole,
   ForgotPasswordRequest,
   ResetPasswordRequest 
-} from '../../../../shared/types/auth';
+} from '../../../shared/types/auth';
 import { 
   setAuthToken, 
   setUserData, 
@@ -16,7 +16,7 @@ import {
   isAuthenticated, 
   getCurrentUserRole,
   logout as utilLogout
-} from '../../../../utils/auth';
+} from '../../../utils/auth';
 
 interface UseAuthReturn {
   user: Partial<User> | null;
