@@ -7,7 +7,6 @@ import { LoginPage, SignupPage } from "./features/auth";
 /* ---------- Layouts & guard ---------- */
 import GuestRoute from "./routes/GuestRoute";
 import { 
-  ProtectedRoute, 
   AdminRoute, 
   AgencyRoute, 
   CitizenRoute
