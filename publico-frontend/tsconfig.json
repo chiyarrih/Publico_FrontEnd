@@ -14,7 +14,15 @@
     "allowJs": true,
     "skipLibCheck": true,
     "incremental": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "baseUrl": "src",
+    "paths": {
+      "@citizen/*": ["features/citizen/*"],
+      "@agency/*": ["features/agency/*"],
+      "@shared/*": ["shared/*"],
+      "@routes/*": ["routes/*"],
+      "@config/*": ["config/*"]
+    }
   },
   "include": ["src"],
   "exclude": ["node_modules"]

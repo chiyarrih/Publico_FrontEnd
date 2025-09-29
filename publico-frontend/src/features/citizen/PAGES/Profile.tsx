@@ -84,8 +84,6 @@ const Profile: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Page Title */}
-      <div className="text-lg font-semibold text-slate-900">User Profile</div>
-
       <div className="card">
         {/* Tabs header */}
         <div className="px-5 pt-4">
