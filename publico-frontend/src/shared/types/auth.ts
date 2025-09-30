@@ -22,7 +22,7 @@ export interface Citizen extends BaseUser {
 
 // Agency Interface
 export interface Agency extends BaseUser {
-  agency_id: string;
+  _id: string;
   agency_name: string;
   agency_code: string;
   contact_email: string;
@@ -86,7 +86,7 @@ export type RegisterRequest = RegisterCitizenRequest | RegisterAgencyRequest | R
 // Authentication Responses
 export interface AuthResponse {
   message: string;
-  user: {
+  users: {
     token: string;
     role: UserRole;
   };

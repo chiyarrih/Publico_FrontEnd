@@ -55,18 +55,19 @@ export const useAuth = (): UseAuthReturn => {
     try {
       const response = await AuthService.login(data);
       
-      setAuthToken(response.user.token);
+      setAuthToken(response.users.token);
       
       const userData = {
-        role: response.user.role,
+        role: response.users.role,
         email: data.email,
+        user: response.users
       };
       
       setUserData(userData);
       setUser(userData);
       
       // Navigate based on role
-      switch (response.user.role) {
+      switch (response.users.role) {
         case 'Admin':
           navigate('/admin/dashboard');
           break;

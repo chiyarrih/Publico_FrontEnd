@@ -68,8 +68,19 @@ export default function useConnectWallet() {
     }
   };
   const handleConnectPrivateKey = async () => {
-    if (privateKey.trim()) {
-      const account = web3.eth.accounts.privateKeyToAccount(privateKey);
+    const response = await fetch("http://localhost:5000/api/decrypt/private", {
+      method: "POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({privateKey})
+    })
+    const json = await response.json()
+    if (!response.ok) {
+      console.log(json);
+      
+    }
+    const decrypted = await json.decryptedKey;
+    if (decrypted) {
+      const account = web3.eth.accounts.privateKeyToAccount(decrypted);
       web3.eth.accounts.wallet.add(account);
       setCurrentAddress(account.address);
       setWalletConnected(true);
