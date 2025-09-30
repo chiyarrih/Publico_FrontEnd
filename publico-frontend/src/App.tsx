@@ -1,14 +1,12 @@
 import React, { Suspense, lazy } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 
-/* ---------- Always-on pages (keep static) ---------- */
-import LoginPage from "./features/citizen/view/PAGES/LoginPage";
-import SignupPage from "./features/citizen/view/PAGES/SignupPage";
+/* ---------- Auth pages (shared across all user types) ---------- */
+import { LoginPage, SignupPage } from "./features/auth";
 
 /* ---------- Layouts & guard ---------- */
 import GuestRoute from "./routes/GuestRoute";
 import { 
-  ProtectedRoute, 
   AdminRoute, 
   AgencyRoute, 
   CitizenRoute

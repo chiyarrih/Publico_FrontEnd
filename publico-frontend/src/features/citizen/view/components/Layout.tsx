@@ -98,7 +98,7 @@ export default function AppLayout() {
     logout();
   };
 
-  const isTransparency = pathname.startsWith("/app/transparency");
+  const isTransparency = pathname.startsWith("/citizen/transparency");
 
   return (
     <div className="min-h-screen w-full bg-slate-50">
@@ -139,13 +139,13 @@ export default function AppLayout() {
               </div>
             </div>
             <nav className="space-y-1">
-              <NavLink to="/app/dashboard"    end className={navLinkClass}>{Icon.dashboard()}   <span>Dashboard</span></NavLink>
-              <NavLink to="/app/transparency"    className={navLinkClass}>{Icon.transparency()} <span>Transparency Portal</span></NavLink>
-              <NavLink to="/app/ledger"          className={navLinkClass}>{Icon.ledger()}       <span>Transaction Ledger</span></NavLink>
-              <NavLink to="/app/alerts"          className={navLinkClass}>{Icon.alerts()}       <span>Smart Contract Alerts</span></NavLink>
-              <NavLink to="/app/profile"         className={navLinkClass}>{Icon.user()}         <span>User Profile</span></NavLink>
-              <NavLink to="/app/faq"             className={navLinkClass}>{Icon.faq()}          <span>FAQs</span></NavLink>
-              <NavLink to="/app/support"         className={navLinkClass}>{Icon.support()}      <span>Contact Support</span></NavLink>
+             <NavLink to="/citizen/dashboard"    end className={navLinkClass}>{Icon.dashboard()}   <span>Dashboard</span></NavLink>
+              <NavLink to="/citizen/transparency"    className={navLinkClass}>{Icon.transparency()} <span>Transparency Portal</span></NavLink>
+              <NavLink to="/citizen/ledger"          className={navLinkClass}>{Icon.ledger()}       <span>Transaction Ledger</span></NavLink>
+              <NavLink to="/citizen/alerts"          className={navLinkClass}>{Icon.alerts()}       <span>Smart Contract Alerts</span></NavLink>
+              <NavLink to="/citizen/profile"         className={navLinkClass}>{Icon.user()}         <span>User Profile</span></NavLink>
+              <NavLink to="/citizen/faq"             className={navLinkClass}>{Icon.faq()}          <span>FAQs</span></NavLink>
+              <NavLink to="/citizen/support"         className={navLinkClass}>{Icon.support()}      <span>Contact Support</span></NavLink>
             </nav>
           </div>
         </aside>
