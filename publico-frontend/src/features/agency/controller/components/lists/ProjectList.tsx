@@ -1,5 +1,6 @@
+import { Project } from "@citizen/controller/data/demo";
 import React from "react";
-import type { Project } from "../../controller/hooks/useAgencyDashboard";
+
 
 const ProjectRow: React.FC<{ p: Project }> = ({ p }) => (
   <div className="rounded border border-slate-200 p-3">
@@ -13,7 +14,7 @@ const ProjectRow: React.FC<{ p: Project }> = ({ p }) => (
       <span className="text-xs text-slate-500">{p.pct}%</span>
     </div>
     <div className="mt-2 w-full h-2 rounded bg-slate-200 overflow-hidden">
-      <div className="h-2" style={{ width: `${p.pct}%`, backgroundColor: p.color }} />
+      <div className="h-2" style={{ width: `${p.pct}%`, backgroundColor: p.barColor }} />
     </div>
   </div>
 );
