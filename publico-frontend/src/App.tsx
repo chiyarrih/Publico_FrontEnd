@@ -37,16 +37,17 @@ const Documents       = lazy(() => import("./features/view/agency/pages/Document
 const Transactions    = lazy(() => import("./features/view/agency/pages/Transactions"));
 const SmartAlerts     = lazy(() => import("./features/view/agency/pages/SmartAlerts"));
 const FAQs            = lazy(() => import("./features/view/agency/pages/FAQs"));
+
 const ContactSupport  = lazy(() => import("./features/view/agency/pages/ContactSupport"));
 const AgencyProfile   = lazy(() => import("./features/view/agency/pages/Profile"));
 
 /* ---------- Lazy admin pages (NEW) ---------- */
-const AdminDashboard     = lazy(() => import("./features/view/admin/pages/Dashboard"));
+// const AdminDashboard     = lazy(() => import("./features/view/admin/pages/Dashboard"));
 const AdminRequests      = lazy(() => import("./features/view/admin/pages/BudgetRequests"));
-const AdminAnalytics     = lazy(() => import("./features/view/admin/pages/Analytics"));
+// const AdminAnalytics     = lazy(() => import("./features/view/admin/pages/Analytics"));
 const AdminTransactions  = lazy(() => import("./features/view/admin/pages/Transactions"));
 const AdminSmartAlerts   = lazy(() => import("./features/view/admin/pages/SmartAlerts"));
-const AdminProfile       = lazy(() => import("./features/view/admin/pages/Profile"));
+// const AdminProfile       = lazy(() => import("./features/view/admin/pages/Profile"));
 
 /* Helper to show component-level crashes instead of white screen */
 function Safe({ children }: React.PropsWithChildren) {
@@ -133,12 +134,12 @@ export default function App() {
             }
           >
             <Route index element={<Navigate to="dashboard" replace />} />
-            <Route path="dashboard" element={<Safe><AdminDashboard /></Safe>} />
+            {/*<Route path="dashboard" element={<Safe><AdminDashboard /></Safe>} />   */}
             <Route path="requests" element={<Safe><AdminRequests /></Safe>} />
-            <Route path="analytics" element={<Safe><AdminAnalytics /></Safe>} />
+            {/*<Route path="analytics" element={<Safe><AdminAnalytics /></Safe>} />*/}
             <Route path="transactions" element={<Safe><AdminTransactions /></Safe>} />
             <Route path="alerts" element={<Safe><AdminSmartAlerts /></Safe>} />
-            <Route path="profile" element={<Safe><AdminProfile /></Safe>} />
+            {/*<Route path="profile" element={<Safe><AdminProfile /></Safe>} /> */}
           </Route>
 
           {/* Error Routes */}

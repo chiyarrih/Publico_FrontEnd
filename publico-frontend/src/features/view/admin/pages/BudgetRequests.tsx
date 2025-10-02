@@ -29,7 +29,7 @@ export default function BudgetRequests(){
             <a className="text-sky-600 hover:underline">{r.id}</a>,
             r.date, r.dept, r.project,
             "₱"+r.amount.toLocaleString(),
-            <Badge tone={tone(r)}>{r.status}</Badge>,
+            <Badge tone={tone(r.status)}>{r.status}</Badge>,
             <a className="text-sky-600 hover:underline">View</a>
           ])}
         />
