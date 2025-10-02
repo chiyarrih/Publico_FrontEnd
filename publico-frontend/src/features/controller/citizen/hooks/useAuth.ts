@@ -55,6 +55,21 @@ export const useAuth = (): UseAuthReturn => {
     try {
       const response = await AuthService.login(data);
       
+      // Validate portal selection against actual user role
+      if (data.expectedRole) {
+        const expectedRoleMap: Record<string, string> = {
+          'citizen': 'Citizen',
+          'agency': 'Agency', 
+          'admin': 'Admin'
+        };
+        
+        const expectedBackendRole = expectedRoleMap[data.expectedRole];
+        if (expectedBackendRole && response.role !== expectedBackendRole) {
+          setError(`Access denied. You selected "${data.expectedRole}" portal but your account is registered as "${response.role}". Please select the correct portal for your account type.`);
+          return;
+        }
+      }
+      
       // Store the token from the response
       setAuthToken(response.token);
       
@@ -68,7 +83,7 @@ export const useAuth = (): UseAuthReturn => {
       setUserData(userData);
       setUser(userData);
       
-      // Navigate based on role
+      // Navigate based on actual role (not portal selection)
       switch (response.role) {
         case 'Admin':
           navigate('/admin/dashboard');

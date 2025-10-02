@@ -1,5 +1,5 @@
 import React from "react";
-import { Modal, Badge, Button } from "../admin/ui/blocks";
+import { Modal, Badge, Button } from "../ui/blocks";
 
 export default function TxnDetailsModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   return (

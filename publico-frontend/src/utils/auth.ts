@@ -5,7 +5,7 @@ const USER_KEY = 'publico_user_data';
 
 // Legacy support for existing code
 export type Role = "guest" | "user" | null;
-export type Portal = "citizen" | "agency";
+export type Portal = "citizen" | "agency" | "admin";
 
 const ROLE_KEY = "auth_role";
 const PORTAL_KEY = "portal_role";
@@ -93,6 +93,45 @@ export const isAuthenticated = (): boolean => {
 export const hasRole = (requiredRoles: UserRole[]): boolean => {
   const userRole = getCurrentUserRole();
   return userRole ? requiredRoles.includes(userRole) : false;
+};
+
+// Enhanced role validation with portal checking
+export const validateRoleAccess = (requiredRole: UserRole): boolean => {
+  const userRole = getCurrentUserRole();
+  const portalRole = getPortalRole();
+  
+  // Check if user has the required role
+  if (!userRole || userRole !== requiredRole) {
+    return false;
+  }
+  
+  // Additional check: ensure portal selection matches role
+  const portalRoleMap: Record<Portal | string, UserRole> = {
+    'citizen': 'Citizen',
+    'agency': 'Agency',
+    'admin': 'Admin'
+  };
+  
+  if (portalRole && portalRoleMap[portalRole] !== userRole) {
+    return false;
+  }
+  
+  return true;
+};
+
+// Check if user can access specific portal
+export const canAccessPortal = (portal: Portal | 'admin'): boolean => {
+  const userRole = getCurrentUserRole();
+  
+  if (!userRole) return false;
+  
+  const accessMap: Record<string, UserRole[]> = {
+    'citizen': ['Citizen'],
+    'agency': ['Agency'],
+    'admin': ['Admin']
+  };
+  
+  return accessMap[portal]?.includes(userRole) || false;
 };
 
 // Logout

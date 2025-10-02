@@ -42,12 +42,14 @@ const ContactSupport  = lazy(() => import("./features/view/agency/pages/ContactS
 const AgencyProfile   = lazy(() => import("./features/view/agency/pages/Profile"));
 
 /* ---------- Lazy admin pages (NEW) ---------- */
-// const AdminDashboard     = lazy(() => import("./features/view/admin/pages/Dashboard"));
+const AdminDashboard     = lazy(() => import("./features/view/admin/pages/Dashboard"));
 const AdminRequests      = lazy(() => import("./features/view/admin/pages/BudgetRequests"));
-// const AdminAnalytics     = lazy(() => import("./features/view/admin/pages/Analytics"));
+const AdminAnalytics     = lazy(() => import("./features/view/admin/pages/Analytics"));
 const AdminTransactions  = lazy(() => import("./features/view/admin/pages/Transactions"));
+const AdminMilestones    = lazy(() => import("./features/view/admin/pages/Milestones"));
 const AdminSmartAlerts   = lazy(() => import("./features/view/admin/pages/SmartAlerts"));
-// const AdminProfile       = lazy(() => import("./features/view/admin/pages/Profile"));
+const AdminVerification  = lazy(() => import("./features/view/admin/pages/Verification"));
+const AdminProfile       = lazy(() => import("./features/view/admin/pages/Profile"));
 
 /* Helper to show component-level crashes instead of white screen */
 function Safe({ children }: React.PropsWithChildren) {
@@ -134,18 +136,45 @@ export default function App() {
             }
           >
             <Route index element={<Navigate to="dashboard" replace />} />
-            {/*<Route path="dashboard" element={<Safe><AdminDashboard /></Safe>} />   */}
+            <Route path="dashboard" element={<Safe><AdminDashboard /></Safe>} />
             <Route path="requests" element={<Safe><AdminRequests /></Safe>} />
-            {/*<Route path="analytics" element={<Safe><AdminAnalytics /></Safe>} />*/}
+            <Route path="analytics" element={<Safe><AdminAnalytics /></Safe>} />
             <Route path="transactions" element={<Safe><AdminTransactions /></Safe>} />
+            <Route path="milestones" element={<Safe><AdminMilestones /></Safe>} />
             <Route path="alerts" element={<Safe><AdminSmartAlerts /></Safe>} />
-            {/*<Route path="profile" element={<Safe><AdminProfile /></Safe>} /> */}
+            <Route path="verification" element={<Safe><AdminVerification /></Safe>} />
+            <Route path="profile" element={<Safe><AdminProfile /></Safe>} />
           </Route>
 
           {/* Error Routes */}
-          <Route path="/unauthorized" element={<div className="p-8 text-center">
-            <h1 className="text-2xl font-bold text-red-600">Unauthorized</h1>
-            <p className="mt-2 text-gray-600">You don't have permission to access this page.</p>
+          <Route path="/unauthorized" element={<div className="min-h-screen flex items-center justify-center bg-gray-50">
+            <div className="max-w-md w-full bg-white rounded-lg shadow-md p-8 text-center">
+              <div className="mb-4">
+                <svg className="mx-auto h-12 w-12 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+              </div>
+              <h1 className="text-2xl font-bold text-red-600 mb-2">Access Denied</h1>
+              <p className="text-gray-600 mb-6">You don't have permission to access this page. Please log in with the correct account type.</p>
+              <div className="space-y-3">
+                <button 
+                  onClick={() => {
+                    // Clear any existing auth data and redirect to login
+                    localStorage.clear();
+                    window.location.href = '/login';
+                  }}
+                  className="w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
+                >
+                  Back to Login
+                </button>
+                <button 
+                  onClick={() => window.history.back()}
+                  className="w-full bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300 transition-colors"
+                >
+                  Go Back
+                </button>
+              </div>
+            </div>
           </div>} />
           <Route path="/404" element={<div className="p-8 text-center">
             <h1 className="text-2xl font-bold">Page Not Found</h1>

@@ -49,6 +49,7 @@ export type User = Citizen | Agency | Admin;
 export interface LoginRequest {
   email: string;
   password: string;
+  expectedRole?: string; // Optional field to validate portal selection
 }
 
 export interface RegisterCitizenRequest {

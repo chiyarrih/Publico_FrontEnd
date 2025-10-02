@@ -1,4 +1,4 @@
-import { apiClient } from '../../../config/api';
+import { apiClient } from '../../../../config/api';
 
 export interface BudgetProject {
   _id?: string;

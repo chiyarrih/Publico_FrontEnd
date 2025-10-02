@@ -8,7 +8,7 @@ const LoginPage = () => {
   const [form, setForm] = useState({
     email: "",
     password: "",
-    portal: "citizen" as "citizen" | "agency",
+    portal: "citizen" as "citizen" | "agency" | "admin",
     remember: false,
   });
 
@@ -21,12 +21,13 @@ const LoginPage = () => {
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Store portal role for routing after login
+    // Store portal role for validation after login
     setPortalRole(form.portal);
     
     await login({
       email: form.email,
       password: form.password,
+      expectedRole: form.portal, // Pass expected role to validate against backend response
     });
   };
 
@@ -105,6 +106,17 @@ const LoginPage = () => {
                       />{" "}
                       Agency Representative
                     </label>
+                    <label className="inline-flex items-center gap-1">
+                      <input
+                        className="accent-[#2563eb]"
+                        type="radio"
+                        name="portal"
+                        value="admin"
+                        checked={form.portal === "admin"}
+                        onChange={onChange}
+                      />{" "}
+                      Admin
+                    </label>
                   </div>
                 </div>
 
@@ -133,7 +145,19 @@ const LoginPage = () => {
                   onClick={() => {
                     setRole("guest");
                     setPortalRole(form.portal);
-                    window.location.href = form.portal === "agency" ? "/agency" : "/citizen/dashboard";
+                    // Route based on selected portal for guest access
+                    switch (form.portal) {
+                      case "admin":
+                        window.location.href = "/admin";
+                        break;
+                      case "agency":
+                        window.location.href = "/agency";
+                        break;
+                      case "citizen":
+                      default:
+                        window.location.href = "/citizen/dashboard";
+                        break;
+                    }
                   }}
                   className="mt-2 w-full h-9 rounded border border-slate-300 text-[13px] font-medium hover:bg-slate-50 transition disabled:bg-gray-100 disabled:cursor-not-allowed"
                 >
