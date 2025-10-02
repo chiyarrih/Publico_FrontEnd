@@ -1,6 +1,6 @@
 import React from "react";
 import { Card } from "../ui/blocks";
-import StatusTag from "../ui/StatusTag";
+import { StatusTag } from "../ui/StatusTag";
 
 type Alert = { id: string; title: string; detail: string; state: string };
 

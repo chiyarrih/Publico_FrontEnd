@@ -18,3 +18,40 @@ export const Pill: React.FC<React.PropsWithChildren<{ color?: PillColor }>> = ({
     {children}
   </span>
 );
+
+// StatusTag component that maps status values to appropriate colors
+export const StatusTag: React.FC<{ value: string }> = ({ value }) => {
+  const getColor = (status: string): PillColor => {
+    const normalizedStatus = status.toLowerCase();
+    switch (normalizedStatus) {
+      case "approved":
+      case "resolved":
+      case "completed":
+      case "verified":
+        return "green";
+      case "pending":
+      case "under review":
+      case "in progress":
+        return "yellow";
+      case "rejected":
+      case "failed":
+      case "unresolved":
+      case "error":
+        return "red";
+      case "draft":
+      case "inactive":
+        return "gray";
+      default:
+        return "blue";
+    }
+  };
+
+  return (
+    <Pill color={getColor(value)}>
+      {value}
+    </Pill>
+  );
+};
+
+// Default export for compatibility with default imports
+export default StatusTag;
