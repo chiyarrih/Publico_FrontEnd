@@ -82,7 +82,7 @@ const SignupPage: React.FC = () => {
         role: 'Agency',
         agency_name: form.agencyName,
         agency_code: form.agencyCode,
-        contact_email: form.email,
+        email: form.email,  // Backend uses 'email' not 'contact_email'
         password: form.password,
         contact_phone: form.contactPhone,
         department: form.department,

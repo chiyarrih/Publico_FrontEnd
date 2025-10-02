@@ -55,10 +55,13 @@ export const useAuth = (): UseAuthReturn => {
     try {
       const response = await AuthService.login(data);
       
-      setAuthToken(response.user.token);
+      // Store the token from the response
+      setAuthToken(response.token);
       
+      // Build user data from the response
       const userData = {
-        role: response.user.role,
+        id: response.user_id,
+        role: response.role,
         email: data.email,
       };
       
@@ -66,7 +69,7 @@ export const useAuth = (): UseAuthReturn => {
       setUser(userData);
       
       // Navigate based on role
-      switch (response.user.role) {
+      switch (response.role) {
         case 'Admin':
           navigate('/admin/dashboard');
           break;

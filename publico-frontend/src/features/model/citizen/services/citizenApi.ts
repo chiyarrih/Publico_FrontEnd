@@ -2,7 +2,8 @@ import { apiClient } from '../../../../config/api';
 import {
   LoginRequest,
   RegisterRequest,
-  AuthResponse,
+  LoginResponse,
+  RegisterResponse,
   ForgotPasswordRequest,
   ResetPasswordRequest,
   User
@@ -10,11 +11,11 @@ import {
 
 export class AuthService {
   // Registration
-  static async register(data: RegisterRequest): Promise<AuthResponse> {
+  static async register(data: RegisterRequest): Promise<RegisterResponse> {
     console.log('🔧 AuthService.register called with:', data);
     console.log('🌐 API Base URL:', import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000');
     try {
-      const response = await apiClient.post<AuthResponse>('/auth/user/register', data);
+      const response = await apiClient.post<RegisterResponse>('/auth/user/register', data);
       console.log('✅ API Response:', response);
       return response;
     } catch (error) {
@@ -24,8 +25,8 @@ export class AuthService {
   }
 
   // Login
-  static async login(data: LoginRequest): Promise<AuthResponse> {
-    return apiClient.post<AuthResponse>('/auth/login', data);
+  static async login(data: LoginRequest): Promise<LoginResponse> {
+    return apiClient.post<LoginResponse>('/auth/login', data);
   }
 
   // Email Verification

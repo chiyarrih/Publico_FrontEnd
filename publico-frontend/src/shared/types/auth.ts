@@ -25,7 +25,6 @@ export interface Agency extends BaseUser {
   agency_id: string;
   agency_name: string;
   agency_code: string;
-  contact_email: string;
   contact_phone: string;
   department?: string;
   address: string;
@@ -66,7 +65,7 @@ export interface RegisterAgencyRequest {
   role: 'Agency';
   agency_name: string;
   agency_code: string;
-  contact_email: string;
+  email: string;
   password: string;
   contact_phone: string;
   department?: string;
@@ -84,12 +83,21 @@ export interface RegisterAdminRequest {
 export type RegisterRequest = RegisterCitizenRequest | RegisterAgencyRequest | RegisterAdminRequest;
 
 // Authentication Responses
-export interface AuthResponse {
+export interface LoginResponse {
   message: string;
-  user: {
-    token: string;
-    role: UserRole;
-  };
+  token: string;
+  role: UserRole;
+  user_id: string;
+  redirect: string;
+  // Agency/Admin specific fields (optional)
+  privateKey?: string;
+  address?: string;
+  name?: string;
+}
+
+export interface RegisterResponse {
+  message: string;
+  user: User;
   redirect: string;
 }
 
