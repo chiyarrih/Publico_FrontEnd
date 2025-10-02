@@ -55,30 +55,44 @@ export const api = {
 
   async getBudgetRequests():Promise<BudgetRequest[]>{
     return [
-      { id:"PRJ-2023-0185", date:"2023-07-15", dept:"Public Works", project:"Road Rehabilitation – Perez Blvd", amount:2_500_000, status:"Pending" },
-      { id:"PRJ-2023-0178", date:"2023-06-21", dept:"Health",       project:"Medical Equipment Procurement",    amount:1_200_000, status:"Approved" },
-      { id:"PRJ-2023-0162", date:"2023-06-11", dept:"Education",    project:"School Building Repair",           amount:900_000,   status:"Reviewed" },
-      { id:"PRJ-2023-0152", date:"2023-05-27", dept:"Agriculture",  project:"Irrigation System Upgrade",        amount:1_800_000, status:"Pending" },
+      { id:"PRJ-2023-0125", date:"2023-05-15", dept:"Public Works", project:"Road Rehabilitation - Perez Blvd", amount:2_500_000, status:"Pending" },
+      { id:"PRJ-2023-0124", date:"2023-05-14", dept:"Health", project:"Medical Equipment Procurement", amount:1_800_000, status:"Approved" },
+      { id:"PRJ-2023-0123", date:"2023-05-13", dept:"Education", project:"School Building Repair", amount:3_200_000, status:"Reviewed" },
+      { id:"PRJ-2023-0122", date:"2023-05-12", dept:"Agriculture", project:"Irrigation System Upgrade", amount:1_500_000, status:"Rejected" },
+      { id:"PRJ-2023-0121", date:"2023-05-11", dept:"Tourism", project:"Bangus Festival Preparation", amount:950_000, status:"Pending" },
+      { id:"PRJ-2023-0120", date:"2023-05-10", dept:"Public Works", project:"Drainage System Improvement", amount:4_200_000, status:"Reviewed" },
+      { id:"PRJ-2023-0119", date:"2023-05-09", dept:"Health", project:"COVID Response Supplies", amount:1_200_000, status:"Approved" },
+      { id:"PRJ-2023-0118", date:"2023-05-08", dept:"Education", project:"Digital Learning Equipment", amount:2_800_000, status:"Pending" },
     ];
   },
 
   async getTransactions():Promise<TxnRow[]>{
     return [
-      { id:"TX-78445", date:"2023-05-15", dept:"Public Works", project:"Road Rehabilitation", amount:500_000,  status:"Completed", hash:"ce41d…eaf7" },
-      { id:"TX-78447", date:"2023-05-14", dept:"Health",       project:"Medical Equipment",  amount:1_300_000, status:"Completed", hash:"c01bd…1aaf" },
-      { id:"TX-78448", date:"2023-05-13", dept:"Education",    project:"School Repairs",     amount:800_000,   status:"Pending",   hash:"a9db2…cc91" },
-      { id:"TX-78452", date:"2023-05-11", dept:"Tourism",      project:"Marketing",          amount:150_000,   status:"Failed",    hash:"f3a77…912c" },
+      { id:"TX-78945", date:"2023-05-15", dept:"Public Works", project:"Road Rehabilitation", amount:500_000, status:"Completed", hash:"0x7a8b9c6d1e2f" },
+      { id:"TX-78946", date:"2023-05-14", dept:"Health", project:"Medical Equipment", amount:350_000, status:"Completed", hash:"0x3e4f5a6b7c8d" },
+      { id:"TX-78947", date:"2023-05-13", dept:"Education", project:"School Repairs", amount:420_000, status:"Pending", hash:"0x9a8b7c6d5e4f" },
+      { id:"TX-78948", date:"2023-05-12", dept:"Agriculture", project:"Irrigation System", amount:280_000, status:"Completed", hash:"0x1a2b3c4d5e6f" },
+      { id:"TX-78949", date:"2023-05-11", dept:"Tourism", project:"Festival Preparation", amount:150_000, status:"Failed", hash:"0xf1e2d3c4b5a6" },
+      { id:"TX-78950", date:"2023-05-10", dept:"Public Works", project:"Drainage System", amount:620_000, status:"Completed", hash:"0x6a5b4c3d2e1f" },
+      { id:"TX-78951", date:"2023-05-09", dept:"Health", project:"COVID Supplies", amount:280_000, status:"Completed", hash:"0x5e4d3c2b1a0f" },
+      { id:"TX-78952", date:"2023-05-08", dept:"Education", project:"Digital Equipment", amount:490_000, status:"Pending", hash:"0x0a1b2c3d4e5f" },
+      { id:"TX-78953", date:"2023-05-07", dept:"Agriculture", project:"Farmer Support", amount:320_000, status:"Completed", hash:"0xf5e4d3c2b1a0" },
+      { id:"TX-78954", date:"2023-05-06", dept:"Tourism", project:"Marketing Campaign", amount:180_000, status:"Completed", hash:"0xa9b8c7d6e5f4" },
     ];
   },
 
   async getAlerts():Promise<AlertRow[]>{
     return [
-      { id:"AL-01", title:"Budget Overrun Detected", date:"2023-05-15", severity:"High",   status:"Open",
-        description:"Public Works has exceeded their quarterly allocation by 15%." },
-      { id:"AL-02", title:"Fund Release Delay",      date:"2023-05-14", severity:"Medium", status:"Open",
-        description:"Funds for School Building Repair delayed by 7 days." },
-      { id:"AL-03", title:"Project Completed",       date:"2023-05-13", severity:"Low",    status:"Open",
-        description:"Medical Equipment Procurement completed." },
+      { id:"AL-01", title:"Budget Overrun Detected", date:"2023-05-15", severity:"High", status:"Open",
+        description:"Public Works Department has exceeded their quarterly allocation by 15%" },
+      { id:"AL-02", title:"Fund Release Delay", date:"2023-05-14", severity:"Medium", status:"Open",
+        description:"Funds for School Building Repair project have been delayed by 7 days" },
+      { id:"AL-03", title:"Project Completed", date:"2023-05-13", severity:"Low", status:"Open",
+        description:"Medical Equipment Procurement project has been successfully completed" },
+      { id:"AL-04", title:"Unauthorized Expense", date:"2023-05-12", severity:"High", status:"Open",
+        description:"An unauthorized expense of ₱120,000 was detected in Tourism Department" },
+      { id:"AL-05", title:"Approval Process Delayed", date:"2023-05-11", severity:"Medium", status:"Open",
+        description:"Irrigation System Upgrade project approval is pending for over 14 days" },
     ];
   }
 };
