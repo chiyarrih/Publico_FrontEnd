@@ -8,6 +8,7 @@ export default defineConfig({
       "@config": "/src/config",
       "@citizen": "/src/features/citizen",
       "@agency": "/src/features/agency",
+      "@admin": "/src/features/admin",
       "@shared": "/src/shared",
       "@utils": "/src/utils",
     },

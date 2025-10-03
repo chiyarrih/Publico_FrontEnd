@@ -19,6 +19,7 @@
     "paths": {
       "@citizen/*": ["features/citizen/*"],
       "@agency/*": ["features/agency/*"],
+      "@admin/*": ["features/admin/*"],
       "@shared/*": ["shared/*"],
       "@routes/*": ["routes/*"],
       "@config/*": ["config/*"]

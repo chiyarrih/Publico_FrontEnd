@@ -77,29 +77,80 @@ export const Table=({head,rows}:{head:React.ReactNode[];rows:React.ReactNode[][]
 /* CHARTS */
 export const LineMini=({data}:{data:{label:string;allocated:number;used:number}[]})=>(
   <ResponsiveContainer width="100%" height={240}>
-    <LineChart data={data} margin={{left:8,right:8,top:10}}>
-      <CartesianGrid strokeDasharray="3 3"/><XAxis dataKey="label"/><YAxis/><Tooltip/>
-      <Line type="monotone" dataKey="allocated"/><Line type="monotone" dataKey="used"/>
+    <LineChart data={data} margin={{left:-20,right:8,top:10,bottom:5}}>
+      <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0"/>
+      <XAxis dataKey="label" tick={{fontSize:12}} stroke="#64748b"/>
+      <YAxis tick={{fontSize:12}} stroke="#64748b"/>
+      <Tooltip 
+        contentStyle={{background:"#fff",border:"1px solid #e2e8f0",borderRadius:"8px",fontSize:"12px"}}
+        labelStyle={{fontWeight:600,color:"#334155"}}
+      />
+      <Legend 
+        wrapperStyle={{fontSize:"12px",paddingTop:"10px"}}
+        iconType="circle"
+      />
+      <Line 
+        type="monotone" 
+        dataKey="allocated" 
+        stroke="#0ea5e9" 
+        strokeWidth={2}
+        dot={{fill:"#0ea5e9",r:4}}
+        name="Allocated"
+      />
+      <Line 
+        type="monotone" 
+        dataKey="used" 
+        stroke="#10b981" 
+        strokeWidth={2}
+        dot={{fill:"#10b981",r:4}}
+        name="Utilized"
+      />
     </LineChart>
   </ResponsiveContainer>
 );
 
 export const PieMini=({data}:{data:{name:string;value:number;color:string}[]})=>(
-  <ResponsiveContainer width="100%" height={240}>
+  <ResponsiveContainer width="100%" height={280}>
     <PieChart>
-      <Pie data={data} dataKey="value" nameKey="name" innerRadius={60} outerRadius={90}>
+      <Pie 
+        data={data} 
+        dataKey="value" 
+        nameKey="name" 
+        cx="50%" 
+        cy="45%" 
+        outerRadius={90}
+        label={({name,value})=>`${name} ${value}%`}
+        labelLine={{stroke:"#94a3b8"}}
+      >
         {data.map((d,i)=><Cell key={i} fill={d.color}/>)}
       </Pie>
-      <Legend/><Tooltip/>
+      <Tooltip 
+        contentStyle={{background:"#fff",border:"1px solid #e2e8f0",borderRadius:"8px",fontSize:"12px"}}
+      />
+      <Legend 
+        wrapperStyle={{fontSize:"11px",paddingTop:"5px"}}
+        iconType="square"
+      />
     </PieChart>
   </ResponsiveContainer>
 );
 
 export const BarMini=({data}:{data:{dept:string;allocated:number;used:number}[]})=>(
   <ResponsiveContainer width="100%" height={240}>
-    <BarChart data={data} margin={{left:8,right:8,top:10}}>
-      <CartesianGrid strokeDasharray="3 3"/><XAxis dataKey="dept"/><YAxis/><Tooltip/>
-      <Bar dataKey="allocated"/><Bar dataKey="used"/>
+    <BarChart data={data} margin={{left:-20,right:8,top:10,bottom:5}}>
+      <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0"/>
+      <XAxis dataKey="dept" tick={{fontSize:11}} stroke="#64748b"/>
+      <YAxis tick={{fontSize:12}} stroke="#64748b"/>
+      <Tooltip 
+        contentStyle={{background:"#fff",border:"1px solid #e2e8f0",borderRadius:"8px",fontSize:"12px"}}
+        labelStyle={{fontWeight:600,color:"#334155"}}
+      />
+      <Legend 
+        wrapperStyle={{fontSize:"12px",paddingTop:"10px"}}
+        iconType="square"
+      />
+      <Bar dataKey="allocated" fill="#0ea5e9" name="Allocated" radius={[4,4,0,0]}/>
+      <Bar dataKey="used" fill="#10b981" name="Utilized" radius={[4,4,0,0]}/>
     </BarChart>
   </ResponsiveContainer>
 );

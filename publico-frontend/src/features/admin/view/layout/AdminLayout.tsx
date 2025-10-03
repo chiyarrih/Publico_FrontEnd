@@ -1,59 +1,85 @@
 import React from "react";
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { Input, Ghost } from "../ui/blocks";
 
-/* Minimal inline icons to match your screenshot */
+/* Icons matching the sidebar UI */
 const I = {
   dashboard: (
-    <svg width="16" height="16" viewBox="0 0 24 24" className="opacity-90">
-      <path d="M3 3h8v8H3V3Zm10 0h8v5h-8V3ZM3 13h8v8H3v-8Zm10 7v-7h8v7h-8Z" fill="currentColor"/>
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="3" width="7" height="7" />
+      <rect x="14" y="3" width="7" height="7" />
+      <rect x="14" y="14" width="7" height="7" />
+      <rect x="3" y="14" width="7" height="7" />
     </svg>
   ),
   folder: (
-    <svg width="16" height="16" viewBox="0 0 24 24" className="opacity-90">
-      <path d="M3 6h6l2 2h10v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6Z" fill="currentColor"/>
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
     </svg>
   ),
   chart: (
-    <svg width="16" height="16" viewBox="0 0 24 24" className="opacity-90">
-      <path d="M4 20V4h2v16H4Zm7 0V10h2v10h-2Zm7 0v-6h2v6h-2Z" fill="currentColor"/>
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="18" y1="20" x2="18" y2="10" />
+      <line x1="12" y1="20" x2="12" y2="4" />
+      <line x1="6" y1="20" x2="6" y2="14" />
     </svg>
   ),
   ledger: (
-    <svg width="16" height="16" viewBox="0 0 24 24" className="opacity-90">
-      <path d="M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5V3Zm2 4h10v2H7V7Zm0 4h10v2H7v-2Zm0 4h7v2H7v-2Z" fill="currentColor"/>
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+      <polyline points="14 2 14 8 20 8" />
+      <line x1="8" y1="13" x2="16" y2="13" />
+      <line x1="8" y1="17" x2="16" y2="17" />
+    </svg>
+  ),
+  milestone: (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 2v20M2 12l10-10 10 10-10 10z" />
     </svg>
   ),
   bell: (
-    <svg width="16" height="16" viewBox="0 0 24 24" className="opacity-90">
-      <path d="M12 22a2 2 0 0 0 2-2H10a2 2 0 0 0 2 2Zm6-6V11a6 6 0 1 0-12 0v5l-2 2v1h16v-1l-2-2Z" fill="currentColor"/>
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+      <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+    </svg>
+  ),
+  verification: (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+      <line x1="16" y1="2" x2="16" y2="6" />
+      <line x1="8" y1="2" x2="8" y2="6" />
+      <line x1="3" y1="10" x2="21" y2="10" />
     </svg>
   ),
   user: (
-    <svg width="16" height="16" viewBox="0 0 24 24" className="opacity-90">
-      <path d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5Zm0 2c-4.33 0-8 2.17-8 5v1h16v-1c0-2.83-3.67-5-8-5Z" fill="currentColor"/>
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+      <circle cx="12" cy="7" r="4" />
+    </svg>
+  ),
+  logout: (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+      <polyline points="16 17 21 12 16 7" />
+      <line x1="21" y1="12" x2="9" y2="12" />
     </svg>
   ),
 };
 
-/* Link with green accent when active */
+/* Sidebar navigation item */
 function SidebarItem({ to, icon, label }: { to: string; icon: React.ReactNode; label: string }) {
   return (
     <NavLink to={to}>
       {({ isActive }) => (
         <div
           className={[
-            "relative flex items-center gap-2 rounded-md px-3 py-2 text-sm",
+            "flex items-center gap-3 rounded-lg px-4 py-3 text-[15px] font-normal transition-all",
             isActive
-              ? "bg-blue-600 text-white shadow-inner"
+              ? "bg-blue-600 text-white"
               : "text-white/90 hover:bg-white/10",
           ].join(" ")}
         >
-          {/* left accent bar */}
-          {isActive && (
-            <span className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-0.5 rounded bg-emerald-400" />
-          )}
-          <span className="w-4">{icon}</span>
+          <span className="flex-shrink-0">{icon}</span>
           <span>{label}</span>
         </div>
       )}
@@ -62,24 +88,49 @@ function SidebarItem({ to, icon, label }: { to: string; icon: React.ReactNode; l
 }
 
 export default function AdminLayout() {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    // Clear any auth tokens/data
+    localStorage.removeItem("authToken");
+    // Navigate to login
+    navigate("/login");
+  };
+
   return (
     <div className="min-h-screen bg-slate-50">
-      <div className="grid lg:grid-cols-[260px_1fr]">
-        {/* Sidebar — royal blue like your sample */}
-        <aside className="hidden min-h-screen border-r border-blue-800 bg-gradient-to-b from-blue-800 via-blue-800 to-blue-700 px-3 py-3 lg:block">
-          {/* Brand header bar */}
-          <div className="mb-3 rounded-sm bg-blue-900/40 px-3 py-2 text-sm font-semibold text-white">
-            Dagupan Admin
+      <div className="grid lg:grid-cols-[280px_1fr]">
+        {/* Sidebar */}
+        <aside className="hidden min-h-screen bg-gradient-to-b from-blue-700 via-blue-700 to-blue-800 lg:flex lg:flex-col">
+          <div className="flex-1 px-4 py-6">
+            {/* Brand header */}
+            <div className="mb-8 px-2">
+              <h1 className="text-xl font-semibold text-white">Dagupan Admin</h1>
+            </div>
+
+            {/* Navigation */}
+            <nav className="space-y-1">
+              <SidebarItem to="/admin" icon={I.dashboard} label="Dashboard" />
+              <SidebarItem to="/admin/requests" icon={I.folder} label="Budget Requests" />
+              <SidebarItem to="/admin/analytics" icon={I.chart} label="Analytics & Reports" />
+              <SidebarItem to="/admin/transactions" icon={I.ledger} label="Transaction Ledger" />
+              <SidebarItem to="/admin/milestones" icon={I.milestone} label="Project Milestones" />
+              <SidebarItem to="/admin/alerts" icon={I.bell} label="Smart Contract Alerts" />
+              <SidebarItem to="/admin/verification" icon={I.verification} label="Agency Verification" />
+              <SidebarItem to="/admin/profile" icon={I.user} label="User Profile" />
+            </nav>
           </div>
 
-          <nav className="space-y-1">
-            <SidebarItem to="/admin"              icon={I.dashboard} label="Dashboard" />
-            <SidebarItem to="/admin/requests"     icon={I.folder}    label="Budget Requests" />
-            <SidebarItem to="/admin/analytics"    icon={I.chart}     label="Analytics & Reports" />
-            <SidebarItem to="/admin/transactions" icon={I.ledger}    label="Transaction Ledger" />
-            <SidebarItem to="/admin/alerts"       icon={I.bell}      label="Smart Contract Alerts" />
-            <SidebarItem to="/admin/profile"      icon={I.user}      label="User Profile" />
-          </nav>
+          {/* Logout button at bottom */}
+          <div className="px-4 pb-6">
+            <button
+              onClick={handleLogout}
+              className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-[15px] font-normal text-white/90 transition-all hover:bg-white/10"
+            >
+              <span className="flex-shrink-0">{I.logout}</span>
+              <span>Logout</span>
+            </button>
+          </div>
         </aside>
 
         {/* Main */}
