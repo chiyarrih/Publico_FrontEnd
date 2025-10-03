@@ -86,10 +86,8 @@ export type RegisterRequest = RegisterCitizenRequest | RegisterAgencyRequest | R
 // Authentication Responses
 export interface AuthResponse {
   message: string;
-  users: {
-    token: string;
-    role: UserRole;
-  };
+  token: string;
+  role: UserRole;
   redirect: string;
 }
 

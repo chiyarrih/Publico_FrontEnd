@@ -15,6 +15,7 @@ const LoginPage = () => {
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
     setForm((s) => ({ ...s, [name]: type === "checkbox" ? checked : value }));
+    
     if (error) clearError();
   };
 
@@ -32,14 +33,14 @@ const LoginPage = () => {
 
   return (
     <div className="min-h-screen w-full bg-[#eaf1ff]">
-      <div className="mx-auto flex justify-center pt-24 px-4">
+      <div className="flex justify-center px-4 pt-24 mx-auto">
         <div className="w-[360px]">
-          <div className="w-full text-center mb-3">
+          <div className="w-full mb-3 text-center">
             <span className="text-[13px] font-semibold text-[#2563eb]">Publico</span>
           </div>
 
-          <div className="bg-white rounded-lg shadow border border-slate-200">
-            <div className="p-5 relative">
+          <div className="bg-white border rounded-lg shadow border-slate-200">
+            <div className="relative p-5">
               <h1 className="text-[15px] font-semibold text-center mb-4">
                 Log In to Publico
               </h1>

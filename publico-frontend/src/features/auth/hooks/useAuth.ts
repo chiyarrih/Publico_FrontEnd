@@ -55,19 +55,19 @@ export const useAuth = (): UseAuthReturn => {
     try {
       const response = await AuthService.login(data);
       
-      setAuthToken(response.users.token);
+      setAuthToken(response.token);
       
       const userData = {
-        role: response.users.role,
+        role: response.role,
         email: data.email,
-        user: response.users
+        user: response
       };
       
       setUserData(userData);
       setUser(userData);
       
       // Navigate based on role
-      switch (response.users.role) {
+      switch (response.role) {
         case 'Admin':
           navigate('/admin/dashboard');
           break;
@@ -82,6 +82,8 @@ export const useAuth = (): UseAuthReturn => {
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed');
+      console.log(err);
+      
     } finally {
       setIsLoading(false);
     }
