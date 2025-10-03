@@ -120,7 +120,7 @@ export default function useConnectWallet() {
       setCurrentAddress(getAddress);
       setFetchedData(connected[0])
       setProfile({
-        name: connected[0].agency_name,
+        name: connected[0].agency_name ?? `${connected[0].first_name} ${connected[0].last_name}`,
         email: connected[0].email,
         phone: connected[0].contact_phone,
         address: connected[0].address

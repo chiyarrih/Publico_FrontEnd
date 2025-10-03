@@ -1,4 +1,5 @@
 import useBudget from "@agency/controller/hooks/useBudget";
+import FileUploadBox from "../cards/FileUploadBox";
 
 export default function ProposalForm({ setTab }: { setTab: (e: string) => void }) {
   const { register, handleSubmit, errors, onSubmit, isLoading } = useBudget();
@@ -95,9 +96,7 @@ export default function ProposalForm({ setTab }: { setTab: (e: string) => void }
 
         {/* File Upload */}
         <div className="col-span-2">
-          <div className="p-5 text-xs text-center border border-dashed rounded border-slate-300 text-slate-600">
-            Upload supporting docs (PDF, JPG, PNG up to 10MB)
-          </div>
+          <FileUploadBox/>
         </div>
 
         {/* Buttons */}

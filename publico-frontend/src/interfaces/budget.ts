@@ -5,5 +5,7 @@ export interface BudgetFormProps{
     amountRequested:string,
     endDate: string,
     startDate:string
+    objectives?: string; 
+    files?: File[];
 }
 
