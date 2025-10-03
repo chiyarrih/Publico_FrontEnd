@@ -2,6 +2,7 @@ import { User, UserRole, JWTPayload } from '../shared/types/auth';
 
 const TOKEN_KEY = 'publico_auth_token';
 const USER_KEY = 'publico_user_data';
+const WEB3_ADDRESS = 'web3_address';
 
 // Legacy support for existing code
 export type Role = "guest" | "user" | null;
@@ -39,6 +40,7 @@ export const getAuthToken = (): string | null => {
 export const removeAuthToken = (): void => {
   localStorage.removeItem(TOKEN_KEY);
   localStorage.removeItem(USER_KEY);
+  localStorage.removeItem(WEB3_ADDRESS)
 };
 
 // JWT Token Utilities

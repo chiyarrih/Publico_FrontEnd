@@ -40,15 +40,15 @@ export default function BlockchainWalletCard(){
           <CardContent className="space-y-4">
             {walletData.connected ? (
               <>
-                <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-200">
+                <div className="flex items-center justify-between p-3 border border-green-200 rounded-lg bg-green-50">
                   <div className="flex items-center gap-2">
                     <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                    <span className="text-green-700 font-medium">Wallet Connected</span>
+                    <span className="font-medium text-green-700">Wallet Connected</span>
                   </div>
                   <Button
                     variant="outline"
                     size="sm"
-                    className="text-red-600 border-red-200 hover:bg-red-50 bg-transparent"
+                    className="text-red-600 bg-transparent border-red-200 hover:bg-red-50"
                     onClick={handleDisconnect}
                   >
                     Disconnect
@@ -58,7 +58,7 @@ export default function BlockchainWalletCard(){
                 <div>
                   <Label className="text-muted-foreground">Wallet Address</Label>
                   <div className="flex items-center gap-2 mt-1">
-                    <code className="text-sm bg-muted px-2 py-1 rounded flex-1 truncate">{walletData.address}</code>
+                    <code className="flex-1 px-2 py-1 text-sm truncate rounded bg-muted">{walletData.address}</code>
                     <Button variant="ghost" size="sm">
                       <Copy className="w-4 h-4" />
                     </Button>
@@ -79,17 +79,17 @@ export default function BlockchainWalletCard(){
                   </div>
                 </div>
 
-                <Button variant="link" className="p-0 h-auto text-blue-600">
+                <Button variant="link" className="h-auto p-0 text-blue-600">
                   <ExternalLink className="w-4 h-4 mr-1" />
                   View Transaction History
                 </Button>
               </>
             ) : (
-              <div className="text-center py-8">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-lg bg-muted flex items-center justify-center">
+              <div className="py-8 text-center">
+                <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 rounded-lg bg-muted">
                   <Wallet className="w-8 h-8 text-muted-foreground" />
                 </div>
-                <p className="text-muted-foreground mb-4 text-balance">
+                <p className="mb-4 text-muted-foreground text-balance">
                   Connect your MetaMask wallet to approve budget requests and send funds
                 </p>
                 <Button onClick={() => setShowConnectModal(true)} className="w-full">
@@ -109,7 +109,7 @@ export default function BlockchainWalletCard(){
           <div className="space-y-4">
             <p className="text-muted-foreground">Choose how you want to connect your wallet:</p>
 
-            <Button onClick={handleConnectMetaMask} className="w-full justify-start gap-3">
+            <Button onClick={handleConnectMetaMask} className="justify-start w-full gap-3">
               <Wallet className="w-5 h-5" />
               Connect with MetaMask
             </Button>
@@ -120,7 +120,7 @@ export default function BlockchainWalletCard(){
                 setShowConnectModal(false)
                 setShowPrivateKeyModal(true)
               }}
-              className="w-full justify-start gap-3"
+              className="justify-start w-full gap-3"
             >
               <Key className="w-5 h-5" />
               Connect with Private Key
@@ -153,8 +153,8 @@ export default function BlockchainWalletCard(){
               />
             </div>
 
-            <Alert className="bg-yellow-50 border-yellow-200">
-              <AlertTriangle className="h-4 w-4 text-yellow-600" />
+            <Alert className="border-yellow-200 bg-yellow-50">
+              <AlertTriangle className="w-4 h-4 text-yellow-600" />
               <AlertDescription className="text-yellow-800">
                 <strong>Security Warning</strong>
                 <br />

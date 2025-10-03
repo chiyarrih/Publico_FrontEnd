@@ -66,7 +66,7 @@ export interface RegisterAgencyRequest {
   role: 'Agency';
   agency_name: string;
   agency_code: string;
-  contact_email: string;
+  email: string;
   password: string;
   contact_phone: string;
   department?: string;

@@ -1,6 +1,7 @@
 import { BudgetFormProps } from 'interfaces/budget';
 import { apiClient } from '../../../config/api';
 import { decrypt } from '../../../utils/encryptor';
+import { io } from 'socket.io-client';
 
 export interface BudgetProject {
   _id?: string;
@@ -66,3 +67,52 @@ export const fetchProjectsProposed = async (page = 1, limit = 10) => {
   }
   return json;
 };
+
+
+export const updateToConnected = async () => {
+  const email =  localStorage.getItem('publico_user_data');
+  if (!email) throw new Error("No user data found");
+  const parse = JSON.parse(email);
+  const response = await fetch(
+    `http://localhost:5000/admin/auth/management/update`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${parse.user.token}`,
+        "Content-Type": "application/json",
+      },
+      body:JSON.stringify({email:parse.email})
+    }
+  );
+
+  const json = await response.json();
+  if (!response.ok) {
+    throw new Error(json.message || "Error fetching projects");
+  }
+  console.log(json);
+  
+  return json;
+}
+
+export const fetchUsers = async () => {
+  const email =  localStorage.getItem('publico_user_data');
+  if (!email) throw new Error("No user data found");
+  const parse = JSON.parse(email);
+  const response = await fetch(`http://localhost:5000/admin/auth/management/fetch/${parse.email}`,
+    {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${parse.user.token}`,
+        "Content-Type": "application/json",
+      },
+    }
+  );
+
+  const json = await response.json();
+  if (!response.ok) {
+    throw new Error(json.message || "Error fetching projects");
+  }
+  io
+  
+  return json;
+}

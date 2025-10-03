@@ -12,11 +12,11 @@ export default function ProfileInformationCard(){
         <Card>
             <CardContent className="p-6">
             <div className="flex items-start gap-4 mb-6">
-              <div className="w-16 h-16 rounded-full bg-blue-500 flex items-center justify-center">
+              <div className="flex items-center justify-center w-16 h-16 bg-blue-500 rounded-full">
                 <User className="w-8 h-8 text-white" />
               </div>
               <div className="flex-1">
-                <h2 className="text-xl font-semibold text-foreground mb-1">Ageny User</h2>
+                <h2 className="mb-1 text-xl font-semibold text-foreground">Ageny User</h2>
                 {!isEditing && (
                   <Button onClick={() => setIsEditing(true)} className="mt-2">
                     Edit Profile

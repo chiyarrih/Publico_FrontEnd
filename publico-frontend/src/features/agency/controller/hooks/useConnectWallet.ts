@@ -1,4 +1,8 @@
-import { useState } from "react";
+import { fetchUsers, updateToConnected } from "@agency/services/agencyService";
+import { UseData } from "interfaces/user";
+import { HandHelping } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { connect, Socket } from "socket.io-client";
 import { Web3 } from "web3";
 const web3 = new Web3("HTTP://127.0.0.1:7545");
 
@@ -17,6 +21,9 @@ export default function useConnectWallet() {
     phone: "+63 912 345 6789",
     address: "Barangay Poblacion, Dagupan City",
   });
+  const [fetchedData, setFetchedData] = useState<UseData>()
+  const socketRef = useRef<Socket | null>(null);
+  const token = localStorage.getItem('publico_auth_token');
   const walletData = {
     connected: walletConnected,
     address: currentAddress ?? "0x0",
@@ -47,11 +54,13 @@ export default function useConnectWallet() {
     if (eth) {
       const accounts = await eth.request({ method: "eth_requestAccounts" });
       const address = accounts[0];
-      setWalletConnected(true);
+      localStorage.setItem('web3_address', address)
+      const connected = await updateToConnected()
+      setWalletConnected(connected.isConnected)
       setCurrentAddress(address);
 
       await fetchBalance(address);
-
+      await updateToConnected()
       const message = "Login to Publico";
       const signature = await eth.request({
         method: "personal_sign",
@@ -83,10 +92,12 @@ export default function useConnectWallet() {
       const account = web3.eth.accounts.privateKeyToAccount(decrypted);
       web3.eth.accounts.wallet.add(account);
       setCurrentAddress(account.address);
-      setWalletConnected(true);
+      const connected = await updateToConnected()
+      setWalletConnected(connected.isConnected)
       setShowPrivateKeyModal(false);
       setPrivateKey("");
       await fetchBalance(account.address);
+      await updateToConnected()
     }
   }
 
@@ -96,6 +107,33 @@ export default function useConnectWallet() {
     setBalanceEth("0");
     setBalancePhp("0");
   };
+
+  useEffect(() => {
+  const handleFetch = async () => {
+    try {
+      const getAddress = localStorage.getItem('web3_address');
+
+      if (!getAddress) return;
+
+      const connected = await fetchUsers();
+      setWalletConnected(connected[0].isConnected);
+      setCurrentAddress(getAddress);
+      setFetchedData(connected[0])
+      setProfile({
+        name: connected[0].agency_name,
+        email: connected[0].email,
+        phone: connected[0].contact_phone,
+        address: connected[0].address
+      })
+      await fetchBalance(getAddress);
+    } catch (err) {
+      console.error("Error fetching wallet data:", err);
+    }
+  };
+
+  handleFetch();
+}, []);
+
 
   return {
     isEditing,
@@ -112,6 +150,7 @@ export default function useConnectWallet() {
     setShowPrivateKeyModal,
     balanceEth,
     balancePhp,
+    fetchedData,
     handleSave,
     handleConnectMetaMask,
     handleConnectPrivateKey,
