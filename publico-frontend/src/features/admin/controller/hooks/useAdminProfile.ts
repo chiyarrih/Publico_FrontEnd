@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { fetchUsers } from "@agency/services/agencyService";
+import { UseData } from "interfaces/user";
 
 export interface ProfileData {
   name: string;
@@ -16,14 +18,14 @@ export interface ActivityItem {
 
 export default function useAdminProfile() {
   const [walletConnected, setWalletConnected] = useState(false);
-  
-  const profile: ProfileData = {
+  const [fetchedData, setFetchedData] = useState<UseData | null>(null);
+  const [profile, setProfile] = useState<ProfileData>({
     name: "Admin User",
     email: "admin@dagupan.gov.ph",
     phone: "+63 912 345 6789",
     lastLogin: "2023-05-15 08:30 AM",
     status: "Active",
-  };
+  });
 
   const activities: ActivityItem[] = [
     {
@@ -47,6 +49,48 @@ export default function useAdminProfile() {
       timestamp: "2023-05-12 16:20 PM",
     },
   ];
+
+  useEffect(() => {
+    const handleFetch = async () => {
+      try {
+        const userData = await fetchUsers();
+        setFetchedData(userData[0]);
+        setWalletConnected(userData[0].isConnected);
+        
+        // Format last login date
+        const lastLoginDate = new Date(userData[0].updatedAt).toLocaleString('en-US', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: true
+        });
+
+        // Determine the name with fallback
+        let displayName = "Admin User";
+        if (userData[0].agency_name) {
+          displayName = userData[0].agency_name;
+        } else if (userData[0].first_name && userData[0].last_name) {
+          displayName = `${userData[0].first_name} ${userData[0].last_name}`;
+        } else if (userData[0].first_name) {
+          displayName = userData[0].first_name;
+        }
+
+        setProfile({
+          name: displayName,
+          email: userData[0].email,
+          phone: userData[0].contact_phone,
+          lastLogin: lastLoginDate,
+          status: userData[0].isVerified ? "Active" : "Pending",
+        });
+      } catch (err) {
+        console.error("Error fetching admin profile data:", err);
+      }
+    };
+
+    handleFetch();
+  }, []);
 
   const handleEditProfile = () => {
     console.log("Edit profile clicked");
@@ -78,6 +122,7 @@ export default function useAdminProfile() {
     profile,
     activities,
     walletConnected,
+    fetchedData,
     handleEditProfile,
     handleConnectWallet,
     handleDisconnectWallet,

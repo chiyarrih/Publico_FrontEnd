@@ -12,16 +12,20 @@ export interface UseData {
   token: string | null;
   resetCode: string | null;
   resetCodeExpiration: string | null;
-  agency_id: string;
-  agency_name: string;
-  agency_code: string;
-  department: string;
+  agency_id?: string;
+  agency_name?: string;
+  agency_code?: string;
+  department?: string;
   contact_phone: string;
   address: string;
   isConnected: boolean;
   date_registered: string;
-  isPending: boolean;
+  isPending?: boolean;
   createdAt: string;
   updatedAt: string;
   __v: number;
+  // Admin-specific fields
+  first_name?: string;
+  last_name?: string;
+  admin_id?: string;
 }

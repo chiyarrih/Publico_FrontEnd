@@ -9,10 +9,7 @@ export default function Profile() {
   const {
     profile,
     activities,
-    walletConnected,
     handleEditProfile,
-    handleConnectWallet,
-    handleDisconnectWallet,
     handleChangePassword,
     handleEnable2FA,
   } = useAdminProfile();
@@ -30,11 +27,7 @@ export default function Profile() {
 
         {/* Right Column - Wallet & Security */}
         <div className="space-y-4">
-          <BlockchainWalletCard
-            walletConnected={walletConnected}
-            onConnect={handleConnectWallet}
-            onDisconnect={handleDisconnectWallet}
-          />
+          <BlockchainWalletCard />
           <SecurityCard
             onChangePassword={handleChangePassword}
             onEnable2FA={handleEnable2FA}

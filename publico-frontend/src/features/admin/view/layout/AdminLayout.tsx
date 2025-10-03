@@ -1,6 +1,7 @@
 import React from "react";
-import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { NavLink, Outlet } from "react-router-dom";
 import { Input, Ghost } from "../ui/blocks";
+import { logout } from "../../../../utils/auth";
 
 /* Icons matching the sidebar UI */
 const I = {
@@ -88,13 +89,8 @@ function SidebarItem({ to, icon, label }: { to: string; icon: React.ReactNode; l
 }
 
 export default function AdminLayout() {
-  const navigate = useNavigate();
-
   const handleLogout = () => {
-    // Clear any auth tokens/data
-    localStorage.removeItem("authToken");
-    // Navigate to login
-    navigate("/login");
+    logout();
   };
 
   return (
@@ -141,7 +137,6 @@ export default function AdminLayout() {
               <Input placeholder="Search…" />
               <div className="ml-auto flex items-center gap-2">
                 <Ghost title="Notifications">🔔</Ghost>
-                <Ghost>Admin User ⌄</Ghost>
               </div>
             </div>
           </header>
