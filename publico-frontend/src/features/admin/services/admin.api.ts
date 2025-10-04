@@ -34,11 +34,23 @@ export class AdminService {
   
   // Delete budget proposal
   static async deleteBudgetProposal(id: string): Promise<{ message: string }> {
-    return apiClient.delete(`/${id}`);
+    return apiClient.delete(`/agency/projects/${id}`);
   }
 
-  // Budget management endpoints would go here
-  // ... other admin-specific methods
+  // Approve budget proposal
+  static async approveBudgetProposal(id: string): Promise<{ message: string; proposal: BudgetProposal }> {
+    return apiClient.put(`/agency/projects/${id}/approve`);
+  }
+
+  // Reject budget proposal
+  static async rejectBudgetProposal(id: string, reason?: string): Promise<{ message: string }> {
+    return apiClient.put(`/agency/projects/${id}/reject`, reason ? { reason } : undefined);
+  }
+
+  // Get single budget proposal
+  static async getBudgetProposal(id: string): Promise<BudgetProposal> {
+    return apiClient.get(`/agency/projects/${id}`);
+  }
 }
 
 // Keep legacy api object for backward compatibility
@@ -76,10 +88,14 @@ export const api = {
 
   async getBudgetRequests():Promise<BudgetRequest[]>{
     return [
-      { id:"PRJ-2023-0185", date:"2023-07-15", dept:"Public Works", project:"Road Rehabilitation – Perez Blvd", amount:2_500_000, status:"Pending" },
-      { id:"PRJ-2023-0178", date:"2023-06-21", dept:"Health",       project:"Medical Equipment Procurement",    amount:1_200_000, status:"Approved" },
-      { id:"PRJ-2023-0162", date:"2023-06-11", dept:"Education",    project:"School Building Repair",           amount:900_000,   status:"Reviewed" },
-      { id:"PRJ-2023-0152", date:"2023-05-27", dept:"Agriculture",  project:"Irrigation System Upgrade",        amount:1_800_000, status:"Pending" },
+      { id:"PRJ-2023-0125", date:"2023-05-15", dept:"Public Works", project:"Road Rehabilitation - Perez Blvd", amount:2_500_000, status:"Pending" },
+      { id:"PRJ-2023-0124", date:"2023-05-14", dept:"Health",       project:"Medical Equipment Procurement",    amount:1_800_000, status:"Approved" },
+      { id:"PRJ-2023-0123", date:"2023-05-13", dept:"Education",    project:"School Building Repair",           amount:3_200_000, status:"Reviewed" },
+      { id:"PRJ-2023-0122", date:"2023-05-12", dept:"Agriculture",  project:"Irrigation System Upgrade",        amount:1_500_000, status:"Rejected" },
+      { id:"PRJ-2023-0121", date:"2023-05-11", dept:"Tourism",      project:"Bangus Festival Preparation",      amount:950_000,   status:"Pending" },
+      { id:"PRJ-2023-0120", date:"2023-05-10", dept:"Public Works", project:"Drainage System Improvement",      amount:4_200_000, status:"Reviewed" },
+      { id:"PRJ-2023-0119", date:"2023-05-09", dept:"Health",       project:"COVID Response Supplies",          amount:1_200_000, status:"Approved" },
+      { id:"PRJ-2023-0118", date:"2023-05-08", dept:"Education",    project:"Digital Learning Equipment",       amount:2_800_000, status:"Pending" },
     ];
   },
 

@@ -19,7 +19,7 @@ export interface BudgetProposal {
   department: string;
   amountRequested: number;
   timeline: string;
-  fileUrl: string;
+  fileUrl: string | string[]; // Support both single file and multiple files
   status: "Pending" | "Approved" | "Rejected";
   approvedBy?: string;
   approvalDate?: string;

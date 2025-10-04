@@ -45,6 +45,7 @@ const AdminAnalytics     = lazy(() => import("./features/admin/view/pages/Analyt
 const AdminTransactions  = lazy(() => import("./features/admin/view/pages/Transactions"));
 const AdminSmartAlerts   = lazy(() => import("./features/admin/view/pages/SmartAlerts"));
 const AdminProfile       = lazy(() => import("./features/admin/view/pages/Profile"));
+const SendBudgetToAgency = lazy(() => import("./features/admin/view/pages/SendBudgetToAgency"));
 
 /* Helper to show component-level crashes instead of white screen */
 function Safe({ children }: React.PropsWithChildren) {
@@ -133,6 +134,7 @@ export default function App() {
             <Route index element={<Navigate to="dashboard" replace />} />
             <Route path="dashboard" element={<Safe><AdminDashboard /></Safe>} />
             <Route path="requests" element={<Safe><AdminRequests /></Safe>} />
+            <Route path="send-budget" element={<Safe><SendBudgetToAgency /></Safe>} />
             <Route path="analytics" element={<Safe><AdminAnalytics /></Safe>} />
             <Route path="transactions" element={<Safe><AdminTransactions /></Safe>} />
             <Route path="alerts" element={<Safe><AdminSmartAlerts /></Safe>} />

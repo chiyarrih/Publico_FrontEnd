@@ -20,7 +20,7 @@ interface PrivateKeyModalProps {
   onClose: () => void;
   onConnect: () => void;
   privateKey: string;
-  setPrivateKey: (value: string) => void;
+  onPrivateKeyChange: (value: string) => void;
 }
 
 export default function PrivateKeyModal({
@@ -28,7 +28,7 @@ export default function PrivateKeyModal({
   onClose,
   onConnect,
   privateKey,
-  setPrivateKey,
+  onPrivateKeyChange,
 }: PrivateKeyModalProps) {
   if (!isOpen) return null;
 
@@ -49,7 +49,7 @@ export default function PrivateKeyModal({
             placeholder="Enter your private key"
             type="password"
             value={privateKey}
-            onChange={(e) => setPrivateKey(e.target.value)}
+            onChange={(e) => onPrivateKeyChange(e.target.value)}
           />
         </div>
 
