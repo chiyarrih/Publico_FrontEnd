@@ -7,6 +7,7 @@ import useBudget from "@agency/controller/hooks/useBudget";
 import InfiniteScroll from "react-infinite-scroll-component";
 import {Toaster} from "react-hot-toast"
 import Loader from "@agency/controller/components/loaders/Loader";
+
 /* ====================== inline icons (no deps) ====================== */
 const I = {
   menu: () => <svg width="18" height="18" viewBox="0 0 24 24" className="text-slate-600"><path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>,
@@ -107,13 +108,12 @@ const BudgetsInner: React.FC = () => {
         <>
           <div className="bg-white border divide-y rounded-lg border-slate-200">
             <InfiniteScroll 
-            next={loadMore} 
-            hasMore={hasMore} 
-            children={<ProposalCard data={data}/>} 
-            loader={<Loader/>} 
-            dataLength={data.length}>
-              
-            </InfiniteScroll>
+              next={loadMore} 
+              hasMore={hasMore} 
+              children={<ProposalCard data={data}/>} 
+              loader={<Loader/>} 
+              dataLength={data.length}
+            />
           </div>
 
           <div className="p-3 text-xs bg-white border rounded-lg border-slate-200 text-slate-600">
@@ -122,7 +122,7 @@ const BudgetsInner: React.FC = () => {
           </div>
         </>
       ) : (
-       <ProposalForm setTab={()=>setTab("proposals")}/>
+        <ProposalForm setTab={()=>setTab("proposals")}/>
       )}
     </div>
   );
@@ -180,6 +180,10 @@ export default function AgencyLayout() {
             </div>
             <nav className="space-y-1">
               <NavLink to="/agency" end className={linkClass}><I.dashboard/><span>Dashboard</span></NavLink>
+
+              {/* NEW: Project Milestones link */}
+              <NavLink to="/agency/milestones" className={linkClass}><I.docs/><span>Project Milestones</span></NavLink>
+
               <NavLink to="/agency/budgets" className={linkClass}><I.budget/><span>Budgets</span></NavLink>
               <NavLink to="/agency/documents" className={linkClass}><I.docs/><span>Documents</span></NavLink>
               <NavLink to="/agency/transactions" className={linkClass}><I.ledger/><span>Transaction Ledger</span></NavLink>
