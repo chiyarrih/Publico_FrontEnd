@@ -1,21 +1,17 @@
 import React, { Suspense, lazy } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 
-/* ---------- Auth pages (shared across all user types) ---------- */
+/* ---------- Auth pages ---------- */
 import { LoginPage, SignupPage } from "./features/auth";
 
 /* ---------- Layouts & guard ---------- */
 import GuestRoute from "./routes/GuestRoute";
-import { 
-  AdminRoute, 
-  AgencyRoute, 
-  CitizenRoute
-} from './routes/ProtectedRoute';
+import { AdminRoute, AgencyRoute, CitizenRoute } from './routes/ProtectedRoute';
 import AppLayout from "./features/citizen/view/components/Layout";
 import AgencyLayout from "./features/agency/view/layout/AgencyLayout";
 import AdminLayout from "./features/admin/view/layout/AdminLayout";
 
-/* ---------- Shared debug wrappers ---------- */
+/* ---------- Shared wrappers ---------- */
 import Loading from "./shared/components/layout/Loading";
 import ErrorBoundary from "./shared/components/layout/ErrorBoundary";
 
@@ -38,7 +34,11 @@ const FAQs            = lazy(() => import("./features/agency/view/pages/FAQs"));
 const ContactSupport  = lazy(() => import("./features/agency/view/pages/ContactSupport"));
 const AgencyProfile   = lazy(() => import("./features/agency/view/pages/Profile"));
 
-/* ---------- Lazy admin pages (NEW) ---------- */
+/* ---------- NEW: Milestones pages ---------- */
+const Milestones      = lazy(() => import("./features/agency/view/pages/Milestones"));
+const MilestoneDetail = lazy(() => import("./features/agency/view/pages/MilestoneDetail"));
+
+/* ---------- Lazy admin pages ---------- */
 const AdminDashboard     = lazy(() => import("./features/admin/view/pages/Dashboard"));
 const AdminRequests      = lazy(() => import("./features/admin/view/pages/BudgetRequests"));
 const AdminAnalytics     = lazy(() => import("./features/admin/view/pages/Analytics"));
@@ -46,8 +46,10 @@ const AdminTransactions  = lazy(() => import("./features/admin/view/pages/Transa
 const AdminSmartAlerts   = lazy(() => import("./features/admin/view/pages/SmartAlerts"));
 const AdminProfile       = lazy(() => import("./features/admin/view/pages/Profile"));
 const SendBudgetToAgency = lazy(() => import("./features/admin/view/pages/SendBudgetToAgency"));
+const CitizenMilestones      = lazy(() => import("./features/citizen/view/PAGES/Milestones"));
+const CitizenMilestoneDetail = lazy(() => import("./features/citizen/view/PAGES/MilestoneDetail"));
 
-/* Helper to show component-level crashes instead of white screen */
+
 function Safe({ children }: React.PropsWithChildren) {
   return (
     <ErrorBoundary>
@@ -61,34 +63,13 @@ export default function App() {
     <ErrorBoundary>
       <Suspense fallback={<Loading label="Loading app..." />}>
         <Routes>
-          {/* Public Routes */}
+          {/* Public */}
           <Route path="/" element={<Navigate to="/login" replace />} />
-          <Route 
-            path="/login" 
-            element={
-              <GuestRoute>
-                <LoginPage />
-              </GuestRoute>
-            } 
-          />
-          <Route 
-            path="/signup" 
-            element={
-              <GuestRoute>
-                <SignupPage />
-              </GuestRoute>
-            } 
-          />
+          <Route path="/login" element={<GuestRoute><LoginPage /></GuestRoute>} />
+          <Route path="/signup" element={<GuestRoute><SignupPage /></GuestRoute>} />
 
-          {/* Citizen Routes */}
-          <Route 
-            path="/citizen" 
-            element={
-              <CitizenRoute>
-                <AppLayout />
-              </CitizenRoute>
-            }
-          >
+          {/* Citizen */}
+          <Route path="/citizen" element={<CitizenRoute><AppLayout /></CitizenRoute>}>
             <Route index element={<Navigate to="dashboard" replace />} />
             <Route path="dashboard" element={<Safe><CitizenDashboard /></Safe>} />
             <Route path="alerts" element={<Safe><Alerts /></Safe>} />
@@ -97,22 +78,21 @@ export default function App() {
             <Route path="profile" element={<Safe><Profile /></Safe>} />
             <Route path="transparency" element={<Safe><Transparency /></Safe>} />
             <Route path="support" element={<Safe><Support /></Safe>} />
+            <Route path="milestones" element={<Safe><CitizenMilestones /></Safe>} />
+            <Route path="milestones/:id" element={<Safe><CitizenMilestoneDetail /></Safe>} />
           </Route>
 
-          {/* Legacy /app route redirect */}
+          {/* Legacy redirect */}
           <Route path="/app/*" element={<Navigate to="/citizen" replace />} />
 
-          {/* Agency Routes */}
-          <Route 
-            path="/agency" 
-            element={
-              <AgencyRoute>
-                <AgencyLayout />
-              </AgencyRoute>
-            }
-          >
+          {/* Agency */}
+          <Route path="/agency" element={<AgencyRoute><AgencyLayout /></AgencyRoute>}>
             <Route index element={<Navigate to="dashboard" replace />} />
             <Route path="dashboard" element={<Safe><AgencyDashboard /></Safe>} />
+            {/* NEW routes */}
+            <Route path="milestones" element={<Safe><Milestones /></Safe>} />
+            <Route path="milestones/:id" element={<Safe><MilestoneDetail /></Safe>} />
+            {/* existing */}
             <Route path="budgets" element={<Safe><Budgets /></Safe>} />
             <Route path="documents" element={<Safe><Documents /></Safe>} />
             <Route path="transactions" element={<Safe><Transactions /></Safe>} />
@@ -122,15 +102,8 @@ export default function App() {
             <Route path="profile" element={<Safe><AgencyProfile /></Safe>} />
           </Route>
 
-          {/* Admin Routes */}
-          <Route 
-            path="/admin" 
-            element={
-              <AdminRoute>
-                <AdminLayout />
-              </AdminRoute>
-            }
-          >
+          {/* Admin */}
+          <Route path="/admin" element={<AdminRoute><AdminLayout /></AdminRoute>}>
             <Route index element={<Navigate to="dashboard" replace />} />
             <Route path="dashboard" element={<Safe><AdminDashboard /></Safe>} />
             <Route path="requests" element={<Safe><AdminRequests /></Safe>} />
@@ -141,7 +114,7 @@ export default function App() {
             <Route path="profile" element={<Safe><AdminProfile /></Safe>} />
           </Route>
 
-          {/* Error Routes */}
+          {/* Errors */}
           <Route path="/unauthorized" element={<div className="p-8 text-center">
             <h1 className="text-2xl font-bold text-red-600">Unauthorized</h1>
             <p className="mt-2 text-gray-600">You don't have permission to access this page.</p>
@@ -151,7 +124,7 @@ export default function App() {
             <p className="mt-2 text-gray-600">The page you're looking for doesn't exist.</p>
           </div>} />
 
-          {/* Catch All */}
+          {/* Catch-all */}
           <Route path="*" element={<Navigate to="/404" replace />} />
         </Routes>
       </Suspense>
