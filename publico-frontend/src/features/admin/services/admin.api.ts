@@ -1,6 +1,6 @@
 import { apiClient } from '../../../config/api';
 import { User } from '../../../shared/types/auth';
-import type { BudgetRequest, TxnRow, AlertRow } from "../model/types/admin";
+import type { BudgetRequest, TxnRow, AlertRow, BudgetProposal } from "../model/types/admin";
 
 export class AdminService {
   // Get all citizens
@@ -15,6 +15,26 @@ export class AdminService {
     balanceEth: string;
   }> {
     return apiClient.get(`/balance/${address}`);
+  }
+
+  // Get all budget proposals for admin
+  static async getAllBudgetProposals(
+    page: number = 1, 
+    limit: number = 10, 
+    status?: string
+  ): Promise<{
+    data: BudgetProposal[];
+    currentPage: number;
+    totalPages: number;
+    totalItems: number;
+  }> {
+    const statusParam = status && status !== 'All' ? `&status=${status}` : '';
+    return apiClient.get(`/agency/projects/all?page=${page}&limit=${limit}${statusParam}`);
+  }
+  
+  // Delete budget proposal
+  static async deleteBudgetProposal(id: string): Promise<{ message: string }> {
+    return apiClient.delete(`/${id}`);
   }
 
   // Budget management endpoints would go here
