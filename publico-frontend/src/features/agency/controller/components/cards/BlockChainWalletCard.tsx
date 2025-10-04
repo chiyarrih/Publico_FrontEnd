@@ -10,11 +10,7 @@ import { Label } from "recharts";
 
 export default function BlockchainWalletCard(){
     const {
-    isEditing,
-    setIsEditing,
-    walletConnected,
     walletData,
-    profile,
     setProfile,
     privateKey,
     setPrivateKey,

@@ -27,6 +27,7 @@ export default function useBudget() {
       amountRequested: '',
       endDate: '',
       startDate: '',
+      objectives: '',
     },
   });
 
@@ -88,9 +89,7 @@ export default function useBudget() {
       setFetchedData((prev) => [newData, ...prev]);
     });
 
-    socket.on('data', () => {
-      setPage(1);
-    });
+    
 
     return () => {
       socket.disconnect();

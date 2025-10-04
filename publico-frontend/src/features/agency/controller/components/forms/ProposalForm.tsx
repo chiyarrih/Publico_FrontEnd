@@ -89,6 +89,8 @@ export default function ProposalForm({ setTab }: { setTab: (e: string) => void }
         <label className="col-span-2 text-xs">
           <span className="block mb-1 text-slate-700">Objectives</span>
           <textarea
+            {...register("objectives", { required: "Objectives is required" })}
+
             className="min-h-[90px] w-full rounded border border-slate-300 px-2 py-2 text-sm"
             placeholder="Describe the objectives and expected outcomes…"
           />

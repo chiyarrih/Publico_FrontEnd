@@ -2,7 +2,7 @@ import { BudgetFormProps } from 'interfaces/budget';
 import { apiClient } from '../../../config/api';
 import { decrypt } from '../../../utils/encryptor';
 import { io } from 'socket.io-client';
-
+import axios from 'axios'
 export interface BudgetProject {
   _id?: string;
   projectName: string;
@@ -31,6 +31,7 @@ export const sendBudgetProposal = async (data: BudgetFormProps, files: File[]) =
   formData.append("category", data.category);
   formData.append("amountRequested", data.amountRequested);
   formData.append("startDate", data.startDate);
+  formData.append("message", data?.objectives)
   formData.append("endDate", data.endDate);
 
   files.forEach((file) => formData.append("fileUrl", file));
@@ -120,7 +121,31 @@ export const fetchUsers = async () => {
   if (!response.ok) {
     throw new Error(json.message || "Error fetching projects");
   }
-  io
   
   return json;
 }
+
+
+export const fetchLedger = async (page:number, limit:number) => {
+  try {
+    const storage = localStorage.getItem('publico_user_data')
+    if (!storage) throw new Error("Not found")
+    const json = JSON.parse(storage)
+
+    const response = await axios.get(`http://localhost:5000/api/ledgers/${json.user.user_id}?page=${page}&limit=${limit}`, 
+      {
+        headers:{
+          'Content-Type': 'application/json',
+          'Authorization':`Bearer ${json.user.token}`
+        },
+        params: {page, limit}
+      }
+    )
+    return response.data
+  } catch (error) {
+    console.error("Error fetching ledger:", error);
+    throw error;
+
+  }
+}
+

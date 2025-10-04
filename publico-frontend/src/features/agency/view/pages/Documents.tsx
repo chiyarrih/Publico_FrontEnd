@@ -27,11 +27,6 @@ export default function Documents() {
       d.projectName?.toLowerCase().includes(q.toLowerCase()) ||
       d.department?.toLowerCase().includes(q?.toLowerCase())
   );
-
-
-
-
-
   return (
     <div className="space-y-4">
       <div className="p-4 bg-white border rounded-lg border-slate-200">
