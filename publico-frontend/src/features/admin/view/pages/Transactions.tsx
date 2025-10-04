@@ -1,15 +1,34 @@
-import React, { useMemo, useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Table, Input, Select, Button, Badge, Card } from "../ui/blocks";
 import useAdminTransactions from "../../controller/hooks/useAdminTransactions";
 import TransactionDetailsModal from "../modals/TransactionDetailsModal";
 import type { BudgetProposal } from "../../model/types/admin";
 
 export default function Transactions(){
-  const { proposals, loading, statusFilter, handleStatusChange, page, totalPages, handlePageChange, handleDelete } = useAdminTransactions();
-  const [q, setQ] = useState("");
-  const [deptFilter, setDeptFilter] = useState("All");
+  const { 
+    proposals, 
+    loading, 
+    statusFilter, 
+    searchQuery,
+    departmentFilter,
+    dateRange,
+    showDatePicker,
+    handleStatusChange, 
+    handleSearchChange,
+    handleDepartmentChange,
+    handleDateRangeChange,
+    clearDateRange,
+    toggleDatePicker,
+    page, 
+    totalPages, 
+    handlePageChange, 
+    handleDelete 
+  } = useAdminTransactions();
   const [selectedProposal, setSelectedProposal] = useState<BudgetProposal | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [startDate, setStartDate] = useState<string>('');
+  const [endDate, setEndDate] = useState<string>('');
+  const datePickerRef = useRef<HTMLDivElement>(null);
 
   const handleViewDetails = (proposal: BudgetProposal) => {
     setSelectedProposal(proposal);
@@ -21,27 +40,45 @@ export default function Transactions(){
     setSelectedProposal(null);
   };
 
+  const handleApplyDateRange = () => {
+    if (startDate && endDate) {
+      handleDateRangeChange(startDate, endDate);
+      toggleDatePicker();
+    }
+  };
+
+  const handleClearDateRange = () => {
+    setStartDate('');
+    setEndDate('');
+    clearDateRange();
+    toggleDatePicker();
+  };
+
+  // Close date picker when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (datePickerRef.current && !datePickerRef.current.contains(event.target as Node)) {
+        if (showDatePicker) {
+          toggleDatePicker();
+        }
+      }
+    };
+
+    if (showDatePicker) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showDatePicker, toggleDatePicker]);
+
   const tone = (s: string) => {
     if (s === "Approved") return "green";
     if (s === "Pending") return "yellow";
     if (s === "Rejected") return "red";
     return "gray";
   };
-
-  const filtered = useMemo(() => {
-    return proposals.filter(proposal => {
-      const searchMatch = [
-        proposal.projectId,
-        proposal.projectName,
-        proposal.department,
-        proposal.category
-      ].join(" ").toLowerCase().includes(q.toLowerCase());
-
-      const deptMatch = deptFilter === "All" || proposal.department === deptFilter;
-
-      return searchMatch && deptMatch;
-    });
-  }, [proposals, q, deptFilter]);
 
   const departments = [
     "Department of Health",
@@ -65,12 +102,12 @@ export default function Transactions(){
         <div className="mb-3 flex flex-wrap items-center gap-2">
           <Input 
             placeholder="Search transactions by ID, project, department…" 
-            value={q} 
-            onChange={e => setQ(e.target.value)} 
+            value={searchQuery} 
+            onChange={e => handleSearchChange(e.target.value)} 
             className="w-full sm:w-96"
           />
           <div className="ml-auto flex items-center gap-2">
-            <Select value={deptFilter} onChange={e => setDeptFilter(e.target.value)}>
+            <Select value={departmentFilter} onChange={e => handleDepartmentChange(e.target.value)}>
               <option value="All">All Departments</option>
               {departments.map(dept => (
                 <option key={dept} value={dept}>{dept}</option>
@@ -82,24 +119,78 @@ export default function Transactions(){
               <option value="Approved">Approved</option>
               <option value="Rejected">Rejected</option>
             </Select>
-            <Button className="border border-slate-300">
-              <svg className="w-4 h-4 mr-1 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-              </svg>
-              Date Range
-            </Button>
+            <div className="relative" ref={datePickerRef}>
+              <Button 
+                onClick={toggleDatePicker}
+                className={`border ${dateRange ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-slate-300'}`}
+              >
+                <svg className="w-4 h-4 mr-1 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                {dateRange ? `${dateRange.start} - ${dateRange.end}` : 'Date Range'}
+              </Button>
+              
+              {showDatePicker && (
+                <div className="absolute right-0 top-full mt-2 p-4 bg-white border border-slate-200 rounded-lg shadow-lg z-10 min-w-80">
+                  <div className="space-y-4">
+                    <h3 className="text-sm font-semibold text-slate-900">Select Date Range</h3>
+                    
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-medium text-slate-600 mb-1">
+                          Start Date
+                        </label>
+                        <Input
+                          type="date"
+                          value={startDate}
+                          onChange={(e) => setStartDate(e.target.value)}
+                          className="text-sm"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-slate-600 mb-1">
+                          End Date
+                        </label>
+                        <Input
+                          type="date"
+                          value={endDate}
+                          onChange={(e) => setEndDate(e.target.value)}
+                          className="text-sm"
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="flex gap-2 pt-2">
+                      <Button
+                        onClick={handleApplyDateRange}
+                        disabled={!startDate || !endDate}
+                        className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        Apply Filter
+                      </Button>
+                      <Button
+                        onClick={handleClearDateRange}
+                        className="px-3 border border-slate-300 hover:bg-slate-50"
+                      >
+                        Clear
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
         {loading ? (
           <div className="py-8 text-center text-slate-500">Loading transactions...</div>
-        ) : filtered.length === 0 ? (
+        ) : proposals.length === 0 ? (
           <div className="py-8 text-center text-slate-500">No transactions found</div>
         ) : (
           <>
             <Table
               head={["Transaction ID", "Date", "Department", "Project", "Amount", "Status", "Digital Signature", "Actions"]}
-              rows={filtered.map(proposal => [
+              rows={proposals.map(proposal => [
                 <a 
                   onClick={() => handleViewDetails(proposal)}
                   className="text-sky-600 hover:underline cursor-pointer"
