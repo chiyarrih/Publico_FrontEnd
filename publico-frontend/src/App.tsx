@@ -45,6 +45,9 @@ const AdminAnalytics     = lazy(() => import("./features/admin/view/pages/Analyt
 const AdminTransactions  = lazy(() => import("./features/admin/view/pages/Transactions"));
 const AdminSmartAlerts   = lazy(() => import("./features/admin/view/pages/SmartAlerts"));
 const AdminProfile       = lazy(() => import("./features/admin/view/pages/Profile"));
+const CitizenMilestones      = lazy(() => import("./features/citizen/view/PAGES/Milestones"));
+const CitizenMilestoneDetail = lazy(() => import("./features/citizen/view/PAGES/MilestoneDetail"));
+
 
 function Safe({ children }: React.PropsWithChildren) {
   return (
@@ -74,6 +77,8 @@ export default function App() {
             <Route path="profile" element={<Safe><Profile /></Safe>} />
             <Route path="transparency" element={<Safe><Transparency /></Safe>} />
             <Route path="support" element={<Safe><Support /></Safe>} />
+            <Route path="milestones" element={<Safe><CitizenMilestones /></Safe>} />
+            <Route path="milestones/:id" element={<Safe><CitizenMilestoneDetail /></Safe>} />
           </Route>
 
           {/* Legacy redirect */}
