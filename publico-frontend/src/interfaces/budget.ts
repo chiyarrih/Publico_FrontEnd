@@ -9,3 +9,6 @@ export interface BudgetFormProps{
     files?: File[];
 }
 
+export interface Doc  {
+  name: string; dept: string; cat: string; date: string; size: string; status: "Verified" | "Pending";
+};

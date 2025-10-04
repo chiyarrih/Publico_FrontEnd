@@ -2,7 +2,7 @@ import useBudget from "@agency/controller/hooks/useBudget";
 import FileUploadBox from "../cards/FileUploadBox";
 
 export default function ProposalForm({ setTab }: { setTab: (e: string) => void }) {
-  const { register, handleSubmit, errors, onSubmit, isLoading } = useBudget();
+  const { register, handleSubmit, errors, onSubmit, isLoading, files, setFiles } = useBudget();
 
   return (
     <div className="p-4 bg-white border rounded-lg border-slate-200">
@@ -96,7 +96,7 @@ export default function ProposalForm({ setTab }: { setTab: (e: string) => void }
 
         {/* File Upload */}
         <div className="col-span-2">
-          <FileUploadBox/>
+          <FileUploadBox files={files} setFiles={setFiles} />
         </div>
 
         {/* Buttons */}

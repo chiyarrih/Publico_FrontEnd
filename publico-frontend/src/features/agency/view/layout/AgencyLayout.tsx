@@ -5,6 +5,7 @@ import ProposalForm from "@agency/controller/components/forms/ProposalForm";
 import ProposalCard from "@agency/controller/components/cards/ProposalCard";
 import useBudget from "@agency/controller/hooks/useBudget";
 import InfiniteScroll from "react-infinite-scroll-component";
+import {Toaster} from "react-hot-toast"
 import Loader from "@agency/controller/components/loaders/Loader";
 /* ====================== inline icons (no deps) ====================== */
 const I = {
@@ -70,6 +71,7 @@ const BudgetsInner: React.FC = () => {
 
   return (
     <div className="space-y-4">
+      <Toaster position="top-center" />
       {/* header card */}
       <div className="p-4 bg-white border rounded-lg border-slate-200">
         <div className="flex items-center justify-between gap-3">

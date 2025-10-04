@@ -2,6 +2,7 @@ import { fetchProjectsProposed, sendBudgetProposal } from '@agency/services/agen
 import { BudgetFormProps } from 'interfaces/budget';
 import { useEffect, useRef, useState } from 'react';
 import { SubmitHandler, useForm } from 'react-hook-form';
+import {toast} from 'react-hot-toast';
 import { io, Socket } from 'socket.io-client';
 
 export default function useBudget() {
@@ -10,10 +11,9 @@ export default function useBudget() {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [limit] = useState(10);
-
+  const [files, setFiles] = useState<File[]>([]);
   const socketRef = useRef<Socket | null>(null);
   const token = localStorage.getItem('publico_auth_token');
-
   const {
     register,
     handleSubmit,
@@ -30,11 +30,28 @@ export default function useBudget() {
     },
   });
 
+  const handleDownload = async (url: string) => {
+  try {
+    const filename = url.split("/").pop() || "download";
+    const response = await fetch(`${url}?download`, { mode: "cors" });
+    const blob = await response.blob();
+    const link = document.createElement("a");
+    link.href = window.URL.createObjectURL(blob);
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  } catch (err) {
+    console.error("Download failed:", err);
+  }
+};
   const onSubmit: SubmitHandler<BudgetFormProps> = async (data) => {
     try {
       setIsLoading(true);
-      await sendBudgetProposal(data);
+      await sendBudgetProposal(data, files);
       reset();
+      setFiles([]);
+      toast.success("Budget proposed Successfully.")
     } catch (error) {
       console.error(error);
     } finally {
@@ -96,5 +113,8 @@ export default function useBudget() {
     hasMore,
     loadMore,
     page,
+    files,
+    setFiles,
+    handleDownload
   };
 }

@@ -1,24 +1,19 @@
-import { useState } from "react";
+interface FileUploadBoxProps {
+  files: File[];
+  setFiles: React.Dispatch<React.SetStateAction<File[]>>;
+}
 
-export default function FileUploadBox() {
-  const [files, setFiles] = useState<File[]>([]);
-
+export default function FileUploadBox({ files, setFiles }: FileUploadBoxProps) {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      setFiles(Array.from(e.target.files));
-    }
+    if (e.target.files) setFiles(Array.from(e.target.files));
   };
 
   const handleDrop = (e: React.DragEvent<HTMLLabelElement>) => {
     e.preventDefault();
-    if (e.dataTransfer.files) {
-      setFiles(Array.from(e.dataTransfer.files));
-    }
+    if (e.dataTransfer.files) setFiles(Array.from(e.dataTransfer.files));
   };
 
-  const handleDragOver = (e: React.DragEvent<HTMLLabelElement>) => {
-    e.preventDefault();
-  };
+  const handleDragOver = (e: React.DragEvent<HTMLLabelElement>) => e.preventDefault();
 
   return (
     <div className="col-span-2">
