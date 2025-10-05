@@ -1,16 +1,16 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
-import { setRole, setPortalRole } from "../../../utils/auth";
+import { setRole, setPortalRole, Portal } from "../../../utils/auth";
+import { UserRole } from "../../../shared/types/auth";
 import AuthLayout from "./AuthLayout";
 import AuthCard from "./ui/AuthCard";
 import FormField from "./ui/FormField";
 import RadioRow from "./ui/RadioRow";
 
-type Portal = "citizen" | "agency";
 
 const LoginPage = () => {
-  const { login, isLoading, error, clearError } = useAuth();
+  const { loginWithRoleValidation, isLoading, error, clearError } = useAuth();
   const [form, setForm] = useState({ email: "", password: "", portal: "citizen" as Portal, remember: false });
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -21,8 +21,13 @@ const LoginPage = () => {
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate role-based access
+    const expectedRole = form.portal === "admin" ? "Admin" : 
+                        form.portal === "agency" ? "Agency" : "Citizen";
+    
     setPortalRole(form.portal);
-    await login({ email: form.email, password: form.password });
+    await loginWithRoleValidation({ email: form.email, password: form.password }, expectedRole);
   };
 
   return (
@@ -55,7 +60,8 @@ const LoginPage = () => {
             onChange={onChange}
             options={[
               { label: "Citizen", value: "citizen" },
-              { label: "Agency Representative", value: "agency" }
+              { label: "Agency Representative", value: "agency" },
+              { label: "Administrator", value: "admin" }
             ]}
           />
 
@@ -78,7 +84,9 @@ const LoginPage = () => {
             onClick={() => {
               setRole("guest");
               setPortalRole(form.portal);
-              window.location.href = form.portal === "agency" ? "/agency" : "/citizen/dashboard";
+              const redirectUrl = form.portal === "admin" ? "/admin/dashboard" : 
+                                 form.portal === "agency" ? "/agency" : "/citizen/dashboard";
+              window.location.href = redirectUrl;
             }}
             className="mt-2 w-full h-9 rounded border border-slate-300 text-[13px] font-medium hover:bg-slate-50 transition disabled:bg-gray-100 disabled:cursor-not-allowed"
           >

@@ -6,7 +6,7 @@ const WEB3_ADDRESS = 'web3_address';
 
 // Legacy support for existing code
 export type Role = "guest" | "user" | null;
-export type Portal = "citizen" | "agency";
+export type Portal = "citizen" | "agency" | "admin";
 
 const ROLE_KEY = "auth_role";
 const PORTAL_KEY = "portal_role";
@@ -26,6 +26,7 @@ export const clearPortalRole = () => localStorage.removeItem(PORTAL_KEY);
 
 export const isAgency = () => getPortalRole() === "agency";
 export const isCitizen = () => getPortalRole() === "citizen";
+export const isAdmin = () => getPortalRole() === "admin";
 
 // New comprehensive auth system
 // Token Management

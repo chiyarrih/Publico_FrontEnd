@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
-import { RegisterCitizenRequest, RegisterAgencyRequest } from "../../../shared/types/auth";
+import { RegisterCitizenRequest, RegisterAgencyRequest, RegisterAdminRequest } from "../../../shared/types/auth";
 import { validateEmail, validatePassword } from "../../../utils/auth";
 import AuthLayout from "./AuthLayout";
 import AuthCard from "./ui/AuthCard";
@@ -9,7 +9,7 @@ import FormField from "./ui/FormField";
 import PasswordField from "./ui/PasswordField";
 import RadioRow from "./ui/RadioRow";
 
-type Role = "citizen" | "agency";
+type Role = "citizen" | "agency" | "admin";
 type Errors = Record<string, string>;
 
 const SignupPage = () => {
@@ -62,7 +62,7 @@ const SignupPage = () => {
     e.preventDefault();
     if (!validate()) return;
 
-    let payload: RegisterCitizenRequest | RegisterAgencyRequest;
+    let payload: RegisterCitizenRequest | RegisterAgencyRequest | RegisterAdminRequest;
     if (form.role === "citizen") {
       payload = {
         role: "Citizen",
@@ -71,7 +71,7 @@ const SignupPage = () => {
         email: form.email,
         password: form.password,
       };
-    } else {
+    } else if (form.role === "agency") {
       payload = {
         role: "Agency",
         agency_name: form.agencyName,
@@ -81,6 +81,14 @@ const SignupPage = () => {
         contact_phone: form.contactPhone,
         department: form.department,
         address: form.address,
+      };
+    } else {
+      payload = {
+        role: "Admin",
+        first_name: form.firstName,
+        last_name: form.lastName,
+        email: form.email,
+        password: form.password,
       };
     }
     await register(payload);
@@ -109,6 +117,7 @@ const SignupPage = () => {
             options={[
               { label: "Citizen", value: "citizen" },
               { label: "Agency Representative", value: "agency" },
+              { label: "Administrator", value: "admin" },
             ]}
           />
 

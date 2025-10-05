@@ -7,7 +7,8 @@ import {
   User, 
   UserRole,
   ForgotPasswordRequest,
-  ResetPasswordRequest 
+  ResetPasswordRequest,
+  AuthResponse
 } from '../../../shared/types/auth';
 import { 
   setAuthToken, 
@@ -24,7 +25,8 @@ interface UseAuthReturn {
   isAuth: boolean;
   isLoading: boolean;
   error: string | null;
-  login: (data: LoginRequest) => Promise<void>;
+  login: (data: LoginRequest) => Promise<AuthResponse | null>;
+  loginWithRoleValidation: (data: LoginRequest, expectedRole: UserRole) => Promise<AuthResponse | null>;
   register: (data: RegisterRequest) => Promise<void>;
   logout: () => void;
   forgotPassword: (data: ForgotPasswordRequest) => Promise<void>;
@@ -48,7 +50,7 @@ export const useAuth = (): UseAuthReturn => {
     }
   }, []);
 
-  const login = async (data: LoginRequest) => {
+  const login = async (data: LoginRequest): Promise<AuthResponse | null> => {
     setIsLoading(true);
     setError(null);
     
@@ -80,10 +82,61 @@ export const useAuth = (): UseAuthReturn => {
         default:
           navigate('/');
       }
+      
+      return response;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed');
       console.log(err);
+      return null;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const loginWithRoleValidation = async (data: LoginRequest, expectedRole: UserRole): Promise<AuthResponse | null> => {
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const response = await AuthService.login(data);
       
+      // Validate role before proceeding
+      if (response.role !== expectedRole) {
+        setError(`Access denied. This account is registered as ${response.role}, not ${expectedRole}. Please select the correct portal or contact support.`);
+        return null;
+      }
+      
+      setAuthToken(response.token);
+      
+      const userData = {
+        role: response.role,
+        email: data.email,
+        user: response
+      };
+      
+      setUserData(userData);
+      setUser(userData);
+      
+      // Navigate based on role
+      switch (response.role) {
+        case 'Admin':
+          navigate('/admin/dashboard');
+          break;
+        case 'Agency':
+          navigate('/agency/dashboard');
+          break;
+        case 'Citizen':
+          navigate('/citizen/dashboard');
+          break;
+        default:
+          navigate('/');
+      }
+      
+      return response;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Login failed');
+      console.log(err);
+      return null;
     } finally {
       setIsLoading(false);
     }
@@ -163,6 +216,7 @@ export const useAuth = (): UseAuthReturn => {
     isLoading,
     error,
     login,
+    loginWithRoleValidation,
     register,
     logout,
     forgotPassword,
