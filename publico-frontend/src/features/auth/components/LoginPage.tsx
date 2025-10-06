@@ -52,7 +52,7 @@ const LoginPage = () => {
 
           <div className="flex items-center justify-between">
             <span className="text-[12px] text-slate-700">I am a:</span>
-            <Link to="#" className="text-[12px] text-[#2563eb] hover:underline">Forgot password?</Link>
+            <Link to="/forgot-password" className="text-[12px] text-[#2563eb] hover:underline">Forgot password?</Link>
           </div>
           <RadioRow
             name="portal"

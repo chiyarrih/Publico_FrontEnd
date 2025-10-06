@@ -2,7 +2,7 @@ import React, { Suspense, lazy } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 
 /* ---------- Auth pages ---------- */
-import { LoginPage, SignupPage } from "./features/auth";
+import { LoginPage, SignupPage, ForgotPasswordPage, ResetPasswordPage } from "./features/auth";
 
 /* ---------- Layouts & guard ---------- */
 import GuestRoute from "./routes/GuestRoute";
@@ -69,6 +69,8 @@ export default function App() {
           <Route path="/" element={<Navigate to="/login" replace />} />
           <Route path="/login" element={<GuestRoute><LoginPage /></GuestRoute>} />
           <Route path="/signup" element={<GuestRoute><SignupPage /></GuestRoute>} />
+          <Route path="/forgot-password" element={<GuestRoute><ForgotPasswordPage /></GuestRoute>} />
+          <Route path="/reset-password" element={<GuestRoute><ResetPasswordPage /></GuestRoute>} />
 
           {/* Citizen */}
           <Route path="/citizen" element={<CitizenRoute><AppLayout /></CitizenRoute>}>

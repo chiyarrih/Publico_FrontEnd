@@ -16,6 +16,7 @@ import {
   getUserData, 
   isAuthenticated, 
   getCurrentUserRole,
+  decodeJWT,
   logout as utilLogout
 } from '../../../utils/auth';
 
@@ -59,7 +60,12 @@ export const useAuth = (): UseAuthReturn => {
       
       setAuthToken(response.token);
       
+      // Extract user ID from JWT token
+      const decoded = decodeJWT(response.token);
+      const userId = decoded?.id;
+      
       const userData = {
+        id: userId,
         role: response.role,
         email: data.email,
         user: response
@@ -108,7 +114,12 @@ export const useAuth = (): UseAuthReturn => {
       
       setAuthToken(response.token);
       
+      // Extract user ID from JWT token
+      const decoded = decodeJWT(response.token);
+      const userId = decoded?.id;
+      
       const userData = {
+        id: userId,
         role: response.role,
         email: data.email,
         user: response
@@ -182,9 +193,9 @@ export const useAuth = (): UseAuthReturn => {
     
     try {
       await AuthService.forgotPassword(data);
-      setError('Reset code sent to your email!');
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to send reset code');
+      // Success message will be handled by the component
+    } catch (err: any) {
+      setError(err.message || 'Failed to send reset code');
     } finally {
       setIsLoading(false);
     }
@@ -196,10 +207,9 @@ export const useAuth = (): UseAuthReturn => {
     
     try {
       await AuthService.resetPassword(data);
-      setError('Password reset successful! You can now login.');
-      navigate('/login');
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Password reset failed');
+      // Success message and navigation will be handled by the component
+    } catch (err: any) {
+      setError(err.message || 'Password reset failed');
     } finally {
       setIsLoading(false);
     }

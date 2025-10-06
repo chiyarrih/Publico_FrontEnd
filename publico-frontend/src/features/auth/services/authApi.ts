@@ -38,6 +38,11 @@ export class AuthService {
     return apiClient.post<{ message: string; user: User }>('/auth/sendResetPassword', data);
   }
 
+  // Verify Reset Code
+  static async verifyResetCode(email: string, code: string): Promise<{ message: string; valid: boolean }> {
+    return apiClient.post<{ message: string; valid: boolean }>('/auth/verifyResetCode', { email, code });
+  }
+
   // Reset Password
   static async resetPassword(data: ResetPasswordRequest): Promise<{ message: string }> {
     return apiClient.post<{ message: string }>('/auth/changePassword', data);
@@ -46,5 +51,42 @@ export class AuthService {
   // Get All Citizens (Admin only)
   static async getAllCitizens(): Promise<{ citizens: User[] }> {
     return apiClient.get<{ citizens: User[] }>('/auth/getAll');
+  }
+
+  // Profile Management
+  static async getUserProfile(userId: string): Promise<User> {
+    return apiClient.get<User>(`/auth/profile/${userId}`);
+  }
+
+  static async getUserProfileByEmail(email: string): Promise<User> {
+    // Try the working endpoint used by admin/agency services
+    return apiClient.get<User>(`/admin/auth/management/fetch/${email}`);
+  }
+
+  static async getCitizenProfile(email: string): Promise<User> {
+    // Use the dedicated citizen profile endpoint
+    return apiClient.get<User>(`/citizen/auth/profile/${email}`);
+  }
+
+  static async getCitizenProfileFromAll(email: string): Promise<User> {
+    // Get all citizens and filter for the specific user
+    const response = await apiClient.get<{ citizens: User[] }>('/auth/getAll');
+    const citizen = response.citizens.find(c => c.email === email);
+    if (!citizen) {
+      throw new Error('Citizen not found');
+    }
+    return citizen;
+  }
+
+
+  static async updateUserProfile(userId: string, data: Partial<User>): Promise<User> {
+    return apiClient.put<User>(`/auth/profile/${userId}`, data);
+  }
+
+  static async changePassword(userId: string, currentPassword: string, newPassword: string): Promise<{ message: string }> {
+    return apiClient.post<{ message: string }>(`/auth/changePassword/${userId}`, {
+      currentPassword,
+      newPassword
+    });
   }
 }
