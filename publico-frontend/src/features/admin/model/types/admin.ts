@@ -27,7 +27,15 @@ export interface BudgetProposal {
   address: string;
   privateKey: string;
   createdAt: string;
+  // Additional fields for milestone management
+  totalBudget?: number;
+  startDate?: string;
+  endDate?: string;
+  overallStatus?: string;
 }
+
+// Alias for backward compatibility - Budget is the same as BudgetProposal
+export type Budget = BudgetProposal;
 
 export interface TxnRow {
   id:string; date:string; dept:string; project:string; amount:number; status:TxStatus; hash:string;

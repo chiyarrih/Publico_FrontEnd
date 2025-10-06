@@ -31,6 +31,12 @@ export class AdminService {
     const statusParam = status && status !== 'All' ? `&status=${status}` : '';
     return apiClient.get(`/agency/projects/all?page=${page}&limit=${limit}${statusParam}`);
   }
+
+  // Get all budget projects (for milestone creation)
+  static async getBudgetProjects(): Promise<BudgetProposal[]> {
+    const response = await apiClient.get<{ data: BudgetProposal[] }>('/agency/projects/all');
+    return response.data || [];
+  }
   
   // Delete budget proposal
   static async deleteBudgetProposal(id: string): Promise<{ message: string }> {

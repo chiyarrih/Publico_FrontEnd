@@ -103,10 +103,23 @@ export const updateToConnected = async () => {
   return json;
 }
 
+// Rate limiting cache
+const fetchCache = new Map<string, { data: any; timestamp: number }>();
+const CACHE_DURATION = 5000; // 5 seconds cache
+
 export const fetchUsers = async () => {
-  const email =  localStorage.getItem('publico_user_data');
+  const email = localStorage.getItem('publico_user_data');
   if (!email) throw new Error("No user data found");
+  
   const parse = JSON.parse(email);
+  const cacheKey = `fetchUsers_${parse.email}`;
+  
+  // Check cache first
+  const cached = fetchCache.get(cacheKey);
+  if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+    return cached.data;
+  }
+  
   const response = await fetch(`http://localhost:5000/admin/auth/management/fetch/${parse.email}`,
     {
       method: "GET",
@@ -119,8 +132,11 @@ export const fetchUsers = async () => {
 
   const json = await response.json();
   if (!response.ok) {
-    throw new Error(json.message || "Error fetching projects");
+    throw new Error(json.message || "Error fetching user data");
   }
+  
+  // Cache the result
+  fetchCache.set(cacheKey, { data: json, timestamp: Date.now() });
   
   return json;
 }
