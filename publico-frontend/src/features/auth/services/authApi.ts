@@ -43,6 +43,16 @@ export class AuthService {
     return apiClient.post<{ message: string; valid: boolean }>('/auth/verifyResetCode', { email, code });
   }
 
+  // Send OTP for email verification (for new registrations)
+  static async sendOTP(email: string): Promise<{ message: string }> {
+    return apiClient.post<{ message: string }>('/auth/sendOTP', { email });
+  }
+
+  // Verify OTP for email verification (for new registrations)
+  static async verifyOTP(email: string, code: string): Promise<{ message: string; valid: boolean }> {
+    return apiClient.post<{ message: string; valid: boolean }>('/auth/verifyOTP', { email, code });
+  }
+
   // Reset Password
   static async resetPassword(data: ResetPasswordRequest): Promise<{ message: string }> {
     return apiClient.post<{ message: string }>('/auth/changePassword', data);

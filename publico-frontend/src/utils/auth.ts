@@ -103,7 +103,20 @@ export const logout = (): void => {
   removeAuthToken();
   clearRole();
   clearPortalRole();
+  // Clear agency approval flag so they can see approval page again if re-approved
+  localStorage.removeItem('agency_approval_seen');
   window.location.href = '/login';
+};
+
+// Clear all authentication data (for debugging)
+export const clearAllAuthData = (): void => {
+  localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(USER_KEY);
+  localStorage.removeItem(WEB3_ADDRESS);
+  localStorage.removeItem(ROLE_KEY);
+  localStorage.removeItem(PORTAL_KEY);
+  localStorage.removeItem('agency_approval_seen');
+  console.log('🧹 All authentication data cleared from localStorage');
 };
 
 // Validation Utilities

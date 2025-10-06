@@ -58,6 +58,30 @@ export const useAuth = (): UseAuthReturn => {
     try {
       const response = await AuthService.login(data);
       
+      // Debug logging for agency applications
+      if (response.role === 'Agency') {
+        console.log('🔍 Agency login response:', {
+          role: response.role,
+          isVerified: response.isVerified,
+          isAgencyVerified: response.isAgencyVerified,
+          applicationStatus: response.applicationStatus,
+          isPending: response.isPending,
+          fullResponse: response
+        });
+      }
+      
+      // Check email verification for ALL users (this is authentication-related)
+      if (response.isVerified === false) {
+        setError('Please verify your email before logging in');
+        return null;
+      }
+      
+      // For agencies, check application status (this is business logic, not authentication)
+      if (response.role === 'Agency') {
+        // Agency application status is handled in navigation logic below
+        // We don't block login here, just handle navigation
+      }
+      
       setAuthToken(response.token);
       
       // Extract user ID from JWT token
@@ -74,13 +98,44 @@ export const useAuth = (): UseAuthReturn => {
       setUserData(userData);
       setUser(userData);
       
-      // Navigate based on role
+      // Navigate based on role and status
       switch (response.role) {
         case 'Admin':
           navigate('/admin/dashboard');
           break;
         case 'Agency':
-          navigate('/agency/dashboard');
+          if (response.isAgencyVerified === true) {
+            // Check if this is the first login after approval
+            const hasSeenApproval = localStorage.getItem('agency_approval_seen');
+            if (!hasSeenApproval) {
+              // First login after approval - show approval page
+              localStorage.setItem('agency_approval_seen', 'true');
+              navigate('/application-approved', { 
+                state: { 
+                  email: data.email, 
+                  role: 'Agency', 
+                  applicationStatus: 'approved',
+                  agencyName: response.agency_name || 'Your Agency'
+                } 
+              });
+            } else {
+              // Subsequent logins - go directly to dashboard
+              navigate('/agency/dashboard');
+            }
+          } else if (response.isAgencyVerified === false && !response.isPending) {
+            navigate('/application-rejected', { 
+              state: { email: data.email, role: 'Agency', applicationStatus: 'rejected' } 
+            });
+          } else {
+            // Default case: pending or undefined status - show application under review
+            navigate('/application-under-review', { 
+              state: { 
+                email: data.email, 
+                role: 'Agency', 
+                applicationStatus: response.applicationStatus || 'pending' 
+              } 
+            });
+          }
           break;
         case 'Citizen':
           navigate('/citizen/dashboard');
@@ -106,10 +161,34 @@ export const useAuth = (): UseAuthReturn => {
     try {
       const response = await AuthService.login(data);
       
+      // Debug logging for agency applications
+      if (response.role === 'Agency') {
+        console.log('🔍 Agency loginWithRoleValidation response:', {
+          role: response.role,
+          isVerified: response.isVerified,
+          isAgencyVerified: response.isAgencyVerified,
+          applicationStatus: response.applicationStatus,
+          isPending: response.isPending,
+          fullResponse: response
+        });
+      }
+      
       // Validate role before proceeding
       if (response.role !== expectedRole) {
         setError(`Access denied. This account is registered as ${response.role}, not ${expectedRole}. Please select the correct portal or contact support.`);
         return null;
+      }
+      
+      // Check email verification for ALL users (this is authentication-related)
+      if (response.isVerified === false) {
+        setError('Please verify your email before logging in');
+        return null;
+      }
+      
+      // For agencies, check application status (this is business logic, not authentication)
+      if (response.role === 'Agency') {
+        // Agency application status is handled in navigation logic below
+        // We don't block login here, just handle navigation
       }
       
       setAuthToken(response.token);
@@ -128,13 +207,44 @@ export const useAuth = (): UseAuthReturn => {
       setUserData(userData);
       setUser(userData);
       
-      // Navigate based on role
+      // Navigate based on role and status
       switch (response.role) {
         case 'Admin':
           navigate('/admin/dashboard');
           break;
         case 'Agency':
-          navigate('/agency/dashboard');
+          if (response.isAgencyVerified === true) {
+            // Check if this is the first login after approval
+            const hasSeenApproval = localStorage.getItem('agency_approval_seen');
+            if (!hasSeenApproval) {
+              // First login after approval - show approval page
+              localStorage.setItem('agency_approval_seen', 'true');
+              navigate('/application-approved', { 
+                state: { 
+                  email: data.email, 
+                  role: 'Agency', 
+                  applicationStatus: 'approved',
+                  agencyName: response.agency_name || 'Your Agency'
+                } 
+              });
+            } else {
+              // Subsequent logins - go directly to dashboard
+              navigate('/agency/dashboard');
+            }
+          } else if (response.isAgencyVerified === false && !response.isPending) {
+            navigate('/application-rejected', { 
+              state: { email: data.email, role: 'Agency', applicationStatus: 'rejected' } 
+            });
+          } else {
+            // Default case: pending or undefined status - show application under review
+            navigate('/application-under-review', { 
+              state: { 
+                email: data.email, 
+                role: 'Agency', 
+                applicationStatus: response.applicationStatus || 'pending' 
+              } 
+            });
+          }
           break;
         case 'Citizen':
           navigate('/citizen/dashboard');
@@ -164,9 +274,14 @@ export const useAuth = (): UseAuthReturn => {
       console.log('✅ Registration response:', response);
       
       // For roles that require email verification
-      if (data.role === 'Citizen' || data.role === 'Agency') {
+      if (data.role === 'Citizen') {
         setError('Registration successful! Please check your email for verification.');
         navigate('/login');
+      } else if (data.role === 'Agency') {
+        // For agency, redirect to OTP verification
+        navigate('/verify-otp', { 
+          state: { email: data.email, role: 'Agency' } 
+        });
       } else if (data.role === 'Admin') {
         // Auto-login for Admin
         const email = data.email;

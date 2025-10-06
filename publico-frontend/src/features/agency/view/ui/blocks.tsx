@@ -3,7 +3,7 @@ import {
   ResponsiveContainer, LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip,
   PieChart, Pie, Cell
 } from "recharts";
-import type { Alert, Kpi, SpendPoint, PieSlice, Project } from "../controller/hooks/useAgencyDashboard";
+import type { Alert, Kpi, SpendPoint, PieSlice, Project } from "../../controller/hooks/useAgencyDashboard";
 
 /* -------- Card -------- */
 export const Card: React.FC<React.PropsWithChildren<{ title?: React.ReactNode; right?: React.ReactNode; className?: string }>> =

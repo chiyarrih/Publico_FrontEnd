@@ -3,6 +3,11 @@ import { Routes, Route, Navigate } from "react-router-dom";
 
 /* ---------- Auth pages ---------- */
 import { LoginPage, SignupPage, ForgotPasswordPage, ResetPasswordPage } from "./features/auth";
+import OTPVerificationPage from "./features/auth/components/OTPVerificationPage";
+import ApplicationUnderReviewPage from "./features/auth/components/ApplicationUnderReviewPage";
+import ApplicationRejectedPage from "./features/auth/components/ApplicationRejectedPage";
+import ApplicationApprovedPage from "./features/auth/components/ApplicationApprovedPage";
+import DebugAuthPage from "./features/auth/components/DebugAuthPage";
 
 /* ---------- Layouts & guard ---------- */
 import GuestRoute from "./routes/GuestRoute";
@@ -48,6 +53,7 @@ const AdminProfile       = lazy(() => import("./features/admin/view/pages/Profil
 const SendBudgetToAgency = lazy(() => import("./features/admin/view/pages/SendBudgetToAgency"));
 const AdminProjectMilestones = lazy(() => import("./features/admin/view/pages/ProjectMilestones"));
 const AdminProjectDetails = lazy(() => import("./features/admin/view/pages/ProjectDetails"));
+const AgencyVerification = lazy(() => import("./features/admin/view/pages/AgencyVerification"));
 const CitizenMilestones      = lazy(() => import("./features/citizen/view/PAGES/Milestones"));
 const CitizenMilestoneDetail = lazy(() => import("./features/citizen/view/PAGES/MilestoneDetail"));
 
@@ -69,6 +75,11 @@ export default function App() {
           <Route path="/" element={<Navigate to="/login" replace />} />
           <Route path="/login" element={<GuestRoute><LoginPage /></GuestRoute>} />
           <Route path="/signup" element={<GuestRoute><SignupPage /></GuestRoute>} />
+          <Route path="/verify-otp" element={<GuestRoute><OTPVerificationPage /></GuestRoute>} />
+          <Route path="/application-under-review" element={<GuestRoute><ApplicationUnderReviewPage /></GuestRoute>} />
+          <Route path="/application-rejected" element={<GuestRoute><ApplicationRejectedPage /></GuestRoute>} />
+          <Route path="/application-approved" element={<GuestRoute><ApplicationApprovedPage /></GuestRoute>} />
+          <Route path="/debug-auth" element={<DebugAuthPage />} />
           <Route path="/forgot-password" element={<GuestRoute><ForgotPasswordPage /></GuestRoute>} />
           <Route path="/reset-password" element={<GuestRoute><ResetPasswordPage /></GuestRoute>} />
 
@@ -118,6 +129,7 @@ export default function App() {
             <Route path="profile" element={<Safe><AdminProfile /></Safe>} />
             <Route path="milestones" element={<Safe><AdminProjectMilestones /></Safe>} />
             <Route path="milestones/:id" element={<Safe><AdminProjectDetails /></Safe>} />
+            <Route path="verification" element={<Safe><AgencyVerification /></Safe>} />
           </Route>
 
           {/* Errors */}

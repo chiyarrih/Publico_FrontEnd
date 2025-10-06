@@ -8,7 +8,8 @@ export interface UseData {
   _id: string;
   email: string;
   role: string;
-  isVerified: boolean;
+  isVerified: boolean; // Email verification status
+  isAgencyVerified?: boolean; // Agency application approval status
   token: string | null;
   resetCode: string | null;
   resetCodeExpiration: string | null;

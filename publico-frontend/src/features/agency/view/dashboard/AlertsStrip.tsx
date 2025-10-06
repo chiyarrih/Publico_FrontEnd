@@ -1,5 +1,5 @@
 import React from "react";
-import type { Alert } from "../../../agency/hooks/useAgencyDashboard";
+import type { Alert } from "../../controller/hooks/useAgencyDashboard";
 
 const AlertsStrip: React.FC<{ items: Alert[] }> = ({ items }) => (
   <div className="card p-3 divide-y">

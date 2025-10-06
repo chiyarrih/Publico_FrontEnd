@@ -144,7 +144,7 @@ export default function BlockchainWalletCard() {
         onClose={() => setShowPrivateKeyModal(false)}
         onConnect={handleConnectPrivateKey}
         privateKey={privateKey}
-        setPrivateKey={setPrivateKey}
+        onPrivateKeyChange={setPrivateKey}
       />
     </>
   );

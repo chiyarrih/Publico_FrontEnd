@@ -8,6 +8,7 @@ import AuthCard from "./ui/AuthCard";
 import FormField from "./ui/FormField";
 import PasswordField from "./ui/PasswordField";
 import RadioRow from "./ui/RadioRow";
+import { Upload, X } from "lucide-react";
 
 type Role = "citizen" | "agency" | "admin";
 type Errors = Record<string, string>;
@@ -22,6 +23,15 @@ const SignupPage = () => {
     terms: false,
   });
   const [errs, setErrs] = useState<Errors>({});
+  const [documents, setDocuments] = useState<{
+    agencyLicense: File | null;
+    businessCertificate: File | null;
+    proofOfInsurance: File | null;
+  }>({
+    agencyLicense: null,
+    businessCertificate: null,
+    proofOfInsurance: null,
+  });
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
@@ -29,6 +39,65 @@ const SignupPage = () => {
     if (errs[name]) setErrs(o => ({ ...o, [name]: "" }));
     if (error) clearError();
   };
+
+  const handleDocumentUpload = (type: keyof typeof documents, file: File | null) => {
+    setDocuments(prev => ({ ...prev, [type]: file }));
+    if (errs[type]) setErrs(o => ({ ...o, [type]: "" }));
+  };
+
+  const removeDocument = (type: keyof typeof documents) => {
+    setDocuments(prev => ({ ...prev, [type]: null }));
+  };
+
+  // Document upload component
+  const DocumentUploadField = ({ 
+    label, 
+    type, 
+    file, 
+    error 
+  }: { 
+    label: string; 
+    type: keyof typeof documents; 
+    file: File | null; 
+    error?: string; 
+  }) => (
+    <div className="space-y-1">
+      <label className="block text-[12px] font-medium text-slate-700">{label}</label>
+      <div className="relative">
+        <input
+          type="file"
+          id={`${type}-upload`}
+          className="hidden"
+          accept=".pdf,.jpg,.jpeg,.png"
+          onChange={(e) => handleDocumentUpload(type, e.target.files?.[0] || null)}
+          disabled={isLoading}
+        />
+        <label
+          htmlFor={`${type}-upload`}
+          className="flex items-center justify-between w-full p-3 text-sm border border-slate-300 rounded cursor-pointer hover:bg-slate-50"
+        >
+          <span className={file ? "text-slate-900" : "text-slate-500"}>
+            {file ? file.name : "Select file..."}
+          </span>
+          <div className="flex items-center gap-2">
+            <Upload className="w-4 h-4 text-slate-400" />
+            <span className="text-[#2563eb] text-[12px] font-medium">Browse</span>
+          </div>
+        </label>
+        {file && (
+          <button
+            type="button"
+            onClick={() => removeDocument(type)}
+            className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-slate-100 rounded"
+            disabled={isLoading}
+          >
+            <X className="w-3 h-3 text-slate-400" />
+          </button>
+        )}
+      </div>
+      {error && <span className="text-[11px] text-red-600">{error}</span>}
+    </div>
+  );
 
   const validate = (): boolean => {
     const e: Errors = {};
@@ -52,6 +121,11 @@ const SignupPage = () => {
       need("agencyCode", form.agencyCode, "Agency code is required");
       need("contactPhone", form.contactPhone, "Contact phone is required");
       need("address", form.address, "Address is required");
+      
+      // Document validation for agency
+      if (!documents.agencyLicense) e.agencyLicense = "Agency License is required";
+      if (!documents.businessCertificate) e.businessCertificate = "Business Certificate is required";
+      if (!documents.proofOfInsurance) e.proofOfInsurance = "Proof of Insurance is required";
     }
 
     setErrs(e);
@@ -81,7 +155,9 @@ const SignupPage = () => {
         contact_phone: form.contactPhone,
         department: form.department,
         address: form.address,
+        documents: documents, // Include documents for agency
       };
+      console.log("🚀 Agency registration payload:", payload);
     } else {
       payload = {
         role: "Admin",
@@ -137,6 +213,29 @@ const SignupPage = () => {
               </div>
               <FormField label="Department (Optional)" name="department" value={form.department} onChange={onChange} disabled={isLoading} placeholder="e.g., Budget Planning" />
               <FormField label="Address" name="address" value={form.address} onChange={onChange} disabled={isLoading} error={errs.address} placeholder="Agency address" />
+              
+              {/* Document Upload Section */}
+              <div className="space-y-3 pt-2">
+                <h3 className="text-[13px] font-medium text-slate-700">Required Documents</h3>
+                <DocumentUploadField 
+                  label="Agency License" 
+                  type="agencyLicense" 
+                  file={documents.agencyLicense} 
+                  error={errs.agencyLicense} 
+                />
+                <DocumentUploadField 
+                  label="Business Certificate" 
+                  type="businessCertificate" 
+                  file={documents.businessCertificate} 
+                  error={errs.businessCertificate} 
+                />
+                <DocumentUploadField 
+                  label="Proof of Insurance" 
+                  type="proofOfInsurance" 
+                  file={documents.proofOfInsurance} 
+                  error={errs.proofOfInsurance} 
+                />
+              </div>
             </>
           )}
 

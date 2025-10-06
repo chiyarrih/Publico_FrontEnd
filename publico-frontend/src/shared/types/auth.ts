@@ -6,7 +6,7 @@ export interface BaseUser {
   id: string;
   email: string;
   role: UserRole;
-  isVerified: boolean;
+  isVerified?: boolean; // Optional - not required for Admin role
   date_registered: string;
 }
 
@@ -30,6 +30,7 @@ export interface Agency extends BaseUser {
   department?: string;
   address: string;
   isPending: boolean;
+  isAgencyVerified?: boolean; // New field for agency application status
   agency_web3_account?: any;
   role: 'Agency';
 }
@@ -71,6 +72,11 @@ export interface RegisterAgencyRequest {
   contact_phone: string;
   department?: string;
   address: string;
+  documents?: {
+    agencyLicense: File | null;
+    businessCertificate: File | null;
+    proofOfInsurance: File | null;
+  };
 }
 
 export interface RegisterAdminRequest {
@@ -89,6 +95,11 @@ export interface AuthResponse {
   token: string;
   role: UserRole;
   redirect: string;
+  isVerified?: boolean; // Email verification status
+  isPending?: boolean; // For agency applications
+  isAgencyVerified?: boolean; // Agency application approval status
+  applicationStatus?: 'pending' | 'approved' | 'rejected'; // For agency applications
+  agency_name?: string; // Agency name for approved agencies
 }
 
 export interface ForgotPasswordRequest {
