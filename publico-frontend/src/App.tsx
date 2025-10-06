@@ -46,6 +46,8 @@ const AdminTransactions  = lazy(() => import("./features/admin/view/pages/Transa
 const AdminSmartAlerts   = lazy(() => import("./features/admin/view/pages/SmartAlerts"));
 const AdminProfile       = lazy(() => import("./features/admin/view/pages/Profile"));
 const SendBudgetToAgency = lazy(() => import("./features/admin/view/pages/SendBudgetToAgency"));
+const AdminProjectMilestones = lazy(() => import("./features/admin/view/pages/ProjectMilestones"));
+const AdminProjectDetails = lazy(() => import("./features/admin/view/pages/ProjectDetails"));
 const CitizenMilestones      = lazy(() => import("./features/citizen/view/PAGES/Milestones"));
 const CitizenMilestoneDetail = lazy(() => import("./features/citizen/view/PAGES/MilestoneDetail"));
 
@@ -112,6 +114,8 @@ export default function App() {
             <Route path="transactions" element={<Safe><AdminTransactions /></Safe>} />
             <Route path="alerts" element={<Safe><AdminSmartAlerts /></Safe>} />
             <Route path="profile" element={<Safe><AdminProfile /></Safe>} />
+            <Route path="milestones" element={<Safe><AdminProjectMilestones /></Safe>} />
+            <Route path="milestones/:id" element={<Safe><AdminProjectDetails /></Safe>} />
           </Route>
 
           {/* Errors */}

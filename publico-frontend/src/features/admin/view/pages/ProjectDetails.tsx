@@ -1,6 +1,6 @@
 import React from "react";
 import { useParams, Link } from "react-router-dom";
-import { sampleProjects, asMoney } from "../../model/projectTypes";
+import { sampleProjects, asMoney } from "../../model/types/projectTypes";
 import { Block, Panel, InfoItem, Pill, ProgressBar, ViewLink } from "../ui/kit";
 
 export default function ProjectDetails(){

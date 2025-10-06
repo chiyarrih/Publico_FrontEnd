@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { Project } from "../../model/projectTypes";
+import { Project } from "../../model/types/projectTypes";
 import { ProjectService } from "../../services/projectService";
 import { Panel, Pill, IconButton } from "../ui/kit";
 

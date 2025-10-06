@@ -1,4 +1,4 @@
-import { Project, sampleProjects } from "../../model/projectTypes";
+import { Project, sampleProjects } from "../model/types/projectTypes";
 
 export const ProjectService = {
   getAll: async (): Promise<Project[]> => sampleProjects,
