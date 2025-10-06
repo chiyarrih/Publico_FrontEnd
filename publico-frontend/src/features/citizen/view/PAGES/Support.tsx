@@ -1,5 +1,7 @@
 import React, { useRef, useState } from "react";
 import { Card, Field, Input, Select, Textarea, PrimaryBtn } from "../../../../shared/ui";
+import { ContactSupportService, ContactSupportRequest } from "../../../shared/services/contactSupportService";
+import { getUserData, getCurrentUserRole } from "../../../../utils/auth";
 
 const Icon = {
   mail: (cls = "h-4 w-4") => (
@@ -24,7 +26,34 @@ const Icon = {
 export default function Support() {
   const [form, setForm] = useState({ name: "", email: "", type: "", message: "" });
   const [fileName, setFileName] = useState("No file selected");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitMessage, setSubmitMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  // Pre-fill form with user data if available
+  React.useEffect(() => {
+    const userData = getUserData();
+    if (userData) {
+      let name = "";
+      let email = userData.email || "";
+      
+      // Handle different user types
+      if (userData.role === 'Citizen') {
+        name = `${userData.first_name || ''} ${userData.last_name || ''}`.trim();
+      } else if (userData.role === 'Agency') {
+        name = userData.agency_name || "";
+        email = userData.contact_email || userData.email || "";
+      } else if (userData.role === 'Admin') {
+        name = `${userData.first_name || ''} ${userData.last_name || ''}`.trim();
+      }
+      
+      setForm(prev => ({
+        ...prev,
+        name,
+        email
+      }));
+    }
+  }, []);
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
     setForm((s) => ({ ...s, [e.target.name]: e.target.value }));
@@ -32,12 +61,51 @@ export default function Support() {
   const onPick: React.ChangeEventHandler<HTMLInputElement> = (e) =>
     setFileName(e.target.files?.[0]?.name || "No file selected");
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    alert("Support request submitted ✅ (demo)");
-    setForm({ name: "", email: "", type: "", message: "" });
-    setFileName("No file selected");
-    if (fileRef.current) fileRef.current.value = "";
+    setIsSubmitting(true);
+    setSubmitMessage(null);
+
+    try {
+      // Validate form
+      if (!form.name || !form.email || !form.type || !form.message) {
+        throw new Error("All fields are required");
+      }
+
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(form.email)) {
+        throw new Error("Please enter a valid email address");
+      }
+
+      const request: ContactSupportRequest = {
+        name: form.name,
+        email: form.email,
+        userRole: 'Citizen',
+        issueType: form.type,
+        message: form.message,
+        attachment: fileRef.current?.files?.[0] || undefined
+      };
+
+      const response = await ContactSupportService.submitRequest(request);
+      
+      if (response.success) {
+        setSubmitMessage({ type: 'success', text: 'Support request submitted successfully! We will get back to you soon.' });
+        setForm({ name: "", email: "", type: "", message: "" });
+        setFileName("No file selected");
+        if (fileRef.current) fileRef.current.value = "";
+      } else {
+        throw new Error(response.message || 'Failed to submit support request');
+      }
+    } catch (error) {
+      console.error('Error submitting support request:', error);
+      setSubmitMessage({ 
+        type: 'error', 
+        text: error instanceof Error ? error.message : 'Failed to submit support request. Please try again.' 
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -45,20 +113,38 @@ export default function Support() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Left: form */}
         <Card className="lg:col-span-2" title="Submit a Support Request">
+          {submitMessage && (
+            <div className={`mb-4 p-3 rounded-md ${
+              submitMessage.type === 'success' 
+                ? 'bg-green-50 text-green-800 border border-green-200' 
+                : 'bg-red-50 text-red-800 border border-red-200'
+            }`}>
+              {submitMessage.text}
+            </div>
+          )}
           <form onSubmit={submit} className="space-y-4">
             <Field label="Your Name">
               <Input name="name" value={form.name} onChange={onChange} placeholder="Full Name" />
             </Field>
             <Field label="Email Address">
-              <Input name="email" type="email" value={form.email} onChange={onChange} placeholder="your.email@example.com" />
+              <Input 
+                name="email" 
+                type="email" 
+                value={form.email} 
+                readOnly 
+                className="bg-gray-50 cursor-not-allowed" 
+                placeholder="your.email@example.com" 
+              />
             </Field>
             <Field label="Issue Type">
               <Select name="type" value={form.type} onChange={onChange}>
                 <option value="">Select an issue type</option>
+                <option>General</option>
                 <option>Account / Login</option>
                 <option>Data Accuracy</option>
                 <option>Reports & Downloads</option>
                 <option>Smart Contract Alert</option>
+                <option>Data Concern</option>
                 <option>Other</option>
               </Select>
             </Field>
@@ -87,7 +173,9 @@ export default function Support() {
               <input ref={fileRef} type="file" className="hidden" onChange={onPick} />
             </div>
 
-            <PrimaryBtn type="submit" className="w-full">Submit Request</PrimaryBtn>
+            <PrimaryBtn type="submit" className="w-full" disabled={isSubmitting}>
+              {isSubmitting ? 'Submitting...' : 'Submit Request'}
+            </PrimaryBtn>
           </form>
         </Card>
 

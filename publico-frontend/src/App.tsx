@@ -53,6 +53,7 @@ const SendBudgetToAgency = lazy(() => import("./features/admin/view/pages/SendBu
 const AdminProjectMilestones = lazy(() => import("./features/admin/view/pages/ProjectMilestones"));
 const AdminProjectDetails = lazy(() => import("./features/admin/view/pages/ProjectDetails"));
 const AgencyVerification = lazy(() => import("./features/admin/view/pages/AgencyVerification"));
+const AdminContactSupport = lazy(() => import("./features/admin/view/components/ContactSupportView"));
 const CitizenMilestones      = lazy(() => import("./features/citizen/view/PAGES/Milestones"));
 const CitizenMilestoneDetail = lazy(() => import("./features/citizen/view/PAGES/MilestoneDetail"));
 
@@ -128,6 +129,7 @@ export default function App() {
             <Route path="milestones" element={<Safe><AdminProjectMilestones /></Safe>} />
             <Route path="milestones/:id" element={<Safe><AdminProjectDetails /></Safe>} />
             <Route path="verification" element={<Safe><AgencyVerification /></Safe>} />
+            <Route path="contact-support" element={<Safe><AdminContactSupport /></Safe>} />
           </Route>
 
           {/* Errors */}

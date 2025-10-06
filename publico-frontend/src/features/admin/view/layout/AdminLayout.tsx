@@ -58,6 +58,12 @@ const I = {
       <circle cx="12" cy="7" r="4" />
     </svg>
   ),
+  support: (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+      <polyline points="22,6 12,13 2,6" />
+    </svg>
+  ),
   logout: (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
@@ -113,6 +119,7 @@ export default function AdminLayout() {
               <SidebarItem to="/admin/milestones" icon={I.milestone} label="Project Milestones" />
               <SidebarItem to="/admin/alerts" icon={I.bell} label="Smart Contract Alerts" />
               <SidebarItem to="/admin/verification" icon={I.verification} label="Agency Verification" />
+              <SidebarItem to="/admin/contact-support" icon={I.support} label="Contact Support" />
               <SidebarItem to="/admin/profile" icon={I.user} label="User Profile" />
             </nav>
           </div>
