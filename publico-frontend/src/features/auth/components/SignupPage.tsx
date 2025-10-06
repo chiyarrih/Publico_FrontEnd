@@ -8,6 +8,7 @@ import AuthCard from "./ui/AuthCard";
 import FormField from "./ui/FormField";
 import PasswordField from "./ui/PasswordField";
 import RadioRow from "./ui/RadioRow";
+import TermsAndConditionsModal from "./ui/TermsAndConditionsModal";
 import { Upload, X } from "lucide-react";
 
 type Role = "citizen" | "agency" | "admin";
@@ -23,6 +24,8 @@ const SignupPage = () => {
     terms: false,
   });
   const [errs, setErrs] = useState<Errors>({});
+  const [showTermsModal, setShowTermsModal] = useState(false);
+  const [hasReadTerms, setHasReadTerms] = useState(false);
   const [documents, setDocuments] = useState<{
     agencyLicense: File | null;
     businessCertificate: File | null;
@@ -47,6 +50,29 @@ const SignupPage = () => {
 
   const removeDocument = (type: keyof typeof documents) => {
     setDocuments(prev => ({ ...prev, [type]: null }));
+  };
+
+  const handleTermsClick = () => {
+    setShowTermsModal(true);
+  };
+
+  const handleTermsAccept = () => {
+    setHasReadTerms(true);
+    setForm(prev => ({ ...prev, terms: true }));
+    setErrs(prev => ({ ...prev, terms: "" }));
+  };
+
+  const handleTermsModalClose = () => {
+    setShowTermsModal(false);
+  };
+
+  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Only allow checking if user has read the terms
+    if (hasReadTerms) {
+      const { checked } = e.target;
+      setForm(prev => ({ ...prev, terms: checked }));
+      if (errs.terms) setErrs(prev => ({ ...prev, terms: "" }));
+    }
   };
 
   // Document upload component
@@ -110,7 +136,8 @@ const SignupPage = () => {
     if (form.password && !validatePassword(form.password))
       e.password = "Min 8 chars with upper, lower, number & special";
     if (form.password !== form.confirm) e.confirm = "Passwords do not match";
-    if (!form.terms) e.terms = "Agree to the terms";
+    if (!hasReadTerms) e.terms = "Please read and accept the terms and conditions";
+    if (!form.terms) e.terms = "You must agree to the terms and conditions";
 
     // names (citizen always, agency also needs them)
     need("firstName", form.firstName, "First name is required");
@@ -244,11 +271,54 @@ const SignupPage = () => {
           <PasswordField label="Password" name="password" value={form.password} onChange={onChange} disabled={isLoading} error={errs.password} />
           <PasswordField label="Confirm Password" name="confirm" value={form.confirm} onChange={onChange} disabled={isLoading} error={errs.confirm} />
 
-          <label className="flex items-center gap-2 text-[12px]">
-            <input className="accent-[#2563eb]" type="checkbox" name="terms" checked={form.terms} onChange={onChange} disabled={isLoading} />
-            I agree to the terms and conditions
-            {errs.terms && <span className="text-[11px] text-red-600 ml-2">{errs.terms}</span>}
-          </label>
+          <div className="space-y-2">
+            <div className="flex items-start gap-3 text-[12px]">
+              <div className="relative flex-shrink-0 mt-0.5">
+                <input 
+                  className={`accent-[#2563eb] w-4 h-4 ${
+                    !hasReadTerms 
+                      ? 'opacity-50 cursor-not-allowed' 
+                      : 'cursor-pointer'
+                  }`}
+                  type="checkbox" 
+                  name="terms" 
+                  checked={form.terms} 
+                  onChange={handleCheckboxChange}
+                  disabled={isLoading || !hasReadTerms}
+                  title={!hasReadTerms ? "Please read the terms and conditions first" : ""}
+                />
+              </div>
+              <div className="flex-1">
+                <span className={!hasReadTerms ? "text-gray-500" : "text-gray-700"}>
+                  I agree to the{" "}
+                  <button
+                    type="button"
+                    onClick={handleTermsClick}
+                    className="text-[#2563eb] hover:underline cursor-pointer font-medium"
+                    disabled={isLoading}
+                  >
+                    terms and conditions
+                  </button>
+                </span>
+                {!hasReadTerms && (
+                  <div className="mt-1 text-[11px] text-amber-600 flex items-center gap-1">
+                    <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                    </svg>
+                    Please read the terms first
+                  </div>
+                )}
+                {errs.terms && (
+                  <div className="mt-1 text-[11px] text-red-600 flex items-center gap-1">
+                    <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                    </svg>
+                    {errs.terms}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
 
           <button
             type="submit"
@@ -259,6 +329,13 @@ const SignupPage = () => {
           </button>
         </form>
       </AuthCard>
+      
+      {/* Terms and Conditions Modal */}
+      <TermsAndConditionsModal
+        isOpen={showTermsModal}
+        onClose={handleTermsModalClose}
+        onAccept={handleTermsAccept}
+      />
     </AuthLayout>
   );
 };
