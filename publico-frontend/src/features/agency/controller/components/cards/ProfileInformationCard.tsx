@@ -1,4 +1,5 @@
 import useConnectWallet from "@agency/controller/hooks/useConnectWallet";
+import { useAgencyProfile } from "@agency/controller/hooks/useAgencyProfile";
 import { Button } from "@citizen/components/ui/button";
 import { CardContent } from "@citizen/components/ui/card";
 import { Label } from "@citizen/components/ui/label";
@@ -8,6 +9,12 @@ import { User } from "lucide-react";
 
 export default function ProfileInformationCard(){
     const {isEditing, walletData, profile,handleSave, setIsEditing, setProfile} = useConnectWallet();
+    const { user: agencyUser, isLoading, error } = useAgencyProfile();
+    
+    // Debug logging
+    console.log('ProfileInformationCard - agencyUser:', agencyUser);
+    console.log('ProfileInformationCard - isLoading:', isLoading);
+    console.log('ProfileInformationCard - error:', error);
     return (
         <Card>
             <CardContent className="p-6">
@@ -16,7 +23,9 @@ export default function ProfileInformationCard(){
                 <User className="w-8 h-8 text-white" />
               </div>
               <div className="flex-1">
-                <h2 className="mb-1 text-xl font-semibold text-foreground">Ageny User</h2>
+                <h2 className="mb-1 text-xl font-semibold text-foreground">
+                  {isLoading ? "Loading..." : agencyUser?.agency_name || "Agency User"}
+                </h2>
                 {!isEditing && (
                   <Button onClick={() => setIsEditing(true)} className="mt-2">
                     Edit Profile
@@ -69,21 +78,34 @@ export default function ProfileInformationCard(){
               </div>
             ) : (
               <div className="space-y-3 text-sm">
+                {error && (
+                  <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded">
+                    Error loading profile: {error}
+                  </div>
+                )}
                 <div>
-                  <span className="text-muted-foreground">Full Name</span> 
-                  <p className="font-medium">{profile.name}</p>
+                  <span className="text-muted-foreground">Agency Name</span> 
+                  <p className="font-medium">{isLoading ? "Loading..." : agencyUser?.agency_name || "N/A"}</p>
                 </div>
                 <div>
                   <span className="text-muted-foreground">Email</span>
-                  <p className="font-medium">{profile.email}</p>
+                  <p className="font-medium">{isLoading ? "Loading..." : agencyUser?.contact_email || "N/A"}</p>
                 </div>
                 <div>
                   <span className="text-muted-foreground">Address</span>
-                  <p className="font-medium">{profile.address}</p>
+                  <p className="font-medium">{isLoading ? "Loading..." : agencyUser?.address || "N/A"}</p>
                 </div>
                 <div>
                   <span className="text-muted-foreground">Phone Number</span>
-                  <p className="font-medium">{profile.phone}</p>
+                  <p className="font-medium">{isLoading ? "Loading..." : agencyUser?.contact_phone || "N/A"}</p>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Agency Code</span>
+                  <p className="font-medium">{isLoading ? "Loading..." : agencyUser?.agency_code || "N/A"}</p>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Department</span>
+                  <p className="font-medium">{isLoading ? "Loading..." : agencyUser?.department || "N/A"}</p>
                 </div>
               </div>
             )}

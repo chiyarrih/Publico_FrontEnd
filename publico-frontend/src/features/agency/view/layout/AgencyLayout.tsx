@@ -4,6 +4,7 @@ import { logout } from '../../../../utils/auth';
 import ProposalForm from "@agency/controller/components/forms/ProposalForm";
 import ProposalCard from "@agency/controller/components/cards/ProposalCard";
 import useBudget from "@agency/controller/hooks/useBudget";
+import useConnectWallet from "@agency/controller/hooks/useConnectWallet";
 import InfiniteScroll from "react-infinite-scroll-component";
 import {Toaster} from "react-hot-toast"
 import Loader from "@agency/controller/components/loaders/Loader";
@@ -134,6 +135,7 @@ export default function AgencyLayout() {
   const { pathname } = useLocation();
   const isBudgets = pathname.replace(/\/+$/, "") === "/agency/budgets";
   const navigate = useNavigate();
+  const { profile } = useConnectWallet();
 
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -155,7 +157,7 @@ export default function AgencyLayout() {
             <button className="p-2 rounded hover:bg-slate-100"><I.menu /></button>
             <button className="relative p-2 rounded hover:bg-slate-100"><I.bell /><span className="absolute w-2 h-2 rounded-full right-1 top-1 bg-rose-500"/></button>
             <button onClick={() => setMenuOpen(v=>!v)} className="flex items-center gap-2 p-2 rounded hover:bg-slate-100">
-              <span className="hidden text-xs text-slate-600 sm:block">Agency User — Full Access</span>
+              <span className="hidden text-xs text-slate-600 sm:block">{profile.name || 'Agency User'} — Full Access</span>
               <div className="w-8 h-8 rounded-full bg-slate-200"/><I.chevronDown/>
             </button>
             {menuOpen && (
@@ -175,7 +177,7 @@ export default function AgencyLayout() {
           <div className="sticky top-16 h-[calc(100vh-4rem)] overflow-auto p-6">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-10 h-10 rounded-full bg-slate-200" />
-              <div><div className="text-sm font-medium text-slate-900">Agency User</div>
+              <div><div className="text-sm font-medium text-slate-900">{profile.name || 'Agency User'}</div>
                 <div className="text-xs text-slate-500">Full Access</div></div>
             </div>
             <nav className="space-y-1">

@@ -16,10 +16,10 @@ export default function useConnectWallet() {
   const [balanceEth, setBalanceEth] = useState("0");
   const [balancePhp, setBalancePhp] = useState("0");
   const [profile, setProfile] = useState({
-    name: "Dia Mate",
-    email: "agency@gmail.com",
-    phone: "+63 912 345 6789",
-    address: "Barangay Poblacion, Dagupan City",
+    name: "",
+    email: "",
+    phone: "",
+    address: "",
   });
   const [fetchedData, setFetchedData] = useState<UseData>()
   const socketRef = useRef<Socket | null>(null);
@@ -109,30 +109,35 @@ export default function useConnectWallet() {
   };
 
   useEffect(() => {
-  const handleFetch = async () => {
-    try {
-      const getAddress = localStorage.getItem('web3_address');
+    const handleFetch = async () => {
+      try {
+        // Always load profile data first
+        const profileData = await fetchUsers();
+        if (profileData) {
+          const userData = profileData;
+          setFetchedData(userData);
+          setProfile({
+            name: userData.agency_name ?? `${userData.first_name || ''} ${userData.last_name || ''}`.trim(),
+            email: userData.email,
+            phone: userData.contact_phone,
+            address: userData.address
+          });
+        }
 
-      if (!getAddress) return;
+        // Then check for wallet connection
+        const getAddress = localStorage.getItem('web3_address');
+        if (getAddress) {
+          setWalletConnected(true);
+          setCurrentAddress(getAddress);
+          await fetchBalance(getAddress);
+        }
+      } catch (err) {
+        console.error("Error fetching profile data:", err);
+      }
+    };
 
-      const connected = await fetchUsers();
-      setWalletConnected(connected[0].isConnected);
-      setCurrentAddress(getAddress);
-      setFetchedData(connected[0])
-      setProfile({
-        name: connected[0].agency_name ?? `${connected[0].first_name} ${connected[0].last_name}`,
-        email: connected[0].email,
-        phone: connected[0].contact_phone,
-        address: connected[0].address
-      })
-      await fetchBalance(getAddress);
-    } catch (err) {
-      console.error("Error fetching wallet data:", err);
-    }
-  };
-
-  handleFetch();
-}, []);
+    handleFetch();
+  }, []);
 
 
   return {

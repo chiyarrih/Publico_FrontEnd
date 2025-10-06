@@ -1,5 +1,6 @@
 import ProfileComponent from "@agency/controller/components/profile/ProfileComponent";
 import React from "react";
+import useConnectWallet from "@agency/controller/hooks/useConnectWallet";
 
 type Prof = { name: string; email: string; phone: string; address: string; avatar?: string };
 const KEY = "agency_profile_v2";
@@ -8,9 +9,27 @@ const save = (k:string,v:any)=>localStorage.setItem(k,JSON.stringify(v));
 
 const Profile: React.FC = () => {
   const [tab, setTab] = React.useState<"info"|"security"|"notify">("info");
-  const [p,setP]=React.useState<Prof>(()=>load(KEY,{name:"Juan Dela Cruz",email:"juan.delacruz@example.com",phone:"+63 (0) 912 345 6789",address:"Barangay Poblacion, Dagupan City"}));
+  const { profile } = useConnectWallet();
+  const [p,setP]=React.useState<Prof>(()=>load(KEY,{
+    name: profile.name || "Loading...",
+    email: profile.email || "Loading...",
+    phone: profile.phone || "Loading...",
+    address: profile.address || "Loading..."
+  }));
   const [pw,setPw]=React.useState({cur:"",nw:"",cf:""});
   const [prefs,setPrefs]=React.useState({email:true,sms:false,weekly:true});
+
+  // Update profile when data loads
+  React.useEffect(() => {
+    if (profile.name) {
+      setP({
+        name: profile.name,
+        email: profile.email,
+        phone: profile.phone,
+        address: profile.address
+      });
+    }
+  }, [profile]);
 
   const onAvatar = (e:React.ChangeEvent<HTMLInputElement>)=>{
     const f=e.target.files?.[0]; if(!f) return;
