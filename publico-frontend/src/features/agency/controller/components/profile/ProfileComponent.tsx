@@ -7,8 +7,16 @@ import { CardContent, CardHeader, CardTitle } from "@citizen/components/ui/card"
 import { Card, Input } from "@shared/ui"
 import ProfileInformationCard from "../cards/ProfileInformationCard"
 import BlockchainWalletCard from "../cards/BlockChainWalletCard"
+import ChangePasswordModal from "../../../view/modals/ChangePasswordModal"
 
 export default function ProfileComponent() {
+  const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
+
+  const handlePasswordChangeSuccess = () => {
+    // You can add any success handling here
+    console.log('Password changed successfully');
+  };
+
   return (
     <div className="max-w-6xl mx-auto space-y-6">
       <h1 className="text-2xl font-semibold text-foreground">User Profile</h1>
@@ -34,7 +42,12 @@ export default function ProfileComponent() {
                 <p className="text-sm text-muted-foreground">Last changed 30 days ago</p>
               </div>
             </div>
-            <Button variant="outline">Change Password</Button>
+            <Button 
+              variant="outline" 
+              onClick={() => setShowChangePasswordModal(true)}
+            >
+              Change Password
+            </Button>
           </div>
 
           <div className="flex items-center justify-between p-4 border rounded-lg">
@@ -49,6 +62,13 @@ export default function ProfileComponent() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Change Password Modal */}
+      <ChangePasswordModal
+        isOpen={showChangePasswordModal}
+        onClose={() => setShowChangePasswordModal(false)}
+        onSuccess={handlePasswordChangeSuccess}
+      />
     </div>
   )
 }

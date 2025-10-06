@@ -1,5 +1,5 @@
 import { apiClient } from '../../../config/api';
-import { User } from '../../../shared/types/auth';
+import { User, Admin } from '../../../shared/types/auth';
 import type { BudgetRequest, TxnRow, AlertRow, BudgetProposal } from "../model/types/admin";
 
 export class AdminService {
@@ -50,6 +50,30 @@ export class AdminService {
   // Get single budget proposal
   static async getBudgetProposal(id: string): Promise<BudgetProposal> {
     return apiClient.get(`/agency/projects/${id}`);
+  }
+
+  // Admin Profile Management
+  // Get admin profile by email
+  static async getAdminProfile(email: string): Promise<Admin> {
+    return apiClient.get<Admin>(`/admin/auth/management/fetch/${email}`);
+  }
+
+  // Get admin profile by ID
+  static async getAdminProfileById(userId: string): Promise<Admin> {
+    return apiClient.get<Admin>(`/auth/profile/${userId}`);
+  }
+
+  // Update admin profile
+  static async updateAdminProfile(userId: string, data: Partial<Admin>): Promise<Admin> {
+    return apiClient.put<Admin>(`/auth/profile/${userId}`, data);
+  }
+
+  // Change admin password
+  static async changeAdminPassword(userId: string, currentPassword: string, newPassword: string): Promise<{ message: string }> {
+    return apiClient.post<{ message: string }>(`/auth/changePassword/${userId}`, {
+      currentPassword,
+      newPassword
+    });
   }
 }
 

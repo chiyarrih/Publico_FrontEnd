@@ -8,7 +8,7 @@ const load = <T,>(k:string,f:T):T => { try{ const r=localStorage.getItem(k); ret
 const save = (k:string,v:any)=>localStorage.setItem(k,JSON.stringify(v));
 
 const Profile: React.FC = () => {
-  const [tab, setTab] = React.useState<"info"|"security"|"notify">("info");
+  const [tab, setTab] = React.useState<"info"|"notify">("info");
   const { profile } = useConnectWallet();
   const [p,setP]=React.useState<Prof>(()=>load(KEY,{
     name: profile.name || "Loading...",
@@ -16,7 +16,6 @@ const Profile: React.FC = () => {
     phone: profile.phone || "Loading...",
     address: profile.address || "Loading..."
   }));
-  const [pw,setPw]=React.useState({cur:"",nw:"",cf:""});
   const [prefs,setPrefs]=React.useState({email:true,sms:false,weekly:true});
 
   // Update profile when data loads
@@ -36,7 +35,6 @@ const Profile: React.FC = () => {
     const r=new FileReader(); r.onload=()=>setP(s=>({...s,avatar:String(r.result)})); r.readAsDataURL(f);
   };
   const saveInfo=()=>{ save(KEY,p); alert("Profile saved (local)"); };
-  const savePw=(e:React.FormEvent)=>{ e.preventDefault(); if(pw.nw!==pw.cf) return alert("Passwords do not match"); setPw({cur:"",nw:"",cf:""}); alert("Password changed (mock)"); };
 
   return (
     <div className="space-y-4">
@@ -44,7 +42,6 @@ const Profile: React.FC = () => {
         <div className="text-lg font-semibold">User Profile</div>
         <div className="mt-3 flex items-center gap-6 text-sm">
           <button onClick={()=>setTab("info")} className={`pb-2 border-b-2 ${tab==="info"?"border-blue-600 text-blue-700":"border-transparent text-slate-500"}`}>Profile Information</button>
-          <button onClick={()=>setTab("security")} className={`pb-2 border-b-2 ${tab==="security"?"border-blue-600 text-blue-700":"border-transparent text-slate-500"}`}>Security</button>
           <button onClick={()=>setTab("notify")} className={`pb-2 border-b-2 ${tab==="notify"?"border-blue-600 text-blue-700":"border-transparent text-slate-500"}`}>Notifications</button>
         </div>
       </div>
@@ -55,22 +52,6 @@ const Profile: React.FC = () => {
         </div>
       )}
 
-      {tab==="security" && (
-        <div className="bg-white border border-slate-200 rounded-lg p-4">
-          <div className="text-sm font-medium mb-3">Change Password</div>
-          <form className="grid md:grid-cols-2 gap-3" onSubmit={savePw}>
-            <label className="text-xs md:col-span-2"><span className="block mb-1 text-slate-700">Current password</span>
-              <input type="password" className="w-full h-9 rounded border border-slate-300 px-2 text-sm" value={pw.cur} onChange={(e)=>setPw(s=>({...s,cur:e.target.value}))}/></label>
-            <label className="text-xs"><span className="block mb-1 text-slate-700">New password</span>
-              <input type="password" className="w-full h-9 rounded border border-slate-300 px-2 text-sm" value={pw.nw} onChange={(e)=>setPw(s=>({...s,nw:e.target.value}))}/></label>
-            <label className="text-xs"><span className="block mb-1 text-slate-700">Confirm password</span>
-              <input type="password" className="w-full h-9 rounded border border-slate-300 px-2 text-sm" value={pw.cf} onChange={(e)=>setPw(s=>({...s,cf:e.target.value}))}/></label>
-            <div className="md:col-span-2">
-              <button className="h-9 px-4 rounded bg-blue-600 text-white text-sm hover:bg-blue-700">Update Password</button>
-            </div>
-          </form>
-        </div>
-      )}
 
       {tab==="notify" && (
         <div className="bg-white border border-slate-200 rounded-lg p-4">

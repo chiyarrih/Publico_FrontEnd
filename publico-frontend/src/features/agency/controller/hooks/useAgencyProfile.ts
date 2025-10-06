@@ -3,6 +3,7 @@ import { Agency } from "../../../../shared/types/auth";
 import { fetchUsers } from "../../services/agencyService";
 import { getUserData } from "../../../../utils/auth";
 import { UseData } from "../../../../interfaces/user";
+import { AuthService } from "../../../auth/services/authApi";
 
 interface UseAgencyProfileReturn {
   user: Agency | null;
@@ -10,6 +11,8 @@ interface UseAgencyProfileReturn {
   error: string | null;
   updateProfile: (data: Partial<Agency>) => Promise<void>;
   changePassword: (currentPassword: string, newPassword: string) => Promise<void>;
+  forgotPassword: (data: { email: string }) => Promise<{ message: string; user: any }>;
+  resetPassword: (data: { email: string; code: string; newPassword: string }) => Promise<{ message: string }>;
   clearError: () => void;
 }
 
@@ -101,11 +104,40 @@ export const useAgencyProfile = (): UseAgencyProfileReturn => {
     setError(null);
     
     try {
-      // TODO: Implement password change API call
-      console.log('Password change not implemented yet');
-      setError('Password change not implemented yet');
+      await AuthService.changePassword(user.id, currentPassword, newPassword);
     } catch (err: any) {
       setError(err.message || 'Failed to change password');
+      throw err; // Re-throw to let the modal handle it
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const forgotPassword = async (data: { email: string }) => {
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const result = await AuthService.forgotPassword(data);
+      return result;
+    } catch (err: any) {
+      setError(err.message || 'Failed to send reset code');
+      throw err; // Re-throw to let the modal handle it
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const resetPassword = async (data: { email: string; code: string; newPassword: string }) => {
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const result = await AuthService.resetPassword(data);
+      return result;
+    } catch (err: any) {
+      setError(err.message || 'Failed to reset password');
+      throw err; // Re-throw to let the modal handle it
     } finally {
       setIsLoading(false);
     }
@@ -121,6 +153,8 @@ export const useAgencyProfile = (): UseAgencyProfileReturn => {
     error,
     updateProfile,
     changePassword,
+    forgotPassword,
+    resetPassword,
     clearError,
   };
 };

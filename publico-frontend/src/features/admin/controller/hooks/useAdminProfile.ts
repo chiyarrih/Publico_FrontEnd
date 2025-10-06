@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
-import { fetchUsers } from "@agency/services/agencyService";
-import { UseData } from "interfaces/user";
+import { AdminService } from "../../services/admin.api";
+import { Admin } from "../../../../shared/types/auth";
+import { getUserData } from "../../../../utils/auth";
+import { AuthService } from "../../../auth/services/authApi";
 
 export interface ProfileData {
   name: string;
@@ -17,14 +19,16 @@ export interface ActivityItem {
 }
 
 export default function useAdminProfile() {
+  const [admin, setAdmin] = useState<Admin | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [walletConnected, setWalletConnected] = useState(false);
-  const [fetchedData, setFetchedData] = useState<UseData | null>(null);
   const [profile, setProfile] = useState<ProfileData>({
-    name: "Admin User",
-    email: "admin@dagupan.gov.ph",
-    phone: "+63 912 345 6789",
-    lastLogin: "2023-05-15 08:30 AM",
-    status: "Active",
+    name: "Loading...",
+    email: "Loading...",
+    phone: "Loading...",
+    lastLogin: "Loading...",
+    status: "Loading...",
   });
 
   const activities: ActivityItem[] = [
@@ -51,14 +55,28 @@ export default function useAdminProfile() {
   ];
 
   useEffect(() => {
-    const handleFetch = async () => {
+    const loadAdminProfile = async () => {
+      setIsLoading(true);
+      setError(null);
+      
       try {
-        const userData = await fetchUsers();
-        setFetchedData(userData[0]);
-        setWalletConnected(userData[0].isConnected);
+        const userData = getUserData();
+        if (!userData?.email) {
+          throw new Error('User not found');
+        }
+
+        // Ensure user is an Admin
+        if (userData.role !== 'Admin') {
+          throw new Error('Access denied. This profile is only for Admin users.');
+        }
+
+        // Fetch admin profile data
+        const adminData = await AdminService.getAdminProfile(userData.email);
+        setAdmin(adminData);
+        setWalletConnected(adminData.agency_web3_account?.address ? true : false);
         
-        // Format last login date
-        const lastLoginDate = new Date(userData[0].updatedAt).toLocaleString('en-US', {
+        // Format last login date - use date_registered as fallback
+        const lastLoginDate = new Date(adminData.date_registered).toLocaleString('en-US', {
           year: 'numeric',
           month: '2-digit',
           day: '2-digit',
@@ -67,29 +85,30 @@ export default function useAdminProfile() {
           hour12: true
         });
 
-        // Determine the name with fallback
+        // Determine the display name for admin
         let displayName = "Admin User";
-        if (userData[0].agency_name) {
-          displayName = userData[0].agency_name;
-        } else if (userData[0].first_name && userData[0].last_name) {
-          displayName = `${userData[0].first_name} ${userData[0].last_name}`;
-        } else if (userData[0].first_name) {
-          displayName = userData[0].first_name;
+        if (adminData.first_name && adminData.last_name) {
+          displayName = `${adminData.first_name} ${adminData.last_name}`;
+        } else if (adminData.first_name) {
+          displayName = adminData.first_name;
         }
 
         setProfile({
           name: displayName,
-          email: userData[0].email,
-          phone: userData[0].contact_phone,
+          email: adminData.email,
+          phone: "Not provided", // Admin doesn't have phone_number in the interface
           lastLogin: lastLoginDate,
-          status: userData[0].isVerified ? "Active" : "Pending",
+          status: adminData.isVerified ? "Active" : "Pending",
         });
-      } catch (err) {
+      } catch (err: any) {
+        setError(err.message || 'Failed to load admin profile');
         console.error("Error fetching admin profile data:", err);
+      } finally {
+        setIsLoading(false);
       }
     };
 
-    handleFetch();
+    loadAdminProfile();
   }, []);
 
   const handleEditProfile = () => {
@@ -108,6 +127,56 @@ export default function useAdminProfile() {
     setWalletConnected(false);
   };
 
+  const changePassword = async (currentPassword: string, newPassword: string) => {
+    if (!admin) return;
+    
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      await AuthService.changePassword(admin.id, currentPassword, newPassword);
+    } catch (err: any) {
+      setError(err.message || 'Failed to change password');
+      throw err; // Re-throw to let the modal handle it
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const forgotPassword = async (data: { email: string }) => {
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const result = await AuthService.forgotPassword(data);
+      return result;
+    } catch (err: any) {
+      setError(err.message || 'Failed to send reset code');
+      throw err; // Re-throw to let the modal handle it
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const resetPassword = async (data: { email: string; code: string; newPassword: string }) => {
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const result = await AuthService.resetPassword(data);
+      return result;
+    } catch (err: any) {
+      setError(err.message || 'Failed to reset password');
+      throw err; // Re-throw to let the modal handle it
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const clearError = () => {
+    setError(null);
+  };
+
   const handleChangePassword = () => {
     console.log("Change password clicked");
     // TODO: Implement change password modal
@@ -119,15 +188,21 @@ export default function useAdminProfile() {
   };
 
   return {
+    admin,
     profile,
     activities,
+    isLoading,
+    error,
     walletConnected,
-    fetchedData,
     handleEditProfile,
     handleConnectWallet,
     handleDisconnectWallet,
     handleChangePassword,
     handleEnable2FA,
+    changePassword,
+    forgotPassword,
+    resetPassword,
+    clearError,
   };
 }
 
