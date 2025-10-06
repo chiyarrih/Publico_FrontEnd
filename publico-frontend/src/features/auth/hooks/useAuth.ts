@@ -107,9 +107,10 @@ export const useAuth = (): UseAuthReturn => {
           if (response.isAgencyVerified === true) {
             // Check if this is the first login after approval
             const hasSeenApproval = localStorage.getItem('agency_approval_seen');
+            console.log('🔍 Agency login - hasSeenApproval:', hasSeenApproval);
             if (!hasSeenApproval) {
               // First login after approval - show approval page
-              localStorage.setItem('agency_approval_seen', 'true');
+              console.log('🔍 First time seeing approval - navigating to approval page');
               navigate('/application-approved', { 
                 state: { 
                   email: data.email, 
@@ -216,9 +217,10 @@ export const useAuth = (): UseAuthReturn => {
           if (response.isAgencyVerified === true) {
             // Check if this is the first login after approval
             const hasSeenApproval = localStorage.getItem('agency_approval_seen');
+            console.log('🔍 Agency login - hasSeenApproval:', hasSeenApproval);
             if (!hasSeenApproval) {
               // First login after approval - show approval page
-              localStorage.setItem('agency_approval_seen', 'true');
+              console.log('🔍 First time seeing approval - navigating to approval page');
               navigate('/application-approved', { 
                 state: { 
                   email: data.email, 

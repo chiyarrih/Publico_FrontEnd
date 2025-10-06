@@ -91,12 +91,6 @@ const ApplicationUnderReviewPage = () => {
     window.open('mailto:support@publico.com?subject=Agency Application Inquiry', '_blank');
   };
 
-  const handleCheckStatus = () => {
-    // Refresh the page to check for status updates
-    // Use a safer approach to avoid CSP issues
-    const currentPath = window.location.pathname;
-    navigate(currentPath, { replace: true });
-  };
 
   // If application is rejected, redirect to rejected page
   if (applicationStatus === 'rejected') {
@@ -106,9 +100,25 @@ const ApplicationUnderReviewPage = () => {
     return null;
   }
 
-  // If application is approved, redirect to agency dashboard
+  // If application is approved, check if user has seen the approval page
   if (applicationStatus === 'approved') {
-    navigate('/agency/dashboard');
+    const hasSeenApproval = localStorage.getItem('agency_approval_seen');
+    if (!hasSeenApproval) {
+      // First time seeing approval - show approval page
+      const userData = getUserData();
+      const agencyName = (userData as any)?.user?.agency_name || (userData as any)?.agency_name || 'Your Agency';
+      navigate('/application-approved', { 
+        state: { 
+          email, 
+          role: 'Agency', 
+          applicationStatus: 'approved',
+          agencyName
+        } 
+      });
+    } else {
+      // Already seen approval page - go directly to dashboard
+      navigate('/agency/dashboard');
+    }
     return null;
   }
 
@@ -154,12 +164,6 @@ const ApplicationUnderReviewPage = () => {
         title="Application Under Review"
         footer={
           <div className="space-y-3">
-            <button
-              onClick={handleCheckStatus}
-              className="w-full bg-blue-600 text-white py-2 px-4 rounded text-sm font-medium hover:bg-blue-700 transition"
-            >
-              Check Application Status
-            </button>
             <button
               onClick={handleBackToLogin}
               className="w-full bg-gray-600 text-white py-2 px-4 rounded text-sm font-medium hover:bg-gray-700 transition"

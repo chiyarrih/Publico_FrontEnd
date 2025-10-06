@@ -7,7 +7,6 @@ import OTPVerificationPage from "./features/auth/components/OTPVerificationPage"
 import ApplicationUnderReviewPage from "./features/auth/components/ApplicationUnderReviewPage";
 import ApplicationRejectedPage from "./features/auth/components/ApplicationRejectedPage";
 import ApplicationApprovedPage from "./features/auth/components/ApplicationApprovedPage";
-import DebugAuthPage from "./features/auth/components/DebugAuthPage";
 
 /* ---------- Layouts & guard ---------- */
 import GuestRoute from "./routes/GuestRoute";
@@ -79,7 +78,6 @@ export default function App() {
           <Route path="/application-under-review" element={<GuestRoute><ApplicationUnderReviewPage /></GuestRoute>} />
           <Route path="/application-rejected" element={<GuestRoute><ApplicationRejectedPage /></GuestRoute>} />
           <Route path="/application-approved" element={<GuestRoute><ApplicationApprovedPage /></GuestRoute>} />
-          <Route path="/debug-auth" element={<DebugAuthPage />} />
           <Route path="/forgot-password" element={<GuestRoute><ForgotPasswordPage /></GuestRoute>} />
           <Route path="/reset-password" element={<GuestRoute><ResetPasswordPage /></GuestRoute>} />
 

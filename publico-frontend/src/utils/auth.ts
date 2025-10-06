@@ -103,8 +103,8 @@ export const logout = (): void => {
   removeAuthToken();
   clearRole();
   clearPortalRole();
-  // Clear agency approval flag so they can see approval page again if re-approved
-  localStorage.removeItem('agency_approval_seen');
+  // Don't clear agency_approval_seen flag - it should persist across sessions
+  // Only clear it when the user is actually re-approved or application is rejected
   window.location.href = '/login';
 };
 

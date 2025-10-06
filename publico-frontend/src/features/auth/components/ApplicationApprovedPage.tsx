@@ -24,6 +24,9 @@ const ApplicationApprovedPage = () => {
         setEmail(stateEmail);
         setAgencyName(stateAgencyName);
         setIsLoading(false);
+        // Set the flag that user has seen the approval page
+        console.log('🔍 Setting agency_approval_seen flag to true');
+        localStorage.setItem('agency_approval_seen', 'true');
         return;
       }
       
@@ -58,6 +61,9 @@ const ApplicationApprovedPage = () => {
         setEmail(userEmail);
         setAgencyName(userAgencyName);
         setIsLoading(false);
+        // Set the flag that user has seen the approval page
+        console.log('🔍 Setting agency_approval_seen flag to true');
+        localStorage.setItem('agency_approval_seen', 'true');
       } else {
         setError('No email found in user data');
         navigate('/login');

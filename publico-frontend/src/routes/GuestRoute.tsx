@@ -36,7 +36,15 @@ export const GuestRoute: React.FC<GuestRouteProps> = ({ children }) => {
         }
         
         if (applicationStatus === 'approved' || isAgencyVerified === true) {
-          return <Navigate to="/agency/dashboard" replace />;
+          // Check if user has seen the approval page
+          const hasSeenApproval = localStorage.getItem('agency_approval_seen');
+          if (!hasSeenApproval) {
+            // First time seeing approval - show approval page (don't set flag here)
+            return <Navigate to="/application-approved" replace />;
+          } else {
+            // Already seen approval page - go directly to dashboard
+            return <Navigate to="/agency/dashboard" replace />;
+          }
         } else if (applicationStatus === 'rejected' || isAgencyVerified === false) {
           return <Navigate to="/application-rejected" replace />;
         } else {
