@@ -165,4 +165,25 @@ export const fetchLedger = async (page:number, limit:number) => {
   }
 }
 
+export const updateAgencyProfile = async (userId: string, profileData: any) => {
+  const token = localStorage.getItem('publico_auth_token');
+  if (!token) throw new Error("No authentication token found");
+
+  const response = await fetch(`http://localhost:5000/auth/profile/${userId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify(profileData),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || 'Failed to update profile');
+  }
+
+  return await response.json();
+};
+
 

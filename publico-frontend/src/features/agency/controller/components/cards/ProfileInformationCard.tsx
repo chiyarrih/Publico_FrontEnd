@@ -1,4 +1,4 @@
-import useConnectWallet from "@agency/controller/hooks/useConnectWallet";
+import { useState, useEffect } from "react";
 import { useAgencyProfile } from "@agency/controller/hooks/useAgencyProfile";
 import { Button } from "@shared/ui/button";
 import { CardContent } from "@shared/ui/card";
@@ -8,13 +8,49 @@ import { User } from "lucide-react";
 
 
 export default function ProfileInformationCard(){
-    const {isEditing, walletData, profile,handleSave, setIsEditing, setProfile} = useConnectWallet();
-    const { user: agencyUser, isLoading, error } = useAgencyProfile();
+    const { user: agencyUser, isLoading, error, updateProfile } = useAgencyProfile();
+    const [isEditing, setIsEditing] = useState(false);
+    const [profile, setProfile] = useState({
+        name: "",
+        email: "",
+        phone: "",
+        address: "",
+        department: "",
+    });
     
     // Debug logging
     console.log('ProfileInformationCard - agencyUser:', agencyUser);
     console.log('ProfileInformationCard - isLoading:', isLoading);
     console.log('ProfileInformationCard - error:', error);
+
+    // Update profile form when agencyUser data loads
+    useEffect(() => {
+        if (agencyUser) {
+            setProfile({
+                name: agencyUser.agency_name || "",
+                email: agencyUser.contact_email || agencyUser.email || "",
+                phone: agencyUser.contact_phone || "",
+                address: agencyUser.address || "",
+                department: agencyUser.department || "",
+            });
+        }
+    }, [agencyUser]);
+
+    const handleSave = async () => {
+        try {
+            await updateProfile({
+                agency_name: profile.name,
+                contact_phone: profile.phone,
+                address: profile.address,
+                department: profile.department,
+            });
+            setIsEditing(false);
+            alert("Profile updated successfully! ✅");
+        } catch (err) {
+            console.error('Failed to update profile:', err);
+            alert("Failed to update profile. Please try again.");
+        }
+    };
     return (
         <Card>
             <CardContent className="p-6">
@@ -37,11 +73,12 @@ export default function ProfileInformationCard(){
             {isEditing ? (
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="fullName">Full Name</Label>
+                  <Label htmlFor="agencyName">Agency Name</Label>
                   <Input
-                    id="fullName"
+                    id="agencyName"
                     value={profile.name}
                     onChange={(e) => setProfile((prev) => ({ ...prev, name: e.target.value }))}
+                    placeholder="Enter agency name"
                   />
                 </div>
                 <div>
@@ -50,15 +87,19 @@ export default function ProfileInformationCard(){
                     id="email"
                     type="email"
                     value={profile.email}
-                    onChange={(e) => setProfile((prev) => ({ ...prev, email: e.target.value }))}
+                    disabled
+                    className="bg-gray-100"
+                    placeholder="Email cannot be changed"
                   />
+                  <p className="text-xs text-gray-500 mt-1">Email cannot be changed for security reasons</p>
                 </div>
                 <div>
-                  <Label htmlFor="phone">Phone Number</Label>
+                  <Label htmlFor="phone">Contact Phone</Label>
                   <Input
                     id="phone"
                     value={profile.phone}
                     onChange={(e) => setProfile((prev) => ({ ...prev, phone: e.target.value }))}
+                    placeholder="Enter contact phone number"
                   />
                 </div>
                 <div>
@@ -67,11 +108,23 @@ export default function ProfileInformationCard(){
                     id="address"
                     value={profile.address}
                     onChange={(e) => setProfile((prev) => ({ ...prev, address: e.target.value }))}
+                    placeholder="Enter agency address"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="department">Department</Label>
+                  <Input
+                    id="department"
+                    value={profile.department}
+                    onChange={(e) => setProfile((prev) => ({ ...prev, department: e.target.value }))}
+                    placeholder="Enter department"
                   />
                 </div>
                 <div className="flex gap-2">
-                  <Button onClick={handleSave}>Save Changes</Button>
-                  <Button variant="outline" onClick={() => setIsEditing(false)}>
+                  <Button onClick={handleSave} disabled={isLoading}>
+                    {isLoading ? "Saving..." : "Save Changes"}
+                  </Button>
+                  <Button variant="outline" onClick={() => setIsEditing(false)} disabled={isLoading}>
                     Cancel
                   </Button>
                 </div>

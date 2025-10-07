@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Agency } from "../../../../shared/types/auth";
-import { fetchUsers } from "../../services/agencyService";
+import { fetchUsers, updateAgencyProfile } from "../../services/agencyService";
 import { getUserData } from "../../../../utils/auth";
 import { UseData } from "../../../../interfaces/user";
 import { AuthService } from "../../../auth/services/authApi";
@@ -87,9 +87,23 @@ export const useAgencyProfile = (): UseAgencyProfileReturn => {
     setError(null);
     
     try {
-      // TODO: Implement profile update API call
-      console.log('Profile update not implemented yet:', data);
-      setError('Profile update not implemented yet');
+      // Map frontend data to backend expected format
+      const updateData: any = {};
+      
+      if (data.agency_name) updateData.agency_name = data.agency_name;
+      if (data.contact_phone) updateData.contact_phone = data.contact_phone;
+      if (data.department) updateData.department = data.department;
+      if (data.address) updateData.address = data.address;
+      
+      // Use the service function
+      const updatedProfile = await updateAgencyProfile(user.id, updateData);
+      
+      // Update local state with the response
+      setUser(updatedProfile);
+      
+      // Reload profile to get fresh data
+      await loadUserProfile();
+      
     } catch (err: any) {
       setError(err.message || 'Failed to update profile');
     } finally {
