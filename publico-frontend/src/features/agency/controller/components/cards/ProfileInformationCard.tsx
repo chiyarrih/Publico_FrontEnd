@@ -1,8 +1,8 @@
 import useConnectWallet from "@agency/controller/hooks/useConnectWallet";
 import { useAgencyProfile } from "@agency/controller/hooks/useAgencyProfile";
-import { Button } from "@citizen/components/ui/button";
-import { CardContent } from "@citizen/components/ui/card";
-import { Label } from "@citizen/components/ui/label";
+import { Button } from "@shared/ui/button";
+import { CardContent } from "@shared/ui/card";
+import { Label } from "@shared/ui/label";
 import { Card, Input } from "@shared/ui";
 import { User } from "lucide-react";
 

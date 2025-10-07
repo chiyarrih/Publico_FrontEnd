@@ -2,15 +2,21 @@
 
 import { useState } from "react"
 import { User, Wallet, Key, Shield, ExternalLink, Copy } from "lucide-react"
-import { Button } from "@citizen/components/ui/button"
-import { CardContent, CardHeader, CardTitle } from "@citizen/components/ui/card"
+import { Button } from "@shared/ui/button"
+import { CardContent, CardHeader, CardTitle } from "@shared/ui/card"
 import { Card, Input } from "@shared/ui"
 import ProfileInformationCard from "../cards/ProfileInformationCard"
-import BlockchainWalletCard from "../cards/BlockChainWalletCard"
+import BlockchainWalletCard from "@shared/components/BlockchainWalletCard"
 import ChangePasswordModal from "../../../view/modals/ChangePasswordModal"
 
 export default function ProfileComponent() {
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
+  const [profile, setProfile] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    address: "",
+  });
 
   const handlePasswordChangeSuccess = () => {
     // You can add any success handling here
@@ -25,7 +31,7 @@ export default function ProfileComponent() {
         {/* Profile Information Card */}
         <ProfileInformationCard/>
         {/* Blockchain Wallet Card */}
-        <BlockchainWalletCard/>
+        <BlockchainWalletCard role="Agency" onProfileUpdate={setProfile} onFetchedData={(data) => {/* handled by useConnectWallet */}} />
       </div>
 
       {/* Security Section */}

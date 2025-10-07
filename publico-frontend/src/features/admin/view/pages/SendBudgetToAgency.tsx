@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { ArrowLeft, Wallet } from "lucide-react";
 import type { BudgetProposal } from "@admin/model/types/admin";
 import { Card, Button } from "../ui/blocks";
-import useAdminWallet from "../../controller/hooks/useAdminWallet";
+import useWallet from "../../../../shared/hooks/useWallet";
 import ConnectWalletModal from "../../controller/components/modals/ConnectWalletModal";
 import PrivateKeyModal from "../../controller/components/modals/PrivateKeyModal";
 import ConfirmTransactionModal from "../modals/ConfirmTransactionModal";
@@ -26,7 +26,7 @@ export default function SendBudgetToAgency() {
     handleConnectPrivateKey,
     handleDisconnect,
     handleCopyAddress,
-  } = useAdminWallet();
+  } = useWallet({ role: 'Admin' });
 
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [ethAmount, setEthAmount] = useState("0");

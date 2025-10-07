@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import ProfileInformationCard from "@admin/controller/components/cards/ProfileInformationCard";
 import RecentActivityCard from "@admin/controller/components/cards/RecentActivityCard";
-import BlockchainWalletCard from "@admin/controller/components/cards/BlockchainWalletCard";
+import BlockchainWalletCard from "@shared/components/BlockchainWalletCard";
 import SecurityCard from "@admin/controller/components/cards/SecurityCard";
 import useAdminProfile from "@admin/controller/hooks/useAdminProfile";
 import ChangePasswordModal from "../modals/ChangePasswordModal";
@@ -81,7 +81,7 @@ export default function Profile() {
 
         {/* Right Column - Wallet & Security */}
         <div className="space-y-4">
-          <BlockchainWalletCard />
+          <BlockchainWalletCard role="Admin" />
           <SecurityCard
             onChangePassword={handleOpenChangePasswordModal}
             onEnable2FA={handleEnable2FA}
