@@ -77,21 +77,6 @@ const LoginPage = () => {
           >
             {isLoading ? "Logging in..." : "Log In"}
           </button>
-
-          <button
-            type="button"
-            disabled={isLoading}
-            onClick={() => {
-              setRole("guest");
-              setPortalRole(form.portal);
-              const redirectUrl = form.portal === "admin" ? "/admin/dashboard" : 
-                                 form.portal === "agency" ? "/agency" : "/citizen/dashboard";
-              window.location.href = redirectUrl;
-            }}
-            className="mt-2 w-full h-9 rounded border border-slate-300 text-[13px] font-medium hover:bg-slate-50 transition disabled:bg-gray-100 disabled:cursor-not-allowed"
-          >
-            Continue as Guest
-          </button>
         </form>
       </AuthCard>
     </AuthLayout>

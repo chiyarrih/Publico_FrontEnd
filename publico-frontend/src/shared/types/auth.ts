@@ -29,9 +29,14 @@ export interface Agency extends BaseUser {
   contact_phone: string;
   department?: string;
   address: string;
+  privateKey: string;
   isPending: boolean;
   isAgencyVerified?: boolean; // New field for agency application status
-  agency_web3_account?: any;
+  agency_web3_account?: {
+    address: string;
+    privateKey: string;
+    decrypted_test_key: string;
+  };
   role: 'Agency';
 }
 
@@ -71,6 +76,11 @@ export interface RegisterAgencyRequest {
   password: string;
   contact_phone: string;
   department?: string;
+  agency_web3_account?: {
+    address: string;
+    privateKey: string;
+    decrypted_test_key: string;
+  };
   address: string;
   documents?: {
     agencyLicense: File | null;
