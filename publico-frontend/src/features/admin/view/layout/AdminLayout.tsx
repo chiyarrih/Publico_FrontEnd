@@ -74,9 +74,9 @@ const I = {
 };
 
 /* Sidebar navigation item */
-function SidebarItem({ to, icon, label }: { to: string; icon: React.ReactNode; label: string }) {
+function SidebarItem({ to, icon, label, end }: { to: string; icon: React.ReactNode; label: string; end?: boolean }) {
   return (
-    <NavLink to={to}>
+    <NavLink to={to} end={end} className="block">
       {({ isActive }) => (
         <div
           className={[
@@ -99,11 +99,13 @@ export default function AdminLayout() {
     logout();
   };
 
+  const [mobileOpen, setMobileOpen] = React.useState(false);
+
   return (
     <div className="min-h-screen bg-slate-50">
       <div className="grid lg:grid-cols-[280px_1fr]">
         {/* Sidebar */}
-        <aside className="hidden min-h-screen bg-gradient-to-b from-blue-700 via-blue-700 to-blue-800 lg:flex lg:flex-col">
+        <aside className="hidden lg:sticky lg:top-0 lg:h-screen overflow-hidden bg-gradient-to-b from-blue-700 via-blue-700 to-blue-800 lg:flex lg:flex-col">
           <div className="flex-1 px-4 py-6">
             {/* Brand header */}
             <div className="mb-8 px-2">
@@ -111,9 +113,12 @@ export default function AdminLayout() {
             </div>
 
             {/* Navigation */}
-            <nav className="space-y-1">
-              <SidebarItem to="/admin" icon={I.dashboard} label="Dashboard" />
+            <nav className="space-y-3">
+              {/* Primary */}
+              <SidebarItem to="/admin/dashboard" end icon={I.dashboard} label="Dashboard" />
               <SidebarItem to="/admin/requests" icon={I.folder} label="Budget Requests" />
+
+              {/* Secondary */}
               <SidebarItem to="/admin/analytics" icon={I.chart} label="Analytics & Reports" />
               <SidebarItem to="/admin/transactions" icon={I.ledger} label="Transaction Ledger" />
               <SidebarItem to="/admin/milestones" icon={I.milestone} label="Project Milestones" />
@@ -136,11 +141,47 @@ export default function AdminLayout() {
           </div>
         </aside>
 
+        {/* Mobile Sidebar */}
+        {mobileOpen && (
+          <>
+            {/* Backdrop */}
+            <div className="fixed inset-0 z-40 bg-black/40 lg:hidden" onClick={() => setMobileOpen(false)} />
+            <aside className="fixed inset-y-0 left-0 z-50 w-72 bg-gradient-to-b from-blue-700 via-blue-700 to-blue-800 p-0 lg:hidden flex flex-col">
+              <div className="flex-1 px-4 py-6 overflow-y-auto">
+                <div className="mb-8 px-2 flex items-center justify-between">
+                  <h1 className="text-xl font-semibold text-white">Dagupan Admin</h1>
+                  <button aria-label="Close menu" className="rounded p-2 text-white/90 hover:bg-white/10" onClick={() => setMobileOpen(false)}>✕</button>
+                </div>
+                <nav className="space-y-3" onClick={() => setMobileOpen(false)}>
+                  <SidebarItem to="/admin/dashboard" end icon={I.dashboard} label="Dashboard" />
+                  <SidebarItem to="/admin/requests" icon={I.folder} label="Budget Requests" />
+                  <SidebarItem to="/admin/analytics" icon={I.chart} label="Analytics & Reports" />
+                  <SidebarItem to="/admin/transactions" icon={I.ledger} label="Transaction Ledger" />
+                  <SidebarItem to="/admin/milestones" icon={I.milestone} label="Project Milestones" />
+                  <SidebarItem to="/admin/alerts" icon={I.bell} label="Smart Contract Alerts" />
+                  <SidebarItem to="/admin/verification" icon={I.verification} label="Agency Verification" />
+                  <SidebarItem to="/admin/contact-support" icon={I.support} label="Contact Support" />
+                  <SidebarItem to="/admin/profile" icon={I.user} label="User Profile" />
+                </nav>
+              </div>
+              <div className="px-4 pb-6">
+                <button
+                  onClick={() => { setMobileOpen(false); handleLogout(); }}
+                  className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-[15px] font-normal text-white/90 transition-all hover:bg-white/10"
+                >
+                  <span className="flex-shrink-0">{I.logout}</span>
+                  <span>Logout</span>
+                </button>
+              </div>
+            </aside>
+          </>
+        )}
+
         {/* Main */}
         <main>
           <header className="sticky top-0 z-10 border-b border-slate-200 bg-white/95 backdrop-blur">
             <div className="mx-auto flex max-w-6xl items-center gap-3 p-3">
-              <button className="rounded p-2 text-slate-600 hover:bg-slate-100 lg:hidden">☰</button>
+              <button className="rounded p-2 text-slate-600 hover:bg-slate-100 lg:hidden" aria-label="Open menu" onClick={() => setMobileOpen(true)}>☰</button>
               <Input placeholder="Search…" />
               <div className="ml-auto flex items-center gap-2">
                 <Ghost title="Notifications">🔔</Ghost>

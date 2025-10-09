@@ -31,6 +31,7 @@ export default function SendBudgetToAgency() {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [ethAmount, setEthAmount] = useState("0");
   const [gasFee, setGasFee] = useState("0.002");
+  const [editableAgencyWallet, setEditableAgencyWallet] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     if (!proposal) {
@@ -50,6 +51,8 @@ export default function SendBudgetToAgency() {
 
   const phpEquivalent = proposal.amountRequested.toLocaleString();
   const totalEth = (parseFloat(ethAmount) + parseFloat(gasFee)).toFixed(4);
+  const agencyWalletAddress = editableAgencyWallet ?? proposal.address;
+  const isAgencyWalletConnected = !!agencyWalletAddress && agencyWalletAddress.startsWith("0x") && agencyWalletAddress.length > 10;
 
   const handleSendFunds = () => {
     setShowConfirmModal(true);
@@ -188,6 +191,8 @@ export default function SendBudgetToAgency() {
                 </div>
               </div>
 
+              {/* Agency Wallet moved to Confirm modal */}
+
               {/* Transaction Summary */}
               <div className="pt-4 border-t border-slate-200">
                 <h3 className="text-sm font-semibold text-slate-900 mb-3">
@@ -216,7 +221,9 @@ export default function SendBudgetToAgency() {
               {/* Send Button */}
               <Button
                 onClick={handleSendFunds}
-                className="w-full py-3 bg-emerald-600 hover:bg-emerald-700"
+                className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 disabled:cursor-not-allowed"
+                disabled={!isAgencyWalletConnected}
+                title={!isAgencyWalletConnected ? "Agency has no connected wallet" : undefined}
               >
                 <div className="flex items-center justify-center gap-2">
                   <Wallet size={20} />
@@ -268,6 +275,8 @@ export default function SendBudgetToAgency() {
         amountPhp={phpEquivalent}
         gasFee={gasFee}
         total={totalEth}
+        agencyWalletAddress={agencyWalletAddress}
+        onAgencyWalletAddressChange={setEditableAgencyWallet}
       />
     </div>
   );

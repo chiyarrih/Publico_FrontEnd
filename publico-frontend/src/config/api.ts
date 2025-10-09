@@ -30,13 +30,29 @@ export class ApiClient {
       const response = await fetch(url, config);
       
       if (!response.ok) {
-        const error = await response.json().catch(() => ({ message: 'An error occurred' }));
-        throw new Error(error.message || `HTTP error! status: ${response.status}`);
+        let errorMessage = `HTTP error! status: ${response.status}`;
+        try {
+          const error = await response.json();
+          errorMessage = error.message || error.error || errorMessage;
+        } catch {
+          // If response is not JSON, use status text
+          errorMessage = response.statusText || errorMessage;
+        }
+        console.error(`API request failed: ${url}`, {
+          status: response.status,
+          statusText: response.statusText,
+          error: errorMessage
+        });
+        throw new Error(errorMessage);
       }
 
       return await response.json();
     } catch (error) {
-      console.error('API request failed:', error);
+      console.error('API request failed:', {
+        url,
+        method: config.method || 'GET',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
       throw error;
     }
   }

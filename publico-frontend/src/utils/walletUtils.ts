@@ -5,6 +5,8 @@ export interface WalletConnectionState {
   address: string | null;
   balanceEth: string;
   balancePhp: string;
+
+  
 }
 
 export const WALLET_STORAGE_KEYS = {
@@ -72,42 +74,50 @@ export const getCurrentMetaMaskAddress = async (): Promise<string | null> => {
  * Fetch balance for an address
  */
 export const fetchBalance = async (address: string): Promise<{ balanceEth: string; balancePhp: string }> => {
+  // 1) Try backend first (recommended)
   try {
-    // Use MetaMask provider directly for balance fetching
+    const token = localStorage.getItem('publico_auth_token');
+    const resp = await fetch(`http://localhost:5000/api/wallet/balance/${address}`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {}
+    });
+
+    if (resp.ok) {
+      const data = await resp.json();
+      // Prefer the alias fields; fall back to originals
+      const balanceEth = data.ethBalance ?? data.balanceEth ?? "0";
+      const balancePhp = (data.phpEquivalent ?? data.balancePhp ?? 0).toString();
+      return { balanceEth: String(balanceEth), balancePhp: String(balancePhp) };
+    }
+  } catch (e) {
+    console.warn("Backend balance fetch failed, falling back to MetaMask:", e);
+  }
+
+  // 2) Fallback to MetaMask provider (requires MetaMask on correct network)
+  try {
     if (typeof window !== 'undefined' && (window as any).ethereum) {
       const eth = (window as any).ethereum;
-      const balanceWei = await eth.request({
+      const balanceWeiHex = await eth.request({
         method: 'eth_getBalance',
         params: [address, 'latest']
       });
-      
-      // Convert from wei to ether
-      const balanceInEth = (parseInt(balanceWei, 16) / Math.pow(10, 18)).toFixed(6);
-      
+
+      // Use web3 utils to avoid precision issues
+      const balanceEthRaw = (web3 as any).utils.fromWei(balanceWeiHex, 'ether');
+      const balanceEth = Number(balanceEthRaw).toFixed(6);
+
       // Fetch PHP conversion rate
       const res = await fetch("https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=php");
       const data = await res.json();
       const rate = data.ethereum?.php || 0;
-      const balancePhp = (parseFloat(balanceInEth) * rate).toFixed(2);
-      
-      return {
-        balanceEth: balanceInEth,
-        balancePhp
-      };
-    } else {
-      // Fallback: return zero balance if no provider
-      return {
-        balanceEth: "0",
-        balancePhp: "0"
-      };
+      const balancePhp = (parseFloat(balanceEthRaw) * rate).toFixed(2);
+
+      return { balanceEth, balancePhp };
     }
   } catch (err) {
-    console.error("Error fetching balance:", err);
-    return {
-      balanceEth: "0",
-      balancePhp: "0"
-    };
+    console.error("MetaMask balance fetch error:", err);
   }
+
+  return { balanceEth: "0", balancePhp: "0" };
 };
 
 /**

@@ -1,5 +1,5 @@
 import React from "react";
-import { AlertTriangle, X } from "lucide-react";
+import { AlertTriangle, X, Pencil, Check } from "lucide-react";
 
 interface ConfirmTransactionModalProps {
   isOpen: boolean;
@@ -9,6 +9,8 @@ interface ConfirmTransactionModalProps {
   amountPhp: string;
   gasFee: string;
   total: string;
+  agencyWalletAddress?: string;
+  onAgencyWalletAddressChange?: (address: string) => void;
 }
 
 export default function ConfirmTransactionModal({
@@ -19,8 +21,19 @@ export default function ConfirmTransactionModal({
   amountPhp,
   gasFee,
   total,
+  agencyWalletAddress,
+  onAgencyWalletAddressChange,
 }: ConfirmTransactionModalProps) {
   if (!isOpen) return null;
+
+  const [isEditing, setIsEditing] = React.useState(false);
+  const [editableAddress, setEditableAddress] = React.useState(agencyWalletAddress || "");
+
+  React.useEffect(() => {
+    // Reset local state each time modal opens or prop changes
+    setEditableAddress(agencyWalletAddress || "");
+    setIsEditing(false);
+  }, [agencyWalletAddress, isOpen]);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
@@ -43,6 +56,41 @@ export default function ConfirmTransactionModal({
           <p className="text-slate-700">
             You are about to send funds to the agency for this project:
           </p>
+
+          {/* Recipient Wallet */}
+          <div className="space-y-2 p-4 bg-slate-50 rounded-lg border border-slate-200">
+            <div className="flex items-center justify-between">
+              <div className="text-sm text-slate-600">Recipient Wallet</div>
+              {agencyWalletAddress && (
+                <button
+                  className="p-1 rounded hover:bg-slate-200"
+                  onClick={() => setIsEditing(v => !v)}
+                  title={isEditing ? "Done" : "Edit"}
+                  aria-label={isEditing ? "Done" : "Edit"}
+                >
+                  {isEditing ? <Check size={16} className="text-slate-700" /> : <Pencil size={16} className="text-slate-700" />}
+                </button>
+              )}
+            </div>
+
+            {agencyWalletAddress ? (
+              isEditing ? (
+                <input
+                  className="w-full text-xs px-2 py-1 rounded border border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                  value={editableAddress}
+                  onChange={(e) => {
+                    setEditableAddress(e.target.value);
+                    onAgencyWalletAddressChange?.(e.target.value);
+                  }}
+                  placeholder="0x..."
+                />
+              ) : (
+                <code className="block text-xs break-all text-slate-900">{editableAddress || agencyWalletAddress}</code>
+              )
+            ) : (
+              <div className="text-xs text-amber-700">No wallet connected for this agency.</div>
+            )}
+          </div>
 
           {/* Transaction Details */}
           <div className="space-y-3 p-4 bg-slate-50 rounded-lg border border-slate-200">
@@ -92,7 +140,12 @@ export default function ConfirmTransactionModal({
             Cancel
           </button>
           <button
-            onClick={onConfirm}
+            onClick={() => {
+              if (agencyWalletAddress) {
+                onAgencyWalletAddressChange?.(editableAddress);
+              }
+              onConfirm();
+            }}
             className="flex-1 px-4 py-2.5 text-white bg-emerald-600 rounded-lg font-medium hover:bg-emerald-700 transition-colors"
           >
             Confirm & Send

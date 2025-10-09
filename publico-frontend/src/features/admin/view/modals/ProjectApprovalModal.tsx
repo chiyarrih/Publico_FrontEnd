@@ -9,6 +9,7 @@ interface ProjectApprovalModalProps {
   proposal: BudgetProposal;
   onApprove: () => void;
   onReject: () => void;
+  onSendFunds?: () => void;
 }
 
 export default function ProjectApprovalModal({
@@ -17,6 +18,7 @@ export default function ProjectApprovalModal({
   proposal,
   onApprove,
   onReject,
+  onSendFunds,
 }: ProjectApprovalModalProps) {
   if (!isOpen) return null;
 
@@ -245,7 +247,7 @@ export default function ProjectApprovalModal({
                   Approval Actions
                 </h4>
                 <div className="space-y-3">
-                  {proposal.status === "Pending" && (
+                  {proposal.status === "Pending" ? (
                     <>
                       <button
                         onClick={onApprove}
@@ -260,6 +262,19 @@ export default function ProjectApprovalModal({
                       >
                         <XCircle size={20} />
                         Reject Request
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <div className="flex items-center gap-2 px-4 py-3 bg-emerald-50 text-emerald-700 rounded-xl">
+                        <CheckCircle size={20} />
+                        <span className="font-medium">Project Approved</span>
+                      </div>
+                      <button
+                        onClick={onSendFunds}
+                        className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-sky-600 text-white rounded-xl font-medium hover:bg-sky-700 transition-colors"
+                      >
+                        Send Funds to Agency
                       </button>
                     </>
                   )}

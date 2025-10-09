@@ -1,4 +1,5 @@
 import { apiClient } from '../../../config/api';
+import axios from 'axios';
 import { User, Admin } from '../../../shared/types/auth';
 import type { BudgetRequest, TxnRow, AlertRow, BudgetProposal } from "../model/types/admin";
 
@@ -38,19 +39,21 @@ export class AdminService {
     return response.data || [];
   }
   
-  // Delete budget proposal
-  static async deleteBudgetProposal(id: string): Promise<{ message: string }> {
-    return apiClient.delete(`/agency/projects/${id}`);
+  // Approve budget proposal — use PUT to match backend route
+  static async approveBudgetProposal(projectId: string): Promise<any> {
+    const res = await apiClient.put<{ data: any }>(`/admin/budget/${projectId}/approve`, {});
+    return (res as { data: any }).data;
   }
 
-  // Approve budget proposal
-  static async approveBudgetProposal(id: string): Promise<{ message: string; proposal: BudgetProposal }> {
-    return apiClient.put(`/agency/projects/${id}/approve`);
+  // If backend supports reject, call the matching route via apiClient and return data
+  static async rejectBudgetProposal(projectId: string): Promise<any> {
+    const res = await apiClient.put<{ data: any }>(`/admin/budget/${projectId}/reject`, {});
+    return (res as { data: any }).data;
   }
 
-  // Reject budget proposal
-  static async rejectBudgetProposal(id: string, reason?: string): Promise<{ message: string }> {
-    return apiClient.put(`/agency/projects/${id}/reject`, reason ? { reason } : undefined);
+  static async deleteBudgetProposal(projectId: string) {
+    const res = await apiClient.delete(`/admin/budget/${projectId}`);
+    return (res as { data: any }).data;
   }
 
   // Get single budget proposal

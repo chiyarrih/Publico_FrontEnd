@@ -64,22 +64,42 @@ export default function BudgetRequests() {
   };
 
   const handleApprove = async (proposal: BudgetProposal) => {
-    setShowApprovalModal(false);
-    // Navigate to Send Budget page with proposal data
-    navigate("/admin/send-budget", { state: { proposal } });
+    // Show confirmation first
+    const ok = confirm("Approve this budget request? You can send funds afterward.");
+    if (!ok) return;
+
+    try {
+      // Try API call first
+      await AdminService.approveBudgetProposal(proposal.projectId);
+      // Only update UI if API call succeeds
+      setItems(prev => prev.map(p => p._id === proposal._id ? { ...p, status: "Approved" } : p));
+      setSelectedProposal({ ...proposal, status: "Approved" });
+      setShowApprovalModal(true);
+    } catch (err) {
+      console.error("Failed to approve proposal:", err);
+      const errorMessage = err instanceof Error ? err.message : "Unknown error occurred";
+      alert(`Failed to approve proposal: ${errorMessage}`);
+      // Don't update UI state or reopen modal on error
+      return;
+    }
   };
 
   const handleReject = async (proposal: BudgetProposal) => {
-    if (!confirm("Are you sure you want to reject this budget request?")) return;
-    
+    if (!confirm("Reject this budget request?")) return;
+
     try {
-      await AdminService.rejectBudgetProposal(proposal._id);
-      setShowApprovalModal(false);
-      // Reload proposals
-      loadProposals();
+      // Try API call first
+      await AdminService.rejectBudgetProposal(proposal.projectId);
+      // Only update UI if API call succeeds
+      setItems(prev => prev.map(p => p._id === proposal._id ? { ...p, status: "Rejected" } : p));
+      setSelectedProposal({ ...proposal, status: "Rejected" });
+      setShowApprovalModal(true);
     } catch (err) {
       console.error("Failed to reject proposal:", err);
-      alert("Failed to reject proposal");
+      const errorMessage = err instanceof Error ? err.message : "Unknown error occurred";
+      alert(`Failed to reject proposal: ${errorMessage}`);
+      // Don't update UI state or reopen modal on error
+      return;
     }
   };
 
@@ -87,7 +107,7 @@ export default function BudgetRequests() {
     if (!confirm("Are you sure you want to delete this budget request?")) return;
     
     try {
-      await AdminService.deleteBudgetProposal(proposal._id);
+      await AdminService.deleteBudgetProposal(proposal.projectId);
       // Reload proposals
       loadProposals();
     } catch (err) {
@@ -153,6 +173,10 @@ export default function BudgetRequests() {
           proposal={selectedProposal}
           onApprove={() => handleApprove(selectedProposal)}
           onReject={() => handleReject(selectedProposal)}
+          onSendFunds={() => {
+            setShowApprovalModal(false);
+            navigate("/admin/send-budget", { state: { proposal: selectedProposal } });
+          }}
         />
       )}
     </div>
