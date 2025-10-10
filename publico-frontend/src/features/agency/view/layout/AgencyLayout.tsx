@@ -138,63 +138,126 @@ export default function AgencyLayout() {
   const { profile } = useConnectWallet();
 
   const [menuOpen, setMenuOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement | null>(null);
+
   useEffect(() => {
     const onDown = (e: MouseEvent) => { if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false); };
     document.addEventListener("mousedown", onDown); return () => document.removeEventListener("mousedown", onDown);
   }, []);
 
+  // Reusable sidebar inner content so we don't duplicate markup
+  const SidebarInner = ({ mobile }: { mobile?: boolean }) => (
+    <div className={mobile ? "h-full overflow-auto p-6" : "sticky top-16 h-[calc(100vh-4rem)] overflow-auto p-6"}>
+      {mobile && (
+        <div className="mb-4 flex justify-end">
+          <button
+            className="inline-flex items-center justify-center w-8 h-8 rounded hover:bg-slate-100"
+            onClick={() => setSidebarOpen(false)}
+            aria-label="Close sidebar"
+            title="Close"
+          >
+            <svg className="w-4 h-4 text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+              <path d="M18 6L6 18M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      )}
+      <div className="flex items-center gap-3 mb-6">
+        <div className="w-10 h-10 rounded-full bg-slate-200" />
+        <div>
+          <div className="text-sm font-medium text-slate-900">{profile.name || 'Agency User'}</div>
+          <div className="text-xs text-slate-500">Full Access</div>
+        </div>
+      </div>
+      <nav className="space-y-1">
+        <NavLink to="/agency" end className={linkClass}><I.dashboard/><span>Dashboard</span></NavLink>
+        <NavLink to="/agency/milestones" className={linkClass}><I.docs/><span>Project Milestones</span></NavLink>
+        <NavLink to="/agency/budgets" className={linkClass}><I.budget/><span>Budgets</span></NavLink>
+        <NavLink to="/agency/documents" className={linkClass}><I.docs/><span>Documents</span></NavLink>
+        <NavLink to="/agency/transactions" className={linkClass}><I.ledger/><span>Transaction Ledger</span></NavLink>
+        <NavLink to="/agency/alerts" className={linkClass}><I.alert/><span>Smart Contract Alerts</span></NavLink>
+        <NavLink to="/agency/profile" className={linkClass}><I.user/><span>User Profile</span></NavLink>
+        <NavLink to="/agency/faqs" className={linkClass}><I.faq/><span>FAQs</span></NavLink>
+        <NavLink to="/agency/support" className={linkClass}><I.support/><span>Contact Support</span></NavLink>
+      </nav>
+    </div>
+  );
+
   return (
     <div className="w-full min-h-screen bg-slate-50">
       {/* Header */}
-      <header className="sticky top-0 z-10 w-full h-16 bg-white border-b shadow-sm">
-        <div className="flex items-center justify-between h-full px-6">
+      <header className="sticky top-0 z-10 w-full h-14 bg-white border-b shadow-sm">
+        <div className="flex items-center justify-between h-full px-4 lg:px-6">
           <div className="flex items-center gap-3">
-            <span className="text-lg font-bold text-blue-600">Publicoo</span>
-            <span className="text-sm text-slate-500">• Agency Portal</span>
-          </div>
-          <div className="relative flex items-center gap-3" ref={menuRef}>
-            <button className="p-2 rounded hover:bg-slate-100"><I.menu /></button>
-            <button className="relative p-2 rounded hover:bg-slate-100"><I.bell /><span className="absolute w-2 h-2 rounded-full right-1 top-1 bg-rose-500"/></button>
-            <button onClick={() => setMenuOpen(v=>!v)} className="flex items-center gap-2 p-2 rounded hover:bg-slate-100">
-              <span className="hidden text-xs text-slate-600 sm:block">{profile.name || 'Agency User'} — Full Access</span>
-              <div className="w-8 h-8 rounded-full bg-slate-200"/><I.chevronDown/>
+            <button
+              className="p-2 rounded hover:bg-slate-100 lg:hidden"
+              aria-label="Open menu"
+              onClick={() => setSidebarOpen(true)}
+            >
+              <I.menu />
             </button>
-            {menuOpen && (
-              <div className="absolute right-0 w-40 bg-white border rounded-md shadow-lg top-12 border-slate-200">
-                <button onClick={logout}
-                        className="block w-full px-4 py-2 text-sm text-left text-slate-700 hover:bg-slate-50">Logout</button>
-              </div>
-            )}
+            <div className="flex items-center gap-2">
+              <span className="text-lg font-bold text-blue-600">Publico</span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <button
+              className="relative p-2 rounded hover:bg-slate-100"
+              aria-label="Notifications"
+              title="Notifications"
+            >
+              <I.bell />
+              <span className="absolute w-2 h-2 rounded-full right-1 top-1 bg-rose-500" />
+            </button>
+
+            <div className="relative" ref={menuRef}>
+              <button onClick={() => setMenuOpen(v => !v)} className="flex items-center gap-2 p-2 rounded hover:bg-slate-100">
+                <div className="hidden sm:block">
+                  <span className="text-xs text-slate-600">{profile.name || 'Agency User'}</span>
+                </div>
+                <div className="w-8 h-8 rounded-full bg-slate-200" />
+                <I.chevronDown />
+              </button>
+              {menuOpen && (
+                <div className="absolute right-0 top-full mt-2 w-40 bg-white border rounded-md shadow-lg z-50 border-slate-200">
+                  <button
+                    onClick={logout}
+                    className="block w-full px-4 py-2 text-sm text-left text-slate-700 hover:bg-slate-50"
+                  >
+                    Logout
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </header>
+
+      {/* Mobile sidebar overlay — reuse existing sidebar content */}
+      {sidebarOpen && (
+        <div className="fixed inset-0 z-50 lg:hidden">
+          {/* backdrop */}
+          <div
+            className="absolute inset-0 bg-black/40"
+            onClick={() => setSidebarOpen(false)}
+            aria-hidden
+          />
+
+          {/* panel */}
+          <aside className="relative w-64 h-full bg-white shadow-lg">
+            {/* reuse the same sidebar markup used for desktop */}
+            <SidebarInner mobile />
+          </aside>
+        </div>
+      )}
 
       {/* Shell */}
       <div className="grid min-h-[calc(100vh-4rem)] w-full grid-cols-1 lg:grid-cols-[260px,1fr]">
         {/* Sidebar */}
         <aside className="hidden bg-white border-r border-slate-200 lg:block">
-          <div className="sticky top-16 h-[calc(100vh-4rem)] overflow-auto p-6">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 rounded-full bg-slate-200" />
-              <div><div className="text-sm font-medium text-slate-900">{profile.name || 'Agency User'}</div>
-                <div className="text-xs text-slate-500">Full Access</div></div>
-            </div>
-            <nav className="space-y-1">
-              <NavLink to="/agency" end className={linkClass}><I.dashboard/><span>Dashboard</span></NavLink>
-
-              {/* NEW: Project Milestones link */}
-              <NavLink to="/agency/milestones" className={linkClass}><I.docs/><span>Project Milestones</span></NavLink>
-
-              <NavLink to="/agency/budgets" className={linkClass}><I.budget/><span>Budgets</span></NavLink>
-              <NavLink to="/agency/documents" className={linkClass}><I.docs/><span>Documents</span></NavLink>
-              <NavLink to="/agency/transactions" className={linkClass}><I.ledger/><span>Transaction Ledger</span></NavLink>
-              <NavLink to="/agency/alerts" className={linkClass}><I.alert/><span>Smart Contract Alerts</span></NavLink>
-              <NavLink to="/agency/profile" className={linkClass}><I.user/><span>User Profile</span></NavLink>
-              <NavLink to="/agency/faqs" className={linkClass}><I.faq/><span>FAQs</span></NavLink>
-              <NavLink to="/agency/support" className={linkClass}><I.support/><span>Contact Support</span></NavLink>
-            </nav>
-          </div>
+          <SidebarInner />
         </aside>
 
         {/* Main */}

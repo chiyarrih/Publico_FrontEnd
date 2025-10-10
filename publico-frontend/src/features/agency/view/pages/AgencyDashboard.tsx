@@ -117,56 +117,6 @@ const AgencyDashboard: React.FC = () => {
         </div>
       </Card>
 
-      {/* Budget + Activity */}
-      <div className="grid gap-4 lg:grid-cols-3">
-        <Card className="lg:col-span-2" title={
-          <div className="flex items-center gap-6">
-            <button className={`text-sm pb-2 border-b-2 ${tab==="budget"?"border-blue-600 text-blue-700":"border-transparent text-slate-500"}`} onClick={()=>switchTab("budget")}>Budget Submission</button>
-            <button className={`text-sm pb-2 border-b-2 ${tab==="proposal"?"border-blue-600 text-blue-700":"border-transparent text-slate-500"}`} onClick={()=>switchTab("proposal")}>Project Proposal</button>
-          </div>
-        }>
-          {tab==="budget" ? (
-            <form onSubmit={(e)=>{e.preventDefault(); const fd=new FormData(e.currentTarget as HTMLFormElement); submitBudget(Object.fromEntries(fd.entries()));}} className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-2">
-                <label className="text-xs"><span className="mb-1 block text-slate-700">Budget Title</span>
-                  <input name="title" defaultValue="Q3 Infrastructure Budget" className="h-9 w-full rounded border border-slate-300 px-2 text-sm"/></label>
-                <label className="text-xs"><span className="mb-1 block text-slate-700">Amount (USD)</span>
-                  <input name="amount" defaultValue="1,500,000" className="h-9 w-full rounded border border-slate-300 px-2 text-sm"/></label>
-                <label className="text-xs md:col-span-2"><span className="mb-1 block text-slate-700">Budget Category</span>
-                  <select name="category" defaultValue="" className="h-9 w-full rounded border border-slate-300 px-2 text-sm">
-                    <option value="">Select a category</option><option>Roads & Bridges</option><option>Public Works</option>
-                    <option>Water Systems</option><option>Health & Safety</option>
-                  </select></label>
-                <div className="grid grid-cols-2 gap-3 md:col-span-2">
-                  <label className="text-xs"><span className="mb-1 block text-slate-700">Start Date</span>
-                    <input type="date" name="start" className="h-9 w-full rounded border border-slate-300 px-2 text-sm"/></label>
-                  <label className="text-xs"><span className="mb-1 block text-slate-700">End Date</span>
-                    <input type="date" name="end" className="h-9 w-full rounded border border-slate-300 px-2 text-sm"/></label>
-                </div>
-                <label className="text-xs md:col-span-2"><span className="mb-1 block text-slate-700">Description</span>
-                  <textarea name="description" placeholder="Provide details about this budget request" className="min-h-[80px] w-full rounded border border-slate-300 px-2 py-2 text-sm"/></label>
-                <label className="text-xs md:col-span-2">
-                  <span className="mb-1 block text-slate-700">Supporting Documents</span>
-                  <div className="flex h-28 flex-col items-center justify-center rounded border border-dashed border-slate-300 text-[12px] text-slate-500">
-                    <UploadIcon/>
-                    <input name="file" type="file" id="fileup" className="hidden"/>
-                    <label htmlFor="fileup" className="cursor-pointer">Upload files <span className="text-slate-400">or drag & drop</span></label>
-                    <div className="text-[11px] text-slate-400">PDF, Excel, or Word up to 10MB</div>
-                  </div>
-                </label>
-              </div>
-              <label className="flex items-start gap-2 text-xs">
-                <input type="checkbox" className="mt-0.5" required/>
-                <span className="text-slate-600">I confirm this submission is accurate and will be recorded on the blockchain</span>
-              </label>
-              <button className="h-9 rounded bg-blue-600 px-4 text-sm text-white hover:bg-blue-700">Submit Budget Request</button>
-            </form>
-          ) : (
-            <div className="pt-4 text-sm text-slate-600">
-              <div className="rounded border border-slate-200 p-4">Project Proposal form goes here.</div>
-            </div>
-          )}
-        </Card>
 
         <Card title="Recent Activity">
           <ul className="space-y-3 text-sm">
@@ -182,8 +132,7 @@ const AgencyDashboard: React.FC = () => {
           </ul>
         </Card>
       </div>
-    </div>
-  );
+    );
 };
 
 export default AgencyDashboard;
