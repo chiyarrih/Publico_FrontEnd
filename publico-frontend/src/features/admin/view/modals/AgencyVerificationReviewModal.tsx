@@ -15,12 +15,21 @@ export default function AgencyVerificationReviewModal({
   onClose,
   agency,
 }: AgencyVerificationReviewModalProps) {
-  const { getAgencyDetails, approveAgency, rejectAgency } = useAgencyVerification();
+  const { getAgencyDetails, approveAgency, rejectAgency, removeAgency } = useAgencyVerification();
   const [agencyDetails, setAgencyDetails] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [isApproveModalOpen, setIsApproveModalOpen] = useState(false);
   const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
 
+  // normalized current status (prefer fresh details, fallback to prop)
+  const currentStatus = (((agencyDetails?.status ?? agency?.status) as string) ?? "")
+    .toString()
+    .trim()
+    .toLowerCase();
+  const isApproved = currentStatus === "approved";
+  const isRejected = currentStatus === "rejected";
+  const displayStatus = (agencyDetails?.status ?? agency?.status ?? "Pending") as string;
+  
   useEffect(() => {
     if (isOpen && agency) {
       fetchAgencyDetails();
@@ -56,6 +65,26 @@ export default function AgencyVerificationReviewModal({
       onClose();
     } catch (error) {
       console.error("Error rejecting agency:", error);
+    }
+  };
+
+  // new: remove handler
+  const handleRemove = async () => {
+    const ok = confirm(
+      `Are you sure you want to remove "${agency?.agency_name}" (${agency?.agency_id})? This action cannot be undone.`
+    );
+    if (!ok) return;
+
+    try {
+      setLoading(true);
+      await removeAgency(agency._id);
+      onClose();
+      // parent hook refresh should update list; optionally you can show a toast here
+    } catch (error) {
+      console.error("Error removing agency:", error);
+      alert((error as any)?.message || "Failed to remove agency");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -224,33 +253,48 @@ export default function AgencyVerificationReviewModal({
           {/* Sidebar */}
           <div className="w-80 bg-gray-50 p-6 border-l border-gray-200">
             <div className="space-y-6">
-              {/* Verification Actions */}
-              <Card>
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Verification Actions</h3>
-                <div className="space-y-3">
-                  <Button
-                    onClick={() => setIsApproveModalOpen(true)}
-                    className="w-full bg-green-600 hover:bg-green-700 text-white flex items-center justify-center gap-2"
-                    disabled={agency?.status === "Approved"}
-                  >
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                    </svg>
-                    Approve Agency
-                  </Button>
-                  
-                  <Button
-                    onClick={() => setIsRejectModalOpen(true)}
-                    className="w-full border-red-300 text-red-700 hover:bg-red-50 flex items-center justify-center gap-2"
-                    disabled={agency?.status === "Rejected"}
-                  >
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                    </svg>
-                    Reject Agency
-                  </Button>
-                </div>
-              </Card>
+{/* Verification Actions */}
+<Card>
+  <h3 className="text-lg font-medium text-gray-900 mb-4">Verification Actions</h3>
+  <div className="space-y-3">
+    {isApproved ? (
+      <Button
+        onClick={handleRemove}
+        className="w-full border-red-300 text-red-700 hover:bg-red-50 flex items-center justify-center gap-2"
+        disabled={loading}
+      >
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M1 7h22" />
+        </svg>
+        Remove Agency
+      </Button>
+    ) : (
+      <>
+        <Button
+          onClick={() => setIsApproveModalOpen(true)}
+          className="w-full bg-green-600 hover:bg-green-700 text-white flex items-center justify-center gap-2"
+          disabled={isApproved}
+        >
+          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" aria-hidden>
+            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+          </svg>
+          Approve Agency
+        </Button>
+
+        <Button
+          onClick={() => setIsRejectModalOpen(true)}
+          className="w-full border-red-300 text-red-700 hover:bg-red-50 flex items-center justify-center gap-2"
+          disabled={isRejected}
+        >
+          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" aria-hidden>
+            <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+          </svg>
+          Reject Agency
+        </Button>
+      </>
+    )}
+  </div>
+</Card>
 
               {/* Verification Log */}
               <Card>
