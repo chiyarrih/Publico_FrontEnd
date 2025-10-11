@@ -1,17 +1,14 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
-import { setRole, setPortalRole, Portal } from "../../../utils/auth";
-import { UserRole } from "../../../shared/types/auth";
 import AuthLayout from "./AuthLayout";
 import AuthCard from "./ui/AuthCard";
 import FormField from "./ui/FormField";
-import RadioRow from "./ui/RadioRow";
 
 
 const LoginPage = () => {
-  const { loginWithRoleValidation, isLoading, error, clearError } = useAuth();
-  const [form, setForm] = useState({ email: "", password: "", portal: "citizen" as Portal, remember: false });
+  const { login, isLoading, error, clearError } = useAuth();
+  const [form, setForm] = useState({ email: "", password: "", remember: false });
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
@@ -22,12 +19,8 @@ const LoginPage = () => {
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validate role-based access
-    const expectedRole = form.portal === "admin" ? "Admin" : 
-                        form.portal === "agency" ? "Agency" : "Citizen";
-    
-    setPortalRole(form.portal);
-    await loginWithRoleValidation({ email: form.email, password: form.password }, expectedRole);
+    // Login and automatically determine role from account
+    await login({ email: form.email, password: form.password });
   };
 
   return (
@@ -50,20 +43,9 @@ const LoginPage = () => {
           <FormField label="Email" type="email" name="email" value={form.email} onChange={onChange} disabled={isLoading} />
           <FormField label="Password" type="password" name="password" value={form.password} onChange={onChange} disabled={isLoading} />
 
-          <div className="flex items-center justify-between">
-            <span className="text-[12px] text-slate-700">I am a:</span>
+          <div className="flex items-center justify-end">
             <Link to="/forgot-password" className="text-[12px] text-[#2563eb] hover:underline">Forgot password?</Link>
           </div>
-          <RadioRow
-            name="portal"
-            value={form.portal}
-            onChange={onChange}
-            options={[
-              { label: "Citizen", value: "citizen" },
-              { label: "Agency Representative", value: "agency" },
-              { label: "Administrator", value: "admin" }
-            ]}
-          />
 
           <label className="inline-flex items-center gap-2 text-[12px]">
             <input className="accent-[#2563eb]" type="checkbox" name="remember" checked={form.remember} onChange={onChange} />
