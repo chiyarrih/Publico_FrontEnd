@@ -289,11 +289,29 @@ export const useAuth = (): UseAuthReturn => {
         const email = data.email;
         await login({ email, password: data.password });
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('❌ Registration error:', err);
-      const errorMessage = err instanceof Error ? err.message : 'Registration failed';
+      
+      // Handle specific error types from backend
+      let errorMessage = 'Registration failed';
+      
+      if (err?.response?.data?.message) {
+        // Backend error message
+        errorMessage = err.response.data.message;
+      } else if (err instanceof Error) {
+        // Generic error
+        errorMessage = err.message;
+      }
+      
+      // Handle agency name conflict specifically
+      if (errorMessage.includes('has already registered') && errorMessage.includes('agency')) {
+        // Keep the backend message as it's user-friendly
+        setError(errorMessage);
+      } else {
+        setError(errorMessage);
+      }
+      
       console.error('Error message:', errorMessage);
-      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
