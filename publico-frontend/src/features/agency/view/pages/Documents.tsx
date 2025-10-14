@@ -57,9 +57,9 @@ export default function Documents() {
         dataLength={filtered.length}
       >
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((d) => (
+          {filtered.map((d, index) => (
             <div
-              key={d.projectName}
+              key={index}
               className="p-4 bg-white border rounded-lg border-slate-200"
             >
               <div className="flex items-center h-24 overflow-hidden text-sm border border-dashed rounded over justfify-center bg-slate-50 border-slate-200 text-slate-400">

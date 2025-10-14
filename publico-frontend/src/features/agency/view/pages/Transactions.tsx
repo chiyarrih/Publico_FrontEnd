@@ -23,7 +23,23 @@ const Tag: React.FC<{ s: Row["status"] }> = ({ s }) => (
 );
 
 export default function Transactions() {
-  const { ledgers, page, totalPages, setPage, isLoading } = useLedger();
+  const { ledgers,
+    page,
+    totalPages,
+    loading,
+    statusFilter,
+    searchQuery,
+    typeFilter,
+    dateRange,
+    showDatePicker,
+    handleStatusChange,
+    handleSearchChange,
+    handleTypeChange,
+    handleDateRangeChange,
+    clearDateRange,
+    toggleDatePicker,
+    handlePageChange,
+    refreshLedgers,setPage } = useLedger();
 
   return (
     <div className="space-y-4">
@@ -65,7 +81,7 @@ export default function Transactions() {
             </tr>
           </thead>
           <tbody>
-            {isLoading ? (
+            {loading ? (
               <tr>
                 <td colSpan={7} className="py-6 text-center text-slate-500">
                   Loading transactions...
