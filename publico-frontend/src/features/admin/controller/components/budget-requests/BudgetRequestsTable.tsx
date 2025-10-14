@@ -62,13 +62,6 @@ export default function BudgetRequestsTable({
                   >
                     <Eye size={18} />
                   </button>
-                  <button
-                    onClick={() => onDelete?.(request)}
-                    className="text-rose-600 hover:text-rose-700 transition-colors"
-                    title="Delete request"
-                  >
-                    <Trash2 size={18} />
-                  </button>
                 </div>
               </td>
             </tr>

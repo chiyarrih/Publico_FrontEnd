@@ -20,7 +20,12 @@ export default defineConfig({
         target: 'http://localhost:5000',
         changeOrigin: true,
         secure: false,
-      }
+      },
+      '/api/price': {
+        target: 'https://api.coingecko.com',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/price/, '/api/v3/simple/price'),
+      },
     }
   }
 });

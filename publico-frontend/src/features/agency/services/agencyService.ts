@@ -148,7 +148,7 @@ export const fetchLedger = async (page:number, limit:number) => {
     if (!storage) throw new Error("Not found")
     const json = JSON.parse(storage)
 
-    const response = await axios.get(`http://localhost:5000/api/ledgers/${json.user.user_id}?page=${page}&limit=${limit}`, 
+    const response = await axios.get(`http://localhost:5000/api/ledgers/${json.role}/${json.user.user_id}?page=${page}&limit=${limit}`, 
       {
         headers:{
           'Content-Type': 'application/json',
