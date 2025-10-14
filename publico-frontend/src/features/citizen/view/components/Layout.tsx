@@ -74,6 +74,54 @@ function usePageTitle() {
   return "Dashboard";
 }
 
+/* ---------- Avatar + First name from localStorage (no extra imports) ---------- */
+const AVATAR_KEY = "profile.avatarDataUrl";
+const FIRST_KEY  = "profile.firstName";
+const FULL_KEY   = "profile.fullName";
+const FALLBACK_EMOJI = "👤";
+const FALLBACK_IMG =
+  "https://images.unsplash.com/photo-1603415526960-f7e0328d13a7?q=80&w=300&auto=format&fit=crop";
+
+function useLocalProfile() {
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [firstName, setFirstName] = useState<string>("Citizen");
+
+  useEffect(() => {
+    const load = () => {
+      try {
+        const a = localStorage.getItem(AVATAR_KEY);
+        const f = localStorage.getItem(FIRST_KEY);
+        const full = localStorage.getItem(FULL_KEY);
+
+        setAvatarUrl(a || null);
+
+        if (f && f.trim()) {
+          setFirstName(f.trim());
+        } else if (full && full.trim()) {
+          setFirstName(full.trim().split(" ")[0]);
+        } else {
+          setFirstName("Citizen");
+        }
+      } catch {
+        setAvatarUrl(null);
+        setFirstName("Citizen");
+      }
+    };
+
+    load();
+
+    const onStorage = (e: StorageEvent) => {
+      if ([AVATAR_KEY, FIRST_KEY, FULL_KEY].includes(String(e.key))) {
+        load();
+      }
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
+
+  return { avatarUrl, firstName };
+}
+
 export default function AppLayout() {
   const title = usePageTitle();
   const { pathname } = useLocation();
@@ -85,6 +133,9 @@ export default function AppLayout() {
   // filters shown only on Transparency
   const [dept, setDept] = useState("All Departments");
   const [view, setView] = useState("Monthly View");
+
+  // read avatar + first name saved by Profile page
+  const { avatarUrl, firstName } = useLocalProfile();
 
   useEffect(() => {
     const onDown = (e: MouseEvent) => {
@@ -111,13 +162,32 @@ export default function AppLayout() {
               {Icon.bell()}
               <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-rose-500" />
             </button>
-            <button onClick={() => setMenuOpen(v => !v)} className="flex items-center gap-2 rounded p-2 hover:bg-slate-100">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-200">👤</div>
+
+            {/* avatar in header */}
+            <button
+              onClick={() => setMenuOpen(v => !v)}
+              className="flex items-center gap-2 rounded p-2 hover:bg-slate-100"
+            >
+              {avatarUrl ? (
+                <img
+                  src={avatarUrl || FALLBACK_IMG}
+                  alt="avatar"
+                  className="h-8 w-8 rounded-full object-cover border"
+                />
+              ) : (
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-200">
+                  {FALLBACK_EMOJI}
+                </div>
+              )}
               {Icon.chevronDown()}
             </button>
+
             {menuOpen && (
               <div className="absolute right-0 top-12 w-40 rounded-md border border-slate-200 bg-white shadow-lg">
-                <button onClick={handleLogout} className="block w-full px-4 py-2 text-left text-sm text-slate-700 hover:bg-slate-50">
+                <button
+                  onClick={handleLogout}
+                  className="block w-full px-4 py-2 text-left text-sm text-slate-700 hover:bg-slate-50"
+                >
                   Logout
                 </button>
               </div>
@@ -130,16 +200,29 @@ export default function AppLayout() {
       <div className="grid w-full grid-cols-1 lg:grid-cols-[260px,1fr] min-h-[calc(100vh-4rem)]">
         {/* sidebar */}
         <aside className="hidden lg:block border-r border-slate-200 bg-white">
+          {/* ✅ fixed the typo: h-[calc(...)] */}
           <div className="sticky top-16 h-[calc(100vh-4rem)] overflow-auto p-6">
             <div className="mb-6 flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-200">👤</div>
+              {/* avatar in sidebar */}
+              {avatarUrl ? (
+                <img
+                  src={avatarUrl || FALLBACK_IMG}
+                  alt="avatar"
+                  className="h-10 w-10 rounded-full object-cover border"
+                />
+              ) : (
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-200">
+                  {FALLBACK_EMOJI}
+                </div>
+              )}
               <div>
-                <div className="text-sm font-medium text-slate-900">Citizen User</div>
+                {/* first name */}
+                <div className="text-sm font-medium text-slate-900">{firstName}</div>
                 <div className="text-xs text-slate-500">Read Only</div>
               </div>
             </div>
             <nav className="space-y-1">
-             <NavLink to="/citizen/dashboard"    end className={navLinkClass}>{Icon.dashboard()}   <span>Dashboard</span></NavLink>
+              <NavLink to="/citizen/dashboard"       end className={navLinkClass}>{Icon.dashboard()}   <span>Dashboard</span></NavLink>
               <NavLink to="/citizen/transparency"    className={navLinkClass}>{Icon.transparency()} <span>Transparency Portal</span></NavLink>
               <NavLink to="/citizen/ledger"          className={navLinkClass}>{Icon.ledger()}       <span>Transaction Ledger</span></NavLink>
               <NavLink to="/citizen/alerts"          className={navLinkClass}>{Icon.alerts()}       <span>Smart Contract Alerts</span></NavLink>
