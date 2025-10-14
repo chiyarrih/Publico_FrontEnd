@@ -1,210 +1,230 @@
-import React, { useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import React from "react";
+import { useNavigate, useParams } from "react-router-dom";
 
-type Phase = {
-  key: string;
-  name: string;
-  budget: number;
-  spent: number;
-  percent: number; // 0..100
-  range: string;
-  status: "Completed"|"In Progress"|"Pending";
-  proofs: { id: string; title: string; note: string; size: string; by: string; date: string; status: "Verified"|"Pending Verification" }[];
+/* ---------- Mock single project (aligns with screenshot) ---------- */
+const PROJECT = {
+  id: "PRJ-2023-0125",
+  title: "Road Rehabilitation - Perez Blvd",
+  department: "Public Works",
+  budget: 2_500_000,
+  start: "2023-06-01",
+  end: "2023-08-30",
+  overallProgress: 45, // %
+  alerts: [
+    { tone: "warn", text: "Procurement phase exceeded budget by ₱150,000 (0.43 ETH)" },
+    { tone: "info", text: "Planning phase completed under budget by ₱20,000 (0.06 ETH)" },
+  ] as { tone: "warn" | "info"; text: string }[],
+  phases: [
+    { i: 1, name: "Planning", budget: 300_000, spent: 280_000, progress: 100, status: "Completed" },
+    { i: 2, name: "Procurement", budget: 800_000, spent: 950_000, progress: 75, status: "In Progress" },
+    { i: 3, name: "Construction", budget: 1_200_000, spent: 0, progress: 0, status: "Pending" },
+    { i: 4, name: "Completion", budget: 200_000, spent: 0, progress: 0, status: "Pending" },
+  ],
 };
 
-const peso = (n:number)=> `₱${n.toLocaleString()}`;
+const peso = (n: number) =>
+  n.toLocaleString("en-PH", { style: "currency", currency: "PHP", maximumFractionDigits: 0 });
 
-const phases: Phase[] = [
-  {
-    key: "planning", name: "Planning", budget: 300_000, spent: 280_000, percent: 100, range: "Jun 1, 2023 – Jun 15, 2023", status: "Completed",
-    proofs: [
-      { id:"plan-receipts", title:"Material Purchase Receipts", note:"Official receipts for all construction materials purchased", size:"2.6 MB", by:"Procurement Officer", date:"2023-06-25", status:"Verified" }
-    ],
-  },
-  {
-    key: "procurement", name: "Procurement", budget: 900_000, spent: 950_000, percent: 75, range: "Jun 16, 2023 – Jul 15, 2023", status: "In Progress",
-    proofs: [
-      { id:"equip-contract", title:"Equipment Rental Agreement", note:"Signed contract for equipment rental including terms and conditions", size:"1.5 MB", by:"Procurement Officer", date:"2023-07-06", status:"Pending Verification" }
-    ],
-  },
-  { key: "construction", name: "Construction", budget: 1_200_000, spent: 0, percent: 0, range: "Jul 16, 2023 – Aug 15, 2023", status:"Pending", proofs: [] },
-  { key: "completion", name: "Completion", budget: 200_000, spent: 0, percent: 0, range: "Aug 16, 2023 – Aug 30, 2023", status:"Pending", proofs: [] },
-];
+const Pill: React.FC<{ tone: "blue" | "green" | "gray"; children: React.ReactNode }> = ({ tone, children }) => {
+  const map = {
+    blue: "bg-blue-50 text-blue-700 border-blue-200",
+    green: "bg-emerald-50 text-emerald-700 border-emerald-200",
+    gray: "bg-slate-50 text-slate-600 border-slate-200",
+  } as const;
+  return <span className={`inline-flex rounded-full border px-2.5 py-0.5 text-xs font-medium ${map[tone]}`}>{children}</span>;
+};
 
-export default function MilestoneDetail() {
-  const { id } = useParams();
-  const title = id === "road-rehab" ? "Road Rehabilitation - Perez Blvd" : "Selected Project";
-  const [openProof, setOpenProof] = useState<null | Phase["proofs"][number]>(null);
-
+const Progress: React.FC<{ value: number; tone?: "blue" | "green" | "slate" }> = ({ value, tone = "blue" }) => {
+  const track = "h-2 w-full rounded-full bg-slate-100";
+  const thumb =
+    tone === "green" ? "bg-emerald-500" : tone === "slate" ? "bg-slate-300" : "bg-blue-500";
   return (
-    <div className="space-y-4">
-      {/* banner alerts (examples) */}
-      <div className="rounded border border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-700">
-        Procurement phase exceeded budget by ₱150,000 (0.43 ETH)
-      </div>
-      <div className="rounded border border-blue-200 bg-blue-50 px-4 py-2 text-sm text-blue-700">
-        Planning phase completed under budget by ₱20,000 (0.06 ETH)
-      </div>
-
-      {/* breadcrumb + title row */}
-      <div className="flex items-center gap-2 text-sm text-slate-600">
-        <Link to="/citizen/milestones" className="hover:underline">
-          Project <span className="bg-yellow-200 px-1 rounded">Milestones</span>
-        </Link>
-        <span>›</span>
-        <span className="text-slate-900 font-medium">{title}</span>
-        <div className="ml-auto text-xs text-slate-500">Project ID: PRJ-2023-0125</div>
-      </div>
-
-      {/* overview */}
-      <div className="bg-white border border-slate-200 rounded-lg p-4">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div>
-            <div className="text-sm text-slate-500">Department</div>
-            <div className="font-medium text-slate-900">Public Works</div>
-          </div>
-          <div>
-            <div className="text-sm text-slate-500">Total Budget</div>
-            <div className="font-medium text-blue-600">₱2,500,000</div>
-          </div>
-          <div>
-            <div className="text-sm text-slate-500">Timeline</div>
-            <div className="font-medium text-slate-900">Jun 1, 2023 – Aug 30, 2023</div>
-          </div>
-          <div className="sm:col-span-3">
-            <div className="text-sm text-slate-500 mt-3 mb-1">Overall Progress</div>
-            <div className="h-2 bg-slate-200 rounded overflow-hidden">
-              <div className="h-full bg-blue-600" style={{ width: "45%" }} />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* timeline (cards per phase) */}
-      <div className="bg-white border border-slate-200 rounded-lg">
-        <div className="px-4 py-3 font-semibold text-slate-900">Project Timeline</div>
-        <div className="divide-y">
-          {phases.map((p, idx)=>(
-            <div key={p.key} className="p-4">
-              <div className="flex items-start gap-3">
-                <div className={`h-7 w-7 shrink-0 rounded-full flex items-center justify-center text-white ${p.status==="Completed"?"bg-emerald-600":p.status==="In Progress"?"bg-blue-600":"bg-slate-400"}`}>{idx+1}</div>
-                <div className="flex-1">
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <div className="font-semibold text-slate-900">{p.name}</div>
-                    <span className={`text-xs px-2 py-0.5 rounded ${p.status==="Completed"?"bg-emerald-100 text-emerald-700":p.status==="In Progress"?"bg-blue-100 text-blue-700":"bg-slate-100 text-slate-600"}`}>{p.status}</span>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
-                    <div className="text-sm text-slate-700">
-                      <div className="text-slate-500">Budget</div>
-                      <div className="font-medium">{peso(p.budget)} <span className="text-slate-400 text-xs">( { (p.budget/1_000_000).toFixed(2)} ETH )</span></div>
-                    </div>
-                    <div className="text-sm text-slate-700">
-                      <div className="text-slate-500">Spent</div>
-                      <div className="font-medium">{peso(p.spent)} <span className="text-slate-400 text-xs">( { (p.spent/1_000_000).toFixed(2)} ETH )</span></div>
-                    </div>
-                  </div>
-                  <div className="mt-2">
-                    <div className="mb-1 text-xs text-slate-500">Progress</div>
-                    <div className="h-2 rounded bg-slate-200 overflow-hidden">
-                      <div className={`h-full ${p.status==="Completed"?"bg-emerald-600":"bg-blue-600"}`} style={{ width: `${p.percent}%` }} />
-                    </div>
-                    <div className="mt-1 text-xs text-slate-500">{p.range}</div>
-                  </div>
-
-                  {/* proofs (read-only, open modal) */}
-                  {p.proofs.length>0 && (
-                    <div className="mt-4 rounded border border-slate-200">
-                      {p.proofs.map((f,i)=>(
-                        <div key={f.id} className="flex items-center justify-between px-3 py-2 text-sm border-t first:border-t-0">
-                          <div className="min-w-0">
-                            <div className="font-medium text-slate-800 truncate">{f.title}</div>
-                            <div className="text-xs text-slate-500 truncate">{f.note}</div>
-                          </div>
-                          <div className="flex items-center gap-3">
-                            <span className={`text-xs px-2 py-0.5 rounded ${f.status==="Verified"?"bg-emerald-100 text-emerald-700":"bg-amber-100 text-amber-700"}`}>{f.status}</span>
-                            <button onClick={()=>setOpenProof(f)} className="h-8 rounded border border-slate-300 px-2 text-xs">View</button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* expense summary for current phase (sample) */}
-      <div className="bg-white border border-slate-200 rounded-lg p-4">
-        <div className="flex items-center justify-between">
-          <div className="font-semibold text-slate-900">Procurement <span className="text-slate-400 font-normal">Phase</span></div>
-          <span className="text-xs px-2 py-0.5 rounded bg-blue-100 text-blue-700">In Progress</span>
-        </div>
-        <div className="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
-          <div className="rounded bg-slate-50 p-3"><div className="text-slate-500">Budget Allocation</div><div className="font-semibold">{peso(900000)}</div></div>
-          <div className="rounded bg-slate-50 p-3"><div className="text-slate-500">Expenses to Date</div><div className="font-semibold">{peso(950000)}</div></div>
-          <div className="rounded bg-slate-50 p-3"><div className="text-slate-500">Remaining Budget</div><div className="font-semibold">₱-150,000</div></div>
-          <div className="rounded bg-slate-50 p-3"><div className="text-slate-500">Timeline</div><div className="font-semibold">Jun 16, 2023 – Jul 15, 2023</div></div>
-        </div>
-
-        <div className="mt-4">
-          <div className="text-sm font-medium text-slate-800 mb-2">Expense Tracker</div>
-          <div className="rounded border border-slate-200 overflow-hidden">
-            <table className="w-full text-sm">
-              <thead className="bg-slate-50 text-slate-600">
-                <tr>
-                  <th className="p-2 text-left">Date</th>
-                  <th className="p-2 text-left">Description</th>
-                  <th className="p-2 text-left">Amount (PHP)</th>
-                  <th className="p-2 text-left">Amount (ETH)</th>
-                  <th className="p-2 text-left">Supporting File</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y">
-                <tr><td className="p-2">2023-06-20</td><td className="p-2">Construction materials purchase</td><td className="p-2">{peso(650000)}</td><td className="p-2">1.88 ETH</td><td className="p-2"><button onClick={()=>setOpenProof(phases[1].proofs[0])} className="text-blue-600 underline text-xs">View</button></td></tr>
-                <tr><td className="p-2">2023-07-05</td><td className="p-2">Equipment rental</td><td className="p-2">{peso(300000)}</td><td className="p-2">0.87 ETH</td><td className="p-2"><button onClick={()=>setOpenProof(phases[1].proofs[0])} className="text-blue-600 underline text-xs">View</button></td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      {/* Proof Modal (read-only) */}
-      {openProof && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0 bg-black/30" onClick={()=>setOpenProof(null)} />
-          <div className="relative w-[min(640px,94vw)] rounded-lg border border-slate-200 bg-white shadow-xl">
-            <div className="flex items-center justify-between border-b border-slate-100 px-5 py-3">
-              <div className="font-semibold text-slate-900">{openProof.title}</div>
-              <button className="p-1 rounded hover:bg-slate-100" onClick={()=>setOpenProof(null)}>✕</button>
-            </div>
-            <div className="px-5 py-4 text-sm">
-              <div className="text-slate-600">{openProof.note}</div>
-              <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
-                <div><div className="text-slate-500">Uploaded By</div><div className="font-medium">{openProof.by}</div></div>
-                <div><div className="text-slate-500">Upload Date</div><div className="font-medium">{openProof.date}</div></div>
-                <div><div className="text-slate-500">Verification Status</div>
-                  <div className={`inline-flex items-center rounded px-2 py-0.5 text-xs ${openProof.status==="Verified"?"bg-emerald-100 text-emerald-700":"bg-amber-100 text-amber-700"}`}>{openProof.status}</div>
-                </div>
-              </div>
-
-              <div className="mt-4 rounded border border-slate-200 p-3">
-                <div className="flex items-center justify-between">
-                  <div className="text-sm font-medium text-slate-800 truncate">receipts-bundle.pdf</div>
-                  <div className="text-xs text-slate-500">{openProof.size}</div>
-                </div>
-                <button className="mt-3 h-9 rounded bg-blue-600 px-3 text-sm text-white hover:bg-blue-700">
-                  View Document
-                </button>
-              </div>
-            </div>
-            <div className="flex justify-end gap-2 border-t border-slate-100 px-5 py-3">
-              <button className="h-9 rounded border border-slate-300 px-3 text-sm" onClick={()=>setOpenProof(null)}>Close</button>
-            </div>
-          </div>
-        </div>
-      )}
+    <div className={track}>
+      <div className={`h-2 rounded-full ${thumb}`} style={{ width: `${Math.max(0, Math.min(100, value))}%` }} />
     </div>
   );
-}
+};
+
+const AlertBanner: React.FC<{ kind: "warn" | "info"; children: React.ReactNode }> = ({ kind, children }) => {
+  const tone =
+    kind === "warn"
+      ? "bg-amber-50 border-amber-200 text-amber-800"
+      : "bg-blue-50 border-blue-200 text-blue-700";
+  const icon =
+    kind === "warn" ? (
+      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.5">
+        <path d="M12 9v4M12 17h.01" />
+        <path d="M10 2h4l9 16H1L10 2z" />
+      </svg>
+    ) : (
+      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.5">
+        <path d="M13 16h-1v-4h-1M12 8h.01" />
+        <circle cx="12" cy="12" r="9" />
+      </svg>
+    );
+  return (
+    <div className={`flex items-center gap-3 rounded-lg border px-3 py-2 ${tone}`}>
+      {icon}
+      <span className="text-sm">{children}</span>
+    </div>
+  );
+};
+
+const RowLabel: React.FC<{ label: string; value: React.ReactNode }> = ({ label, value }) => (
+  <div className="flex items-center justify-between text-sm">
+    <span className="text-slate-500">{label}</span>
+    <span className="font-medium text-slate-900">{value}</span>
+  </div>
+);
+
+const MilestoneDetail: React.FC = () => {
+  const nav = useNavigate();
+  const { id } = useParams();
+
+  const p = PROJECT; // (if you wire API, use id)
+
+  return (
+    <div className="space-y-6">
+      {/* Header / breadcrumb */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => nav(-1)}
+            className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 hover:bg-slate-50"
+            aria-label="Back"
+          >
+            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <path d="M15 18l-6-6 6-6" />
+            </svg>
+          </button>
+          <div className="text-lg font-semibold text-slate-900">
+            Project Milestones — <span className="font-normal">{p.title}</span>
+          </div>
+        </div>
+        <div className="text-xs text-slate-500">
+          <span className="uppercase tracking-wide">Project ID:</span>{" "}
+          <span className="font-medium text-slate-700">{p.id}</span>
+        </div>
+      </div>
+
+      {/* Alerts */}
+      <div className="space-y-2">
+        <AlertBanner kind="warn">{p.alerts[0].text}</AlertBanner>
+        <AlertBanner kind="info">{p.alerts[1].text}</AlertBanner>
+      </div>
+
+      {/* Overview */}
+      <div className="rounded-xl border border-slate-200 bg-white p-6">
+        <div className="mb-4 text-sm font-semibold text-slate-700">Project Overview</div>
+
+        <div className="grid gap-6 md:grid-cols-3">
+          <RowLabel label="Department" value={<span className="text-slate-700">{p.department}</span>} />
+          <RowLabel
+            label="Total Budget"
+            value={
+              <button className="text-blue-600 hover:underline font-semibold">
+                {peso(p.budget)}
+              </button>
+            }
+          />
+          <RowLabel
+            label="Timeline"
+            value={
+              <span className="text-slate-700">
+                {new Date(p.start).toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric" })} —{" "}
+                {new Date(p.end).toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+              </span>
+            }
+          />
+        </div>
+
+        <div className="mt-6">
+          <div className="mb-2 flex items-center justify-between text-sm">
+            <span className="text-slate-500">Overall Progress</span>
+            <span className="font-medium text-slate-900">{p.overallProgress}%</span>
+          </div>
+          <Progress value={p.overallProgress} />
+        </div>
+      </div>
+
+      {/* Timeline */}
+      <div className="rounded-xl border border-slate-200 bg-white p-6">
+        <div className="mb-4 text-sm font-semibold text-slate-700">Project Timeline</div>
+
+        <div className="space-y-4">
+          {p.phases.map((ph, idx) => {
+            const tone = ph.status === "Completed" ? "green" : ph.status === "In Progress" ? "blue" : "slate";
+            const pillTone = ph.status === "Completed" ? "green" : ph.status === "In Progress" ? "blue" : "gray";
+            return (
+              <div
+                key={ph.i}
+                className={`rounded-lg border px-5 py-4 ${
+                  ph.status === "In Progress" ? "border-blue-200 ring-1 ring-blue-50" : "border-slate-200"
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <span
+                      className={`flex h-7 w-7 items-center justify-center rounded-full text-sm font-semibold text-white ${
+                        ph.status === "Completed" ? "bg-emerald-500" : ph.status === "In Progress" ? "bg-blue-500" : "bg-slate-300"
+                      }`}
+                    >
+                      {ph.i}
+                    </span>
+                    <div className="text-slate-900 font-medium">{ph.name}</div>
+                  </div>
+                  <Pill tone={pillTone as any}>{ph.status}</Pill>
+                </div>
+
+                <div className="mt-3 grid gap-4 md:grid-cols-3 text-sm">
+                  <RowLabel
+                    label="Budget"
+                    value={
+                      <span className="text-slate-700">
+                        {peso(ph.budget)} <span className="text-slate-400 text-xs">( est. ETH )</span>
+                      </span>
+                    }
+                  />
+                  <RowLabel
+                    label="Spent"
+                    value={
+                      <span className="text-slate-700">
+                        {peso(ph.spent)} <span className="text-slate-400 text-xs">( est. ETH )</span>
+                      </span>
+                    }
+                  />
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-500">Progress</span>
+                    <span className="font-medium text-slate-900">{ph.progress}%</span>
+                  </div>
+                </div>
+
+                <div className="mt-3">
+                  <Progress value={ph.progress} tone={tone as any} />
+                </div>
+
+                {/* dates hint line */}
+                <div className="mt-2 text-xs text-slate-500">
+                  {ph.name === "Planning" && "Jun 1, 2023 — Jun 15, 2023"}
+                  {ph.name === "Procurement" && "Jun 16, 2023 — Jul 15, 2023"}
+                  {ph.name === "Construction" && "Jul 16, 2023 — Aug 15, 2023"}
+                  {ph.name === "Completion" && "Aug 16, 2023 — Aug 30, 2023"}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Phase detail section preview (matches screenshot footer label) */}
+      <div className="rounded-xl border border-slate-200 bg-white p-6">
+        <div className="mb-2 text-sm font-semibold text-slate-700">Procurement Phase</div>
+        <div className="text-sm text-slate-600">
+          Latest update: Vendor selection ongoing. Noted over-spend due to price adjustments and expedited shipping.
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default MilestoneDetail;
