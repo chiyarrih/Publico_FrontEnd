@@ -1,5 +1,6 @@
 import React from "react";
 import { NavLink, Outlet } from "react-router-dom";
+import { Toaster } from "react-hot-toast";
 import { Input, Ghost } from "../ui/blocks";
 import { logout } from "../../../../utils/auth";
 
@@ -103,6 +104,30 @@ export default function AdminLayout() {
 
   return (
     <div className="min-h-screen bg-slate-50">
+      <Toaster 
+        position="top-center"
+        toastOptions={{
+          duration: 4000,
+          style: {
+            background: '#363636',
+            color: '#fff',
+          },
+          success: {
+            duration: 4000,
+            style: {
+              background: '#10b981',
+              color: '#fff',
+            },
+          },
+          error: {
+            duration: 4000,
+            style: {
+              background: '#ef4444',
+              color: '#fff',
+            },
+          },
+        }}
+      />
       <div className="grid lg:grid-cols-[280px_1fr]">
         {/* Sidebar */}
         <aside className="hidden lg:sticky lg:top-0 lg:h-screen overflow-hidden bg-gradient-to-b from-blue-700 via-blue-700 to-blue-800 lg:flex lg:flex-col">

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { toast } from "react-hot-toast";
 import { AgencyVerificationService } from "../../services/agencyVerification.api";
 
 export interface AgencyVerificationData {
@@ -42,10 +43,12 @@ export function useAgencyVerification() {
       // Ensure data is always an array
       setAgencies(Array.isArray(data) ? data : []);
     } catch (err: any) {
-      setError(err.message || "Failed to fetch agencies");
+      const errorMessage = err.message || "Failed to fetch agencies";
+      setError(errorMessage);
       console.error("Error fetching agencies:", err);
       // Set empty array on error to prevent undefined filter calls
       setAgencies([]);
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -59,8 +62,11 @@ export function useAgencyVerification() {
     try {
       await AgencyVerificationService.approveAgency(agencyId);
       await fetchAgencies(); // Refresh the list
+      toast.success("Agency approved successfully!");
     } catch (err: any) {
-      setError(err.message || "Failed to approve agency");
+      const errorMessage = err.message || "Failed to approve agency";
+      setError(errorMessage);
+      toast.error(errorMessage);
       throw err;
     }
   };
@@ -69,8 +75,11 @@ export function useAgencyVerification() {
     try {
       await AgencyVerificationService.rejectAgency(agencyId, reason);
       await fetchAgencies(); // Refresh the list
+      toast.success("Agency rejected successfully!");
     } catch (err: any) {
-      setError(err.message || "Failed to reject agency");
+      const errorMessage = err.message || "Failed to reject agency";
+      setError(errorMessage);
+      toast.error(errorMessage);
       throw err;
     }
   };
