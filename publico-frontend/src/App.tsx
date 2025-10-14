@@ -1,5 +1,6 @@
-import React, { Suspense, lazy } from "react";
+import React, { Suspense, lazy, useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
+import { clearOldAgencyApprovalKeys } from "./utils/auth";
 
 /* ---------- Auth pages ---------- */
 import { LoginPage, SignupPage, ForgotPasswordPage, ResetPasswordPage } from "./features/auth";
@@ -68,6 +69,11 @@ function Safe({ children }: React.PropsWithChildren) {
 }
 
 export default function App() {
+  // Clear old agency approval keys on app start (migration)
+  useEffect(() => {
+    clearOldAgencyApprovalKeys();
+  }, []);
+
   return (
     <ErrorBoundary>
       <Suspense fallback={<Loading label="Loading app..." />}>

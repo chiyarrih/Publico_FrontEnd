@@ -71,9 +71,10 @@ const ApplicationApprovedPage = () => {
   }, [navigate, location.state]);
 
   const handleContinueToDashboard = () => {
-    // Set the flag that user has seen the approval page
-    console.log('🔍 Setting agency_approval_seen flag to true');
-    localStorage.setItem('agency_approval_seen', 'true');
+    // Mark that this agency has seen the approval page
+    const agencyId = location.state?.agencyId || (getUserData() as any)?.id;
+    localStorage.setItem(`agency_approval_seen_${agencyId}`, 'true');
+    
     // Navigate to agency dashboard
     navigate('/agency/dashboard');
   };

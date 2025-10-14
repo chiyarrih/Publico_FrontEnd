@@ -19,6 +19,7 @@ import {
   decodeJWT,
   logout as utilLogout
 } from '../../../utils/auth';
+import toast from 'react-hot-toast';
 
 interface UseAuthReturn {
   user: Partial<User> | null;
@@ -105,22 +106,23 @@ export const useAuth = (): UseAuthReturn => {
           break;
         case 'Agency':
           if (response.isAgencyVerified === true) {
-            // Check if this is the first login after approval
-            const hasSeenApproval = localStorage.getItem('agency_approval_seen');
-            console.log('🔍 Agency login - hasSeenApproval:', hasSeenApproval);
+            // Check if agency has seen the approval page
+            const agencyId = (response as any).user_id || (response as any)._id;
+            const hasSeenApproval = localStorage.getItem(`agency_approval_seen_${agencyId}`);
+            
             if (!hasSeenApproval) {
-              // First login after approval - show approval page
-              console.log('🔍 First time seeing approval - navigating to approval page');
+              // First time seeing approval - show approval page
               navigate('/application-approved', { 
                 state: { 
                   email: data.email, 
                   role: 'Agency', 
                   applicationStatus: 'approved',
-                  agencyName: response.agency_name || 'Your Agency'
+                  agencyName: response.agency_name || 'Your Agency',
+                  agencyId: agencyId
                 } 
               });
             } else {
-              // Subsequent logins - go directly to dashboard
+              // Already seen approval page - go directly to dashboard
               navigate('/agency/dashboard');
             }
           } else if (response.isAgencyVerified === false && !response.isPending) {
@@ -215,22 +217,23 @@ export const useAuth = (): UseAuthReturn => {
           break;
         case 'Agency':
           if (response.isAgencyVerified === true) {
-            // Check if this is the first login after approval
-            const hasSeenApproval = localStorage.getItem('agency_approval_seen');
-            console.log('🔍 Agency login - hasSeenApproval:', hasSeenApproval);
+            // Check if agency has seen the approval page
+            const agencyId = (response as any).user_id || (response as any)._id;
+            const hasSeenApproval = localStorage.getItem(`agency_approval_seen_${agencyId}`);
+            
             if (!hasSeenApproval) {
-              // First login after approval - show approval page
-              console.log('🔍 First time seeing approval - navigating to approval page');
+              // First time seeing approval - show approval page
               navigate('/application-approved', { 
                 state: { 
                   email: data.email, 
                   role: 'Agency', 
                   applicationStatus: 'approved',
-                  agencyName: response.agency_name || 'Your Agency'
+                  agencyName: response.agency_name || 'Your Agency',
+                  agencyId: agencyId
                 } 
               });
             } else {
-              // Subsequent logins - go directly to dashboard
+              // Already seen approval page - go directly to dashboard
               navigate('/agency/dashboard');
             }
           } else if (response.isAgencyVerified === false && !response.isPending) {
@@ -277,7 +280,10 @@ export const useAuth = (): UseAuthReturn => {
       
       // For roles that require email verification
       if (data.role === 'Citizen') {
-        setError('Registration successful! Please check your email for verification.');
+        toast.success('Registration successful! Please check your email for verification.', {
+          duration: 5000,
+          position: 'top-center',
+        });
         navigate('/login');
       } else if (data.role === 'Agency') {
         // For agency, redirect to OTP verification

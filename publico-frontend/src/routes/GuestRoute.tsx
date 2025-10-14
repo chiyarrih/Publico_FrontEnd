@@ -37,12 +37,14 @@ export const GuestRoute: React.FC<GuestRouteProps> = ({ children }) => {
         
         if (applicationStatus === 'approved' || isAgencyVerified === true) {
           // For approved agencies, allow access to approval page if they're already on it
-          // Otherwise, redirect to dashboard (initial navigation handled by useAuth.ts during login)
           if (isApplicationApprovedPage) {
             return <>{children}</>;
           } else {
             // Check if user has seen the approval page
-            const hasSeenApproval = localStorage.getItem('agency_approval_seen');
+            const userData = getUserData();
+            const agencyId = (userData as any)?.id;
+            const hasSeenApproval = localStorage.getItem(`agency_approval_seen_${agencyId}`);
+            
             if (!hasSeenApproval) {
               // First time seeing approval - show approval page
               return <Navigate to="/application-approved" replace />;

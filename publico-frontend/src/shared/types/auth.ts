@@ -105,6 +105,8 @@ export interface AuthResponse {
   token: string;
   role: UserRole;
   redirect: string;
+  user_id?: string; // User ID from backend
+  _id?: string; // Frontend compatibility - user ID
   isVerified?: boolean; // Email verification status
   isPending?: boolean; // For agency applications
   isAgencyVerified?: boolean; // Agency application approval status

@@ -102,17 +102,20 @@ const ApplicationUnderReviewPage = () => {
 
   // If application is approved, check if user has seen the approval page
   if (applicationStatus === 'approved') {
-    const hasSeenApproval = localStorage.getItem('agency_approval_seen');
+    const userData = getUserData();
+    const agencyId = (userData as any)?.id;
+    const hasSeenApproval = localStorage.getItem(`agency_approval_seen_${agencyId}`);
+    
     if (!hasSeenApproval) {
       // First time seeing approval - show approval page
-      const userData = getUserData();
       const agencyName = (userData as any)?.user?.agency_name || (userData as any)?.agency_name || 'Your Agency';
       navigate('/application-approved', { 
         state: { 
           email, 
           role: 'Agency', 
           applicationStatus: 'approved',
-          agencyName
+          agencyName,
+          agencyId
         } 
       });
     } else {

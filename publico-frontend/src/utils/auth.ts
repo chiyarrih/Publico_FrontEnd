@@ -116,7 +116,32 @@ export const clearAllAuthData = (): void => {
   localStorage.removeItem(ROLE_KEY);
   localStorage.removeItem(PORTAL_KEY);
   localStorage.removeItem('agency_approval_seen');
+  
+  // Clear all agency-specific approval keys
+  const keysToRemove = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key && key.startsWith('agency_approval_seen_')) {
+      keysToRemove.push(key);
+    }
+  }
+  keysToRemove.forEach(key => localStorage.removeItem(key));
+  
   console.log('🧹 All authentication data cleared from localStorage');
+};
+
+// Clear old agency approval keys (for migration)
+export const clearOldAgencyApprovalKeys = (): void => {
+  // Remove the old global key if it exists
+  localStorage.removeItem('agency_approval_seen');
+  console.log('🧹 Old agency approval keys cleared');
+};
+
+// Utility function to simulate agency approval for testing
+export const simulateAgencyApproval = (agencyId: string): void => {
+  // Clear approval flag to simulate first-time approval
+  localStorage.removeItem(`agency_approval_seen_${agencyId}`);
+  console.log(`🧪 Simulated agency approval reset for agency: ${agencyId}`);
 };
 
 // Validation Utilities
