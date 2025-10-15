@@ -2,12 +2,12 @@ import React from "react";
 import { X, CheckCircle, XCircle, AlertCircle, FileText, Link2 } from "lucide-react";
 import type { BudgetProposal } from "@admin/model/types/admin";
 import { Badge } from "../ui/blocks";
+import useSendFunds from "@admin/controller/hooks/useSendFunds";
 
 interface ProjectApprovalModalProps {
   isOpen: boolean;
   onClose: () => void;
   proposal: BudgetProposal;
-  onApprove: () => void;
   onReject: () => void;
   onSendFunds?: () => void;
 }
@@ -16,12 +16,11 @@ export default function ProjectApprovalModal({
   isOpen,
   onClose,
   proposal,
-  onApprove,
   onReject,
   onSendFunds,
 }: ProjectApprovalModalProps) {
   if (!isOpen) return null;
-
+  const {  onOpeen, isOpeen, onSend } = useSendFunds({projectId:proposal.projectId});
   const getStatusColor = (status: string) => {
     switch (status) {
       case "Approved":
@@ -250,7 +249,7 @@ export default function ProjectApprovalModal({
                   {proposal.status === "Pending" ? (
                     <>
                       <button
-                        onClick={onApprove}
+                        onClick={()=>onSend()}
                         className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-emerald-600 text-white rounded-xl font-medium hover:bg-emerald-700 transition-colors"
                       >
                         <CheckCircle size={20} />

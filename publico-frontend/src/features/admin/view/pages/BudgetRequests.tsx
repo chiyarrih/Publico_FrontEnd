@@ -63,26 +63,7 @@ export default function BudgetRequests() {
     setShowApprovalModal(true);
   };
 
-  const handleApprove = async (proposal: BudgetProposal) => {
-    // Show confirmation first
-    const ok = confirm("Approve this budget request? You can send funds afterward.");
-    if (!ok) return;
-
-    try {
-      // Try API call first
-      await AdminService.approveBudgetProposal(proposal.projectId);
-      // Only update UI if API call succeeds
-      setItems(prev => prev.map(p => p._id === proposal._id ? { ...p, status: "Approved" } : p));
-      setSelectedProposal({ ...proposal, status: "Approved" });
-      setShowApprovalModal(true);
-    } catch (err) {
-      console.error("Failed to approve proposal:", err);
-      const errorMessage = err instanceof Error ? err.message : "Unknown error occurred";
-      alert(`Failed to approve proposal: ${errorMessage}`);
-      // Don't update UI state or reopen modal on error
-      return;
-    }
-  };
+  
 
   const handleReject = async (proposal: BudgetProposal) => {
     if (!confirm("Reject this budget request?")) return;
@@ -171,7 +152,6 @@ export default function BudgetRequests() {
           isOpen={showApprovalModal}
           onClose={() => setShowApprovalModal(false)}
           proposal={selectedProposal}
-          onApprove={() => handleApprove(selectedProposal)}
           onReject={() => handleReject(selectedProposal)}
           onSendFunds={() => {
             setShowApprovalModal(false);
