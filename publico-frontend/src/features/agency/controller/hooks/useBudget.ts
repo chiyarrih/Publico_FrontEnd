@@ -73,6 +73,8 @@ const onSubmit: SubmitHandler<BudgetFormProps> = async (data) => {
     await sendBudgetProposal(data, files, milestones);
     reset();
     setFiles([]);
+    setMilestones([]);
+
     toast.success("Budget proposed successfully.");
   } catch (error) {
     console.error(error);
