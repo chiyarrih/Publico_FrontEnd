@@ -128,6 +128,7 @@ export default function AdminLayout() {
           },
         }}
       />
+      <Toaster/>
       <div className="grid lg:grid-cols-[280px_1fr]">
         {/* Sidebar */}
         <aside className="hidden lg:sticky lg:top-0 lg:h-screen overflow-hidden bg-gradient-to-b from-blue-700 via-blue-700 to-blue-800 lg:flex lg:flex-col">

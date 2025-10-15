@@ -15,7 +15,7 @@ export default function AgencyVerificationReviewModal({
   onClose,
   agency,
 }: AgencyVerificationReviewModalProps) {
-  const { getAgencyDetails, approveAgency, rejectAgency, removeAgency } = useAgencyVerification();
+  const { getAgencyDetails, approveAgency, rejectAgency } = useAgencyVerification();
   const [agencyDetails, setAgencyDetails] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [isApproveModalOpen, setIsApproveModalOpen] = useState(false);
@@ -77,7 +77,7 @@ export default function AgencyVerificationReviewModal({
 
     try {
       setLoading(true);
-      await removeAgency(agency._id);
+      
       onClose();
       // parent hook refresh should update list; optionally you can show a toast here
     } catch (error) {

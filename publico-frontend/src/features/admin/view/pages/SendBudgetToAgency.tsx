@@ -1,12 +1,13 @@
-import React, { useState, useEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import { ArrowLeft, Wallet } from "lucide-react";
+import useSendFunds from "@admin/controller/hooks/useSendFunds";
 import type { BudgetProposal } from "@admin/model/types/admin";
-import { Card, Button } from "../ui/blocks";
+import { ArrowLeft, Wallet } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import useWallet from "../../../../shared/hooks/useWallet";
 import ConnectWalletModal from "../../controller/components/modals/ConnectWalletModal";
 import PrivateKeyModal from "../../controller/components/modals/PrivateKeyModal";
 import ConfirmTransactionModal from "../modals/ConfirmTransactionModal";
+import { Button, Card } from "../ui/blocks";
 
 export default function SendBudgetToAgency() {
   const location = useLocation();
@@ -27,7 +28,7 @@ export default function SendBudgetToAgency() {
     handleDisconnect,
     handleCopyAddress,
   } = useWallet({ role: 'Admin' });
-
+  const {onSend} = useSendFunds({projectId: proposal?.projectId})
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [ethAmount, setEthAmount] = useState("0");
   const [gasFee, setGasFee] = useState("0.002");
@@ -61,6 +62,7 @@ export default function SendBudgetToAgency() {
   const handleConfirmTransaction = async () => {
     // TODO: Implement actual transaction logic
     console.log("Sending transaction...");
+    await onSend()
     setShowConfirmModal(false);
     // Navigate back to budget requests or show success message
     navigate("/admin/requests");

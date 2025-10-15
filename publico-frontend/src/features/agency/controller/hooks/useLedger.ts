@@ -87,7 +87,7 @@ export default function useLedger() {
         filtered = filtered.filter((ledger) => {
           const text = [
             ledger.id,
-            ledger.department,
+            ledger.projectName,
             ledger.amount,
             ledger.department,
           ]

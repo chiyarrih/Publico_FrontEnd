@@ -13,7 +13,11 @@ export interface BudgetProject {
   status: string;
 }
 
-export const sendBudgetProposal = async (data: BudgetFormProps, files: File[]) => {
+export const sendBudgetProposal = async (
+  data: BudgetFormProps,
+  files: File[],
+  milestones: any[]
+) => {
   const token = localStorage.getItem('publico_auth_token');
   const localData = localStorage.getItem('publico_user_data');
   if (!localData) throw new Error("No user data in localStorage");
@@ -31,18 +35,23 @@ export const sendBudgetProposal = async (data: BudgetFormProps, files: File[]) =
   formData.append("category", data.category);
   formData.append("amountRequested", data.amountRequested);
   formData.append("startDate", data.startDate);
-  formData.append("message", data?.objectives)
   formData.append("endDate", data.endDate);
+  formData.append("message", data?.objectives);
 
+  // 👇 New: attach milestones as a JSON string
+  formData.append("milestones", JSON.stringify(milestones));
+
+  // 👇 Files
   files.forEach((file) => formData.append("fileUrl", file));
 
-  const response = await fetch('http://localhost:5000/agency/budget/create_budget_proposal', {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${token}`,
-    },
-    body: formData,
-  });
+  const response = await fetch(
+    'http://localhost:5000/agency/budget/create_budget_proposal',
+    {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+      body: formData,
+    }
+  );
 
   const json = await response.json();
   if (!response.ok) {
@@ -52,7 +61,6 @@ export const sendBudgetProposal = async (data: BudgetFormProps, files: File[]) =
 
   return json;
 };
-
 
 export const fetchProjectsProposed = async (page = 1, limit = 10) => {
   const id = localStorage.getItem('publico_user_data');

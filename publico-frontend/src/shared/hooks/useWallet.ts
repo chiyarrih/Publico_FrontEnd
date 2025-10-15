@@ -1,13 +1,13 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { web3 } from "../config/web3";
-import { 
-  isMetaMaskInstalled, 
-  requestMetaMaskAccounts, 
+import {
+  isMetaMaskInstalled,
+  requestMetaMaskAccounts,
   getCurrentMetaMaskAddress,
-  fetchBalance, 
-  signMessage, 
-  saveWalletState, 
-  clearWalletState, 
+  fetchBalance,
+  signMessage,
+  saveWalletState,
+  clearWalletState,
   attemptWalletReconnection,
   getWalletState,
   setupMetaMaskListeners,
@@ -17,6 +17,26 @@ import {
 // Role-specific services
 import { updateAdminToConnected, connectWalletToBackend, decryptPrivateKey } from "../../features/admin/services/walletService";
 import { updateToConnected } from "../../features/agency/services/agencyService";
+
+// Wallet type handling
+export type WalletType = 'metamask' | 'privateKey';
+
+export const WALLET_STORAGE_KEYS = {
+  ADDRESS: 'web3_address',
+  CONNECTION_STATE: 'web3_connection_state',
+  LAST_CONNECTED: 'web3_last_connected',
+  WALLET_TYPE: 'web3_wallet_type'
+};
+
+export const saveWalletType = (type: WalletType) => {
+  localStorage.setItem(WALLET_STORAGE_KEYS.WALLET_TYPE, type);
+};
+
+export const getWalletType = (): WalletType | null => {
+  return (localStorage.getItem(WALLET_STORAGE_KEYS.WALLET_TYPE) as WalletType) ?? null;
+};
+
+// ------------------- useWallet hook -------------------
 
 export type UserRole = 'Admin' | 'Agency' | 'Citizen';
 
@@ -35,7 +55,7 @@ export interface UseWalletOptions {
 
 export default function useWallet(options: UseWalletOptions) {
   const { role, onProfileUpdate, onFetchedData } = options;
-  
+
   const [walletConnected, setWalletConnected] = useState(false);
   const [showConnectModal, setShowConnectModal] = useState(false);
   const [showPrivateKeyModal, setShowPrivateKeyModal] = useState(false);
@@ -50,8 +70,10 @@ export default function useWallet(options: UseWalletOptions) {
     connected: walletConnected,
     address: currentAddress ?? "0x0",
     balanceEth,
-    balancePhp,
+    balancePhp
   };
+
+  // ------------------- Helper Functions -------------------
 
   const fetchBalanceForAddress = async (address: string) => {
     try {
@@ -63,6 +85,25 @@ export default function useWallet(options: UseWalletOptions) {
     }
   };
 
+  const updateBackendConnection = async () => {
+    try {
+      switch (role) {
+        case 'Admin':
+          await updateAdminToConnected();
+          break;
+        case 'Agency':
+          await updateToConnected();
+          break;
+        case 'Citizen':
+          break; // no backend connection
+      }
+    } catch (backendError) {
+      console.warn("Backend connection update failed:", backendError);
+    }
+  };
+
+  // ------------------- Connect Wallets -------------------
+
   const handleConnectMetaMask = async () => {
     try {
       if (!isMetaMaskInstalled()) {
@@ -73,33 +114,16 @@ export default function useWallet(options: UseWalletOptions) {
       const accounts = await requestMetaMaskAccounts();
       const address = accounts[0];
 
-      // Save wallet state immediately
+      // Save state and type
       saveWalletState(address, true);
+      saveWalletType('metamask');
+
       setCurrentAddress(address);
       setWalletConnected(true);
-
-      // Fetch balance
       await fetchBalanceForAddress(address);
+      await updateBackendConnection();
 
-      // Update backend connection status based on role (don't wait for this)
-      try {
-        switch (role) {
-          case 'Admin':
-            await updateAdminToConnected();
-            break;
-          case 'Agency':
-            await updateToConnected();
-            break;
-          case 'Citizen':
-            // Citizens don't have backend connection status
-            break;
-        }
-      } catch (backendError) {
-        console.warn("Backend connection update failed, but wallet is still connected:", backendError);
-        // Don't fail the connection if backend update fails
-      }
-
-      // Sign message and connect to backend (except for citizens)
+      // Sign message and connect to backend if not citizen
       if (role !== 'Citizen') {
         try {
           const message = `Login to Publico ${role}`;
@@ -108,16 +132,14 @@ export default function useWallet(options: UseWalletOptions) {
           if (role === 'Admin') {
             await connectWalletToBackend(address, signature, message);
           } else if (role === 'Agency') {
-            const response = await fetch("http://localhost:5000/api/wallet/connect", {
+            await fetch("http://localhost:5000/api/wallet/connect", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ address, signature, message }),
             });
-            console.log("Wallet connection response:", response);
           }
         } catch (signError) {
-          console.warn("Backend wallet connection failed, but wallet is still connected:", signError);
-          // Don't fail the connection if backend signing fails
+          console.warn("Backend wallet connection failed:", signError);
         }
       }
 
@@ -131,58 +153,40 @@ export default function useWallet(options: UseWalletOptions) {
   const handleConnectPrivateKey = async () => {
     try {
       let decrypted;
-      
+
       if (role === 'Admin') {
         decrypted = await decryptPrivateKey(privateKey);
       } else {
-        // For Agency and Citizen, use the backend decrypt endpoint
         const response = await fetch("http://localhost:5000/api/decrypt/private", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ privateKey })
         });
-        
+
         const json = await response.json();
         if (!response.ok) {
-          console.error("Private key decryption failed:", json);
           alert("Failed to decrypt private key");
           return;
         }
-        
+
         decrypted = json.decryptedKey;
       }
 
       if (decrypted) {
         const account = web3.eth.accounts.privateKeyToAccount(decrypted);
         web3.eth.accounts.wallet.add(account);
-        
-        // Save wallet state immediately
+
+        // Save state and type
         saveWalletState(account.address, true);
+        saveWalletType('privateKey');
+
         setCurrentAddress(account.address);
         setWalletConnected(true);
-
-        // Update backend connection status based on role (don't wait for this)
-        try {
-          switch (role) {
-            case 'Admin':
-              await updateAdminToConnected();
-              break;
-            case 'Agency':
-              await updateToConnected();
-              break;
-            case 'Citizen':
-              // Citizens don't have backend connection status
-              break;
-          }
-        } catch (backendError) {
-          console.warn("Backend connection update failed, but wallet is still connected:", backendError);
-          // Don't fail the connection if backend update fails
-        }
+        await updateBackendConnection();
+        await fetchBalanceForAddress(account.address);
 
         setShowPrivateKeyModal(false);
         setPrivateKey("");
-
-        await fetchBalanceForAddress(account.address);
       }
     } catch (err) {
       console.error("Error connecting with private key:", err);
@@ -190,25 +194,20 @@ export default function useWallet(options: UseWalletOptions) {
     }
   };
 
+  // ------------------- Disconnect -------------------
+
   const handleDisconnect = async () => {
     try {
-      // Disconnect from backend first
       await disconnectWalletFromBackend();
-      
-      // Then clear local state
+    } catch (err) {
+      console.error("Backend disconnect failed:", err);
+    } finally {
       setWalletConnected(false);
       setCurrentAddress(null);
       setBalanceEth("0");
       setBalancePhp("0");
       clearWalletState();
-    } catch (error) {
-      console.error("Error disconnecting wallet:", error);
-      // Still clear local state even if backend call fails
-      setWalletConnected(false);
-      setCurrentAddress(null);
-      setBalanceEth("0");
-      setBalancePhp("0");
-      clearWalletState();
+      localStorage.removeItem(WALLET_STORAGE_KEYS.WALLET_TYPE);
     }
   };
 
@@ -219,16 +218,15 @@ export default function useWallet(options: UseWalletOptions) {
     }
   };
 
+  // ------------------- Profile Data -------------------
+
   const resetProfileFetch = useCallback(() => {
     hasFetchedProfile.current = false;
     setIsLoadingProfile(false);
   }, []);
 
-  // Memoize the profile fetch function to prevent infinite loops
   const fetchProfileData = useCallback(async () => {
-    if (isLoadingProfile || hasFetchedProfile.current || role !== 'Agency' || !onProfileUpdate || !onFetchedData) {
-      return;
-    }
+    if (isLoadingProfile || hasFetchedProfile.current || role !== 'Agency' || !onProfileUpdate || !onFetchedData) return;
 
     setIsLoadingProfile(true);
     hasFetchedProfile.current = true;
@@ -237,7 +235,6 @@ export default function useWallet(options: UseWalletOptions) {
       const { fetchUsers } = await import("../../features/agency/services/agencyService");
       const profileData = await fetchUsers();
       if (profileData) {
-        // Handle both array and single object responses
         const userData = Array.isArray(profileData) ? profileData[0] : profileData;
         if (userData) {
           onFetchedData(userData);
@@ -251,30 +248,40 @@ export default function useWallet(options: UseWalletOptions) {
       }
     } catch (err) {
       console.error("Error fetching profile data:", err);
-      hasFetchedProfile.current = false; // Reset on error to allow retry
+      hasFetchedProfile.current = false;
     } finally {
       setIsLoadingProfile(false);
     }
   }, [role, onProfileUpdate, onFetchedData, isLoadingProfile]);
 
+  // ------------------- Effect: Reconnection -------------------
+
   useEffect(() => {
-    const handleFetch = async () => {
+    const handleReconnection = async () => {
       try {
-        // Fetch profile data for Agency role (only once)
         await fetchProfileData();
 
-        // Attempt to reconnect wallet
-        const reconnectionResult = await attemptWalletReconnection();
-        if (reconnectionResult.success && reconnectionResult.address) {
-          setWalletConnected(true);
-          setCurrentAddress(reconnectionResult.address);
-          await fetchBalanceForAddress(reconnectionResult.address);
-        } else {
-          // If reconnection failed, check if we have stored state but it's invalid
+        const storedType = getWalletType();
+
+        if (storedType === 'privateKey') {
           const storedState = getWalletState();
           if (storedState.isConnected && storedState.address) {
-            // Clear invalid state
-            clearWalletState();
+            setWalletConnected(true);
+            setCurrentAddress(storedState.address);
+            await fetchBalanceForAddress(storedState.address);
+          }
+        } else if (storedType === 'metamask') {
+          const recon = await attemptWalletReconnection();
+          if (recon.success && recon.address) {
+            setWalletConnected(true);
+            setCurrentAddress(recon.address);
+            await fetchBalanceForAddress(recon.address);
+          } else {
+            const storedState = getWalletState();
+            if (storedState.isConnected && storedState.address) {
+              clearWalletState();
+              localStorage.removeItem(WALLET_STORAGE_KEYS.WALLET_TYPE);
+            }
           }
         }
       } catch (err) {
@@ -282,26 +289,21 @@ export default function useWallet(options: UseWalletOptions) {
       }
     };
 
-    handleFetch();
+    handleReconnection();
 
-    // Set up MetaMask event listeners
     const cleanup = setupMetaMaskListeners(
       async (newAddress) => {
         if (newAddress) {
-          // User switched accounts
           saveWalletState(newAddress, true);
+          saveWalletType('metamask');
           setCurrentAddress(newAddress);
           setWalletConnected(true);
           await fetchBalanceForAddress(newAddress);
         } else {
-          // User disconnected
           handleDisconnect();
         }
       },
-      () => {
-        // User disconnected
-        handleDisconnect();
-      }
+      () => handleDisconnect()
     );
 
     return cleanup;
@@ -325,6 +327,6 @@ export default function useWallet(options: UseWalletOptions) {
     balancePhp,
     isLoadingProfile,
     resetProfileFetch,
-    fetchProfileData,
+    fetchProfileData
   };
 }

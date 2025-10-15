@@ -6,7 +6,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
 import { Input } from "../ui/input";
 import { Alert, AlertDescription } from "../ui/alert";
 import { Label } from "../ui/label";
-import useWallet, { UserRole, WalletData } from "../hooks/useWallet";
+import { UserRole } from "@shared/types/auth";
+import useWallet from "@shared/hooks/useWallet";
+
 
 interface BlockchainWalletCardProps {
   role: UserRole;

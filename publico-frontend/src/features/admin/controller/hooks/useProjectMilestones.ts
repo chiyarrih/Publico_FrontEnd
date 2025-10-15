@@ -227,7 +227,6 @@ export const useProjectMilestone = (milestoneId: string) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [alerts, setAlerts] = useState<Alert[]>([]);
-
   const fetchMilestone = useCallback(async () => {
     if (!milestoneId) return;
     
