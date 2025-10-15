@@ -52,7 +52,7 @@ export default function Milestones() {
   const {milestone} = useMilestone()
   const milestones = milestone; // In real app, this would come from API
 
-  const filtered = useMemo(() => milestones.filter(p =>
+  const filtered = useMemo(() => milestones?.filter(p =>
     (dept === "All" || p.department === dept) &&
     (state === "All" || p.overallStatus === state) &&
     (p.projectName.toLowerCase().includes(search.toLowerCase()) || p._id.includes(search))
@@ -98,7 +98,7 @@ export default function Milestones() {
           onChange={e => setDept(e.target.value)}
         >
           <option>All Departments</option>
-          {Array.from(new Set(milestones.map(m => m.department))).map(dept => (
+          {Array.from(new Set(milestones?.map(m => m.department)))?.map(dept => (
             <option key={dept} value={dept}>{dept}</option>
           ))}
         </select>
@@ -108,7 +108,7 @@ export default function Milestones() {
           onChange={e => setState(e.target.value)}
         >
           <option>All Statuses</option>
-          {Array.from(new Set(milestones.map(m => m.overallStatus))).map(status => (
+          {Array.from(new Set(milestones?.map(m => m.overallStatus)))?.map(status => (
             <option key={status} value={status}>{status}</option>
           ))}
         </select>
@@ -132,13 +132,13 @@ export default function Milestones() {
           </div>
           
           {/* Table Body */}
-          {filtered.length === 0 ? (
+          {filtered?.length === 0 ? (
             <div className="px-6 py-8 text-center text-gray-500">
               No projects found
             </div>
           ) : (
             <div className="divide-y divide-gray-200">
-              {filtered.map(project => (
+              {filtered?.map(project => (
                 <div key={project._id} className="grid grid-cols-6 gap-4 px-6 py-4 hover:bg-gray-50">
                   <div className="text-sm font-medium text-gray-900">{project._id}</div>
                   <div className="text-sm text-gray-900">{project.projectName}</div>

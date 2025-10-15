@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, Pill } from '../../../../shared/ui';
+import {useMilestoneId} from '@agency/controller/hooks/useMilestoneId';
+
+
+
 
 const ArrowLeft = ({ className = "" }: { className?: string }) => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" className={className}><path d="M19 12H5M12 19l-7-7 7-7"/></svg>;
 const CheckCircle = ({ className = "" }: { className?: string }) => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" className={className}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22,4 12,14.01 9,11.01"/></svg>;
@@ -132,33 +136,33 @@ const ProofOfWorkModal: React.FC<ProofOfWorkModalProps> = ({ phaseNumber, phaseN
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-        <h3 className="text-lg font-semibold mb-4">Upload Proof of Work - Phase {phaseNumber}</h3>
-        <p className="text-sm text-gray-600 mb-4">{phaseName}</p>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+      <div className="w-full max-w-md p-6 mx-4 bg-white rounded-lg">
+        <h3 className="mb-4 text-lg font-semibold">Upload Proof of Work - Phase {phaseNumber}</h3>
+        <p className="mb-4 text-sm text-gray-600">{phaseName}</p>
         
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block mb-1 text-sm font-medium text-gray-700">
               Description
             </label>
             <input
               type="text"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full border rounded px-3 py-2 text-sm"
+              className="w-full px-3 py-2 text-sm border rounded"
               placeholder="Describe the work completed..."
             />
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block mb-1 text-sm font-medium text-gray-700">
               Upload Document
             </label>
             <input
               type="file"
               onChange={(e) => setFile(e.target.files?.[0] || null)}
-              className="w-full border rounded px-3 py-2 text-sm"
+              className="w-full px-3 py-2 text-sm border rounded"
               accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
             />
           </div>
@@ -168,7 +172,7 @@ const ProofOfWorkModal: React.FC<ProofOfWorkModalProps> = ({ phaseNumber, phaseN
           <button
             onClick={handleSubmit}
             disabled={!file || !description}
-            className="flex-1 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:bg-gray-400 flex items-center justify-center gap-2"
+            className="flex items-center justify-center flex-1 gap-2 px-4 py-2 text-white bg-blue-600 rounded hover:bg-blue-700 disabled:bg-gray-400"
           >
             <Upload />
             Upload Proof
@@ -190,9 +194,9 @@ export default function MilestoneDetail() {
   const navigate = useNavigate();
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [selectedPhase, setSelectedPhase] = useState<any>(null);
-
+  const {milestoneId} = useMilestoneId({id:id});
   // In real app, this would fetch from API based on id
-  const milestone = mockMilestone;
+  const milestone = milestoneId;
 
   const handleUploadProof = (phase: any) => {
     setSelectedPhase(phase);
@@ -213,9 +217,7 @@ export default function MilestoneDetail() {
     );
   }
 
-  const currentPhase = milestone.phases.find(p => p.status === 'In Progress');
-  const completedPhases = milestone.phases.filter(p => p.status === 'Completed');
-  const pendingPhases = milestone.phases.filter(p => p.status === 'Pending');
+
 
   return (
     <div className="space-y-6">
@@ -224,7 +226,7 @@ export default function MilestoneDetail() {
         <div className="flex items-center gap-4">
           <button
             onClick={() => navigate('/agency/milestones')}
-            className="p-2 hover:bg-gray-100 rounded"
+            className="p-2 rounded hover:bg-gray-100"
           >
             <ArrowLeft />
           </button>
@@ -240,20 +242,20 @@ export default function MilestoneDetail() {
       </div>
 
       {/* Project Overview */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h2 className="text-lg font-semibold mb-4">Project Overview</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+      <div className="p-6 bg-white border border-gray-200 rounded-lg">
+        <h2 className="mb-4 text-lg font-semibold">Project Overview</h2>
+        <div className="grid grid-cols-1 gap-6 mb-6 md:grid-cols-3">
           <div>
-            <div className="text-sm text-gray-600 mb-1">Department</div>
-            <div className="font-medium text-lg">{milestone.department}</div>
+            <div className="mb-1 text-sm text-gray-600">Department</div>
+            <div className="text-lg font-medium">{milestone.department}</div>
           </div>
           <div>
-            <div className="text-sm text-gray-600 mb-1">Total Budget</div>
-            <div className="font-bold text-lg text-blue-600">₱{milestone.totalBudget.toLocaleString()}</div>
+            <div className="mb-1 text-sm text-gray-600">Total Budget</div>
+            <div className="text-lg font-bold text-blue-600">₱{milestone?.totalBudget?.toLocaleString()}</div>
           </div>
           <div>
-            <div className="text-sm text-gray-600 mb-1">Timeline</div>
-            <div className="font-bold text-lg">
+            <div className="mb-1 text-sm text-gray-600">Timeline</div>
+            <div className="text-lg font-bold">
               {new Date(milestone.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} - {new Date(milestone.endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
             </div>
           </div>
@@ -262,20 +264,20 @@ export default function MilestoneDetail() {
           <span className="text-sm text-gray-600">Overall Progress</span>
           <span className="text-sm font-medium">{milestone.overallProgress}%</span>
         </div>
-        <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+        <div className="w-full h-2 mt-2 bg-gray-200 rounded-full">
           <div 
-            className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+            className="h-2 transition-all duration-300 bg-blue-600 rounded-full"
             style={{ width: `${milestone.overallProgress}%` }}
           />
         </div>
       </div>
 
       {/* Milestones Table */}
-      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-        <h2 className="text-lg font-semibold p-6 pb-4">Milestones</h2>
+      <div className="overflow-hidden bg-white border border-gray-200 rounded-lg">
+        <h2 className="p-6 pb-4 text-lg font-semibold">Milestones</h2>
         
         {/* Table Header */}
-        <div className="bg-gray-50 border-b border-gray-200">
+        <div className="border-b border-gray-200 bg-gray-50">
           <div className="grid grid-cols-6 gap-4 px-6 py-3 text-sm font-medium text-gray-700">
             <div>Milestone</div>
             <div>Target Date</div>
@@ -288,7 +290,7 @@ export default function MilestoneDetail() {
         
         {/* Table Body */}
         <div className="divide-y divide-gray-200">
-          {milestone.phases.map((phase) => (
+          {milestone?.phases?.map((phase:any) => (
             <div key={phase.phaseNumber} className="grid grid-cols-6 gap-4 px-6 py-4">
               <div className="flex items-center gap-3">
                 <div className={`w-6 h-6 rounded-full flex items-center justify-center ${
@@ -319,12 +321,12 @@ export default function MilestoneDetail() {
                   <>
                     <button
                       onClick={() => handleUploadProof(phase)}
-                      className="inline-flex items-center gap-1 px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700"
+                      className="inline-flex items-center gap-1 px-3 py-1 text-xs text-white bg-blue-600 rounded hover:bg-blue-700"
                     >
                       <Upload className="w-3 h-3" />
                       Upload Proof
                     </button>
-                    <button className="inline-flex items-center gap-1 px-3 py-1 text-blue-600 text-xs hover:bg-blue-50 rounded">
+                    <button className="inline-flex items-center gap-1 px-3 py-1 text-xs text-blue-600 rounded hover:bg-blue-50">
                       <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
@@ -336,14 +338,14 @@ export default function MilestoneDetail() {
                 {phase.status === 'Pending' && (
                   <button
                     onClick={() => handleUploadProof(phase)}
-                    className="inline-flex items-center gap-1 px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700"
+                    className="inline-flex items-center gap-1 px-3 py-1 text-xs text-white bg-blue-600 rounded hover:bg-blue-700"
                   >
                     <Upload className="w-3 h-3" />
                     Upload Proof
                   </button>
                 )}
                 {phase.status === 'Approved' && (
-                  <button className="inline-flex items-center gap-1 px-3 py-1 text-blue-600 text-xs hover:bg-blue-50 rounded">
+                  <button className="inline-flex items-center gap-1 px-3 py-1 text-xs text-blue-600 rounded hover:bg-blue-50">
                     <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
@@ -358,7 +360,7 @@ export default function MilestoneDetail() {
       </div>
 
       {/* Procurement Phase Details */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
+      <div className="p-6 bg-white border border-gray-200 rounded-lg">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <Clock className="w-5 h-5 text-gray-600" />
@@ -369,22 +371,29 @@ export default function MilestoneDetail() {
           </span>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <div className="grid grid-cols-1 gap-6 mb-6 md:grid-cols-2">
           <div>
-            <div className="text-sm text-gray-600 mb-1">Target Date</div>
-            <div className="font-bold text-lg">
-              {new Date(milestone.phases[1].targetDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+            <div className="mb-1 text-sm text-gray-600">Target Date</div>
+            <div className="text-lg font-bold">
+              {milestone?.phases?.[1]?.targetDate
+                ? new Date(milestone.phases[1].targetDate).toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric',
+                  })
+                : 'No target date'}
             </div>
+
           </div>
           <div>
-            <div className="text-sm text-gray-600 mb-1">Deliverables</div>
-            <div className="font-medium">{milestone.phases[1].description}</div>
+            <div className="mb-1 text-sm text-gray-600">Deliverables</div>
+            <div className="font-medium">{milestone?.phases?.[1]?.description}</div>
           </div>
         </div>
         
         <button
-          onClick={() => handleUploadProof(milestone.phases[1])}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          onClick={() => handleUploadProof(milestone?.phases[0])}
+          className="inline-flex items-center gap-2 px-4 py-2 text-white bg-blue-600 rounded hover:bg-blue-700"
         >
           <Upload className="w-4 h-4" />
           Upload New Proof
@@ -392,14 +401,14 @@ export default function MilestoneDetail() {
       </div>
 
       {/* Proof of Work Section */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h2 className="text-lg font-semibold mb-4">Proof of Work</h2>
+      <div className="p-6 bg-white border border-gray-200 rounded-lg">
+        <h2 className="mb-4 text-lg font-semibold">Proof of Work</h2>
         
         <div className="space-y-4">
-          {milestone.phases[1].proofOfWork.map((proof) => (
+          {milestone.phases?.[1]?.proofOfWork?.map((proof:any) => (
             <div key={proof.documentId} className="flex items-start gap-4 p-4 border border-gray-200 rounded-lg">
               <div className="flex-shrink-0">
-                <div className="w-10 h-10 bg-gray-100 rounded flex items-center justify-center">
+                <div className="flex items-center justify-center w-10 h-10 bg-gray-100 rounded">
                   <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>
@@ -407,9 +416,9 @@ export default function MilestoneDetail() {
               </div>
               
               <div className="flex-1">
-                <h3 className="font-medium text-gray-900 mb-1">{proof.description}</h3>
-                <p className="text-sm text-gray-600 mb-2">{proof.description}</p>
-                <div className="text-xs text-gray-500 mb-3">
+                <h3 className="mb-1 font-medium text-gray-900">{proof.description}</h3>
+                <p className="mb-2 text-sm text-gray-600">{proof.description}</p>
+                <div className="mb-3 text-xs text-gray-500">
                   Uploaded {new Date(proof.uploadedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })} by {proof.uploadedBy} • {(proof.fileSize / 1024 / 1024).toFixed(1)} MB
                 </div>
                 <div className="flex items-center justify-between">
@@ -422,7 +431,7 @@ export default function MilestoneDetail() {
                   </span>
                   <button
                     onClick={() => window.open(proof.fileUrl, '_blank')}
-                    className="inline-flex items-center gap-1 px-3 py-1 text-blue-600 text-xs hover:bg-blue-50 rounded"
+                    className="inline-flex items-center gap-1 px-3 py-1 text-xs text-blue-600 rounded hover:bg-blue-50"
                   >
                     <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />

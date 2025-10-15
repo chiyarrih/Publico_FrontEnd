@@ -8,6 +8,8 @@ export default function useMilestone(){
         const data = await getProjectMilestoneAsAgency();
         setMilestone(data);
     }
+
+
     useEffect(()=>{
         fetchMilestones()
     }, [milestone])
