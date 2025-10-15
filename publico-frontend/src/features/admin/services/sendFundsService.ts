@@ -55,6 +55,7 @@ export const approveBudget = async ({ projectId }: Props) => {
     console.log("No private key found");
     return;
   }
+  const json = await JSON.parse(privateKey)
 
   try {
     const response = await fetch(
@@ -67,7 +68,8 @@ export const approveBudget = async ({ projectId }: Props) => {
           Authorization: `Bearer ${token}`,
         },
         body:JSON.stringify({
-            projectId:projectId
+            projectId:projectId,
+            admin_id: json.user.user_id,
         })
       }
     );

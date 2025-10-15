@@ -50,22 +50,26 @@ export default function BudgetRequests() {
   }, [currentPage, selectedStatus]);
   
   useEffect(() => {
-    const socket = io('http://localhost:3001', {
-      auth: { token },
-    });
+  const socket = io('http://localhost:3001', {
+    auth: { token },
+  });
 
-    socketRef.current = socket;
+  socketRef.current = socket;
 
-    socket.on('new_submited', (newData) => {
-      setItems((prev) => [newData, ...prev]);
-    });
+    socket.on('project_updated', (updatedProject) => {
+    setItems((prev) =>
+      prev.map((item) =>
+        item.projectId === updatedProject.projectId ? updatedProject : item
+      )
+    );
+  });
 
-    
 
-    return () => {
-      socket.disconnect();
-    };
-  }, [token]);
+  return () => {
+    socket.disconnect();
+  };
+}, [token]);
+
 
   // Filter logic - search only (department and status filtering done via API)
   const filtered = useMemo(() => {
@@ -174,7 +178,6 @@ export default function BudgetRequests() {
           isFunded={selectedProposal.isFunded}//TODO: call the project is already funded here
           onApproved={()=>{
             onApprove()
-            setShowApprovalModal(false);
           }}
           isOpen={showApprovalModal}
           onClose={() => setShowApprovalModal(false)}

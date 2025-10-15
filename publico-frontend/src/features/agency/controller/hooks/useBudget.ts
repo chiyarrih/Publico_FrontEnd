@@ -1,5 +1,6 @@
 import { fetchProjectsProposed, sendBudgetProposal } from '@agency/services/agencyService';
 import { BudgetFormProps } from 'interfaces/budget';
+import { Milestone } from 'interfaces/user';
 import { useEffect, useRef, useState } from 'react';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import {toast} from 'react-hot-toast';
@@ -13,6 +14,7 @@ export default function useBudget() {
   const [limit] = useState(10);
   const [files, setFiles] = useState<File[]>([]);
   const socketRef = useRef<Socket | null>(null);
+  
   const token = localStorage.getItem('publico_auth_token');
   const {
     register,
@@ -30,6 +32,24 @@ export default function useBudget() {
       objectives: '',
     },
   });
+  const [milestones, setMilestones] = useState<Milestone[]>([
+    { id: "1", title: "", targetDate: "", budget: "", deliverables: "" },
+  ])
+
+  const addMilestone = () => {
+    const newId = (milestones.length + 1).toString()
+    setMilestones([...milestones, { id: newId, title: "", targetDate: "", budget: "", deliverables: "" }])
+  }
+
+  const removeMilestone = (id: string) => {
+    if (milestones.length > 1) {
+      setMilestones(milestones.filter((m) => m.id !== id))
+    }
+  }
+
+  const updateMilestone = (id: string, field: keyof Milestone, value: string) => {
+    setMilestones(milestones.map((m) => (m.id === id ? { ...m, [field]: value } : m)))
+  }
 
   const handleDownload = async (url: string) => {
   try {
@@ -46,19 +66,24 @@ export default function useBudget() {
     console.error("Download failed:", err);
   }
 };
-  const onSubmit: SubmitHandler<BudgetFormProps> = async (data) => {
-    try {
-      setIsLoading(true);
-      await sendBudgetProposal(data, files);
-      reset();
-      setFiles([]);
-      toast.success("Budget proposed Successfully.")
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+const onSubmit: SubmitHandler<BudgetFormProps> = async (data) => {
+  try {
+    setIsLoading(true);
+    // 👇 include milestones
+    await sendBudgetProposal(data, files, milestones);
+    reset();
+    setFiles([]);
+    setMilestones([]);
+
+    toast.success("Budget proposed successfully.");
+  } catch (error) {
+    console.error(error);
+    toast.error("Failed to submit budget proposal.");
+  } finally {
+    setIsLoading(false);
+  }
+};
+
 
   const loadData = async (currentPage: number) => {
     try {
@@ -69,7 +94,7 @@ export default function useBudget() {
       );
 
       setHasMore(currentPage < result.totalPages);
-    } catch (err) {
+    } catch (err) { 
       console.error(err);
     }
   };
@@ -114,6 +139,10 @@ export default function useBudget() {
     page,
     files,
     setFiles,
-    handleDownload
+    handleDownload,
+    addMilestone,
+    removeMilestone,
+    updateMilestone,
+    milestones
   };
 }

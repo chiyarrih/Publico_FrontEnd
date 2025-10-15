@@ -30,3 +30,11 @@ export interface UseData {
   last_name?: string;
   admin_id?: string;
 }
+
+export interface Milestone  {
+  id: string
+  title: string
+  targetDate: string
+  budget: string
+  deliverables: string
+}
