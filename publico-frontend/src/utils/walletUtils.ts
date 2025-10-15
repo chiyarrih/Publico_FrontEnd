@@ -5,8 +5,6 @@ export interface WalletConnectionState {
   address: string | null;
   balanceEth: string;
   balancePhp: string;
-
-  
 }
 
 export const WALLET_STORAGE_KEYS = {
@@ -15,313 +13,187 @@ export const WALLET_STORAGE_KEYS = {
   LAST_CONNECTED: 'web3_last_connected'
 };
 
-/**
- * Check if MetaMask is installed and available
- */
-export const isMetaMaskInstalled = (): boolean => {
-  return typeof window !== 'undefined' && typeof (window as any).ethereum !== 'undefined';
-};
+// --- MetaMask helpers ---
+export const isMetaMaskInstalled = (): boolean =>
+  typeof window !== 'undefined' && typeof (window as any).ethereum !== 'undefined';
 
-/**
- * Get current MetaMask accounts
- */
 export const getMetaMaskAccounts = async (): Promise<string[]> => {
-  if (!isMetaMaskInstalled()) {
-    throw new Error('MetaMask not installed');
-  }
-  
+  if (!isMetaMaskInstalled()) throw new Error('MetaMask not installed');
   const eth = (window as any).ethereum;
   return await eth.request({ method: 'eth_accounts' });
 };
 
-/**
- * Request MetaMask accounts (triggers connection prompt)
- */
 export const requestMetaMaskAccounts = async (): Promise<string[]> => {
-  if (!isMetaMaskInstalled()) {
-    throw new Error('MetaMask not installed');
-  }
-  
+  if (!isMetaMaskInstalled()) throw new Error('MetaMask not installed');
   const eth = (window as any).ethereum;
   return await eth.request({ method: 'eth_requestAccounts' });
 };
 
-/**
- * Check if user has previously connected to MetaMask
- */
 export const isMetaMaskAuthorized = async (): Promise<boolean> => {
   try {
     const accounts = await getMetaMaskAccounts();
     return accounts.length > 0;
-  } catch (error) {
+  } catch {
     return false;
   }
 };
 
-/**
- * Get the currently connected address from MetaMask
- */
 export const getCurrentMetaMaskAddress = async (): Promise<string | null> => {
   try {
     const accounts = await getMetaMaskAccounts();
     return accounts.length > 0 ? accounts[0] : null;
-  } catch (error) {
+  } catch {
     return null;
   }
 };
 
-/**
- * Fetch balance for an address
- */
+// --- Fetch balance ---
+const getEthToPhpRate = async (): Promise<number> => {
+  try {
+    const resp = await fetch(
+      "https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=php"
+    );
+    if (!resp.ok) throw new Error("Failed to fetch rate");
+    const data = await resp.json();
+    return data.ethereum.php ?? 30000;
+  } catch (err) {
+    console.warn("Coingecko fetch failed, fallback rate used", err);
+    return 30000;
+  }
+};
+
 export const fetchBalance = async (address: string): Promise<{ balanceEth: string; balancePhp: string }> => {
-  // 1) Try backend first (recommended)
   try {
     const token = localStorage.getItem('publico_auth_token');
-    const resp = await fetch(`http://localhost:5000/api/wallet/balance/${address}`, {
+    const resp = await fetch(`http://localhost:5000/balance/${address}`, {
       headers: token ? { Authorization: `Bearer ${token}` } : {}
     });
-
     if (resp.ok) {
       const data = await resp.json();
-      // Prefer the alias fields; fall back to originals
       const balanceEth = data.ethBalance ?? data.balanceEth ?? "0";
-      const balancePhp = (data.phpEquivalent ?? data.balancePhp ?? 0).toString();
-      return { balanceEth: String(balanceEth), balancePhp: String(balancePhp) };
-    }
-  } catch (e) {
-    console.warn("Backend balance fetch failed, falling back to MetaMask:", e);
-  }
-
-  // 2) Fallback to MetaMask provider (requires MetaMask on correct network)
-  try {
-    if (typeof window !== 'undefined' && (window as any).ethereum) {
-      const eth = (window as any).ethereum;
-      const balanceWeiHex = await eth.request({
-        method: 'eth_getBalance',
-        params: [address, 'latest']
-      });
-
-      // Use web3 utils to avoid precision issues
-      const balanceEthRaw = (web3 as any).utils.fromWei(balanceWeiHex, 'ether');
-      const balanceEth = Number(balanceEthRaw).toFixed(6);
-
-      // Fetch PHP conversion rate
-      const res = await fetch("https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=php");
-      const data = await res.json();
-      const rate = data.ethereum?.php || 0;
-      const balancePhp = (parseFloat(balanceEthRaw) * rate).toFixed(2);
-
+      const ethToPhpRate = await getEthToPhpRate();
+      const balancePhp = (parseFloat(balanceEth) * ethToPhpRate).toString();
       return { balanceEth, balancePhp };
     }
+  } catch (e) {
+    console.warn("Backend fetch failed, fallback to web3", e);
+  }
+
+  try {
+    let balanceWei: string;
+    if (typeof window !== "undefined" && (window as any).ethereum) {
+      const eth = (window as any).ethereum;
+      balanceWei = await eth.request({
+        method: "eth_getBalance",
+        params: [address, "latest"],
+      });
+    } else {
+      balanceWei = (await web3.eth.getBalance(address)).toString();
+    }
+    const balanceEth = web3.utils.fromWei(balanceWei, "ether");
+    const balancePhp = (parseFloat(balanceEth) * await getEthToPhpRate()).toString();
+    return { balanceEth, balancePhp };
   } catch (err) {
-    console.error("MetaMask balance fetch error:", err);
+    console.error("Web3 balance fetch failed:", err);
+    return { balanceEth: "0", balancePhp: "0" };
   }
-
-  return { balanceEth: "0", balancePhp: "0" };
 };
 
-/**
- * Sign a message with MetaMask
- */
+// --- Sign message ---
 export const signMessage = async (message: string, address: string): Promise<string> => {
-  if (!isMetaMaskInstalled()) {
-    throw new Error('MetaMask not installed');
-  }
-  
+  if (!isMetaMaskInstalled()) throw new Error('MetaMask not installed');
   const eth = (window as any).ethereum;
-  return await eth.request({
-    method: "personal_sign",
-    params: [message, address],
-  });
+  return await eth.request({ method: "personal_sign", params: [message, address] });
 };
 
-/**
- * Save wallet connection state to localStorage
- */
+// --- Storage helpers ---
 export const saveWalletState = (address: string, isConnected: boolean = true): void => {
   localStorage.setItem(WALLET_STORAGE_KEYS.ADDRESS, address);
   localStorage.setItem(WALLET_STORAGE_KEYS.CONNECTION_STATE, JSON.stringify({ isConnected, address }));
   localStorage.setItem(WALLET_STORAGE_KEYS.LAST_CONNECTED, Date.now().toString());
 };
 
-/**
- * Get wallet connection state from localStorage
- */
 export const getWalletState = (): { isConnected: boolean; address: string | null } => {
   const address = localStorage.getItem(WALLET_STORAGE_KEYS.ADDRESS);
   const stateStr = localStorage.getItem(WALLET_STORAGE_KEYS.CONNECTION_STATE);
-  
-  if (!address || !stateStr) {
-    return { isConnected: false, address: null };
-  }
-  
+  if (!address || !stateStr) return { isConnected: false, address: null };
   try {
     const state = JSON.parse(stateStr);
     return { isConnected: state.isConnected, address: state.address };
-  } catch (error) {
-    return { isConnected: false, address: address };
+  } catch {
+    return { isConnected: false, address };
   }
 };
 
-/**
- * Clear wallet connection state from localStorage
- */
 export const clearWalletState = (): void => {
   localStorage.removeItem(WALLET_STORAGE_KEYS.ADDRESS);
   localStorage.removeItem(WALLET_STORAGE_KEYS.CONNECTION_STATE);
   localStorage.removeItem(WALLET_STORAGE_KEYS.LAST_CONNECTED);
 };
 
-/**
- * Check if wallet connection is still valid by verifying with MetaMask and backend
- */
-export const validateWalletConnection = async (): Promise<{ isValid: boolean; address: string | null }> => {
-  try {
-    const storedState = getWalletState();
-    if (!storedState.isConnected || !storedState.address) {
-      return { isValid: false, address: null };
-    }
-
-    // Check if MetaMask is still connected to the same address
-    const currentAddress = await getCurrentMetaMaskAddress();
-    const isValid = currentAddress === storedState.address;
-    
-    if (!isValid) {
-      // Clear invalid state
-      clearWalletState();
-    }
-    
-    return { isValid, address: currentAddress };
-  } catch (error) {
-    console.error('Error validating wallet connection:', error);
-    clearWalletState();
-    return { isValid: false, address: null };
-  }
-};
-
-/**
- * Validate wallet connection with backend
- */
+// --- Backend validation & disconnect ---
 export const validateWalletWithBackend = async (address: string): Promise<{ isValid: boolean; isConnected: boolean }> => {
   try {
     const token = localStorage.getItem('publico_auth_token');
-    if (!token) {
-      return { isValid: false, isConnected: false };
-    }
-
-    const response = await fetch("http://localhost:5000/api/wallet/validate", {
+    if (!token) return { isValid: false, isConnected: false };
+    const resp = await fetch("http://localhost:5000/api/wallet/validate", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
-      },
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
       body: JSON.stringify({ address })
     });
-
-    if (!response.ok) {
-      return { isValid: false, isConnected: false };
-    }
-
-    const data = await response.json();
+    if (!resp.ok) return { isValid: false, isConnected: false };
+    const data = await resp.json();
     return { isValid: true, isConnected: data.isConnected };
-  } catch (error) {
-    console.error('Error validating wallet with backend:', error);
+  } catch (err) {
+    console.error("Wallet backend validation failed:", err);
     return { isValid: false, isConnected: false };
   }
 };
 
-/**
- * Disconnect wallet from backend
- */
 export const disconnectWalletFromBackend = async (): Promise<boolean> => {
   try {
     const token = localStorage.getItem('publico_auth_token');
-    if (!token) {
-      return false;
-    }
-
-    const response = await fetch("http://localhost:5000/api/wallet/disconnect", {
+    if (!token) return false;
+    const resp = await fetch("http://localhost:5000/api/wallet/disconnect", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
-      }
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` }
     });
-
-    return response.ok;
-  } catch (error) {
-    console.error('Error disconnecting wallet from backend:', error);
+    return resp.ok;
+  } catch (err) {
+    console.error("Wallet backend disconnect failed:", err);
     return false;
   }
 };
 
-/**
- * Attempt to reconnect to MetaMask on page load
- */
+// --- Reconnection ---
 export const attemptWalletReconnection = async (): Promise<{ success: boolean; address: string | null }> => {
   try {
-    const storedState = getWalletState();
-    if (!storedState.isConnected || !storedState.address) {
-      return { success: false, address: null };
-    }
-
-    // Check if MetaMask is still connected
-    const isAuthorized = await isMetaMaskAuthorized();
-    if (!isAuthorized) {
-      clearWalletState();
-      return { success: false, address: null };
-    }
-
+    const stored = getWalletState();
+    if (!stored.isConnected || !stored.address) return { success: false, address: null };
+    const authorized = await isMetaMaskAuthorized();
+    if (!authorized) { clearWalletState(); return { success: false, address: null }; }
     const currentAddress = await getCurrentMetaMaskAddress();
-    if (currentAddress === storedState.address) {
-      // Same address, just reconnect without backend validation
-      // Backend validation can be done later when needed
-      return { success: true, address: currentAddress };
-    } else if (currentAddress) {
-      // Address changed, update stored state
-      saveWalletState(currentAddress, true);
-      return { success: true, address: currentAddress };
-    } else {
-      return { success: false, address: null };
-    }
-  } catch (error) {
-    console.error('Error attempting wallet reconnection:', error);
+    if (currentAddress === stored.address) return { success: true, address: currentAddress };
+    if (currentAddress) { saveWalletState(currentAddress, true); return { success: true, address: currentAddress }; }
+    return { success: false, address: null };
+  } catch (err) {
+    console.error("Reconnection failed:", err);
     clearWalletState();
     return { success: false, address: null };
   }
 };
 
-/**
- * Set up MetaMask event listeners for account changes and disconnections
- */
+// --- Event listeners ---
 export const setupMetaMaskListeners = (onAccountChange: (address: string | null) => void, onDisconnect: () => void) => {
-  if (!isMetaMaskInstalled()) {
-    return () => {}; // Return empty cleanup function
-  }
-
+  if (!isMetaMaskInstalled()) return () => {};
   const eth = (window as any).ethereum;
 
-  const handleAccountsChanged = (accounts: string[]) => {
-    if (accounts.length === 0) {
-      // User disconnected
-      onDisconnect();
-    } else {
-      // User switched accounts
-      onAccountChange(accounts[0]);
-    }
-  };
+  const handleAccountsChanged = (accounts: string[]) => accounts.length === 0 ? onDisconnect() : onAccountChange(accounts[0]);
+  const handleDisconnect = () => onDisconnect();
 
-  const handleDisconnect = () => {
-    onDisconnect();
-  };
-
-  // Listen for account changes
   eth.on('accountsChanged', handleAccountsChanged);
-  
-  // Listen for disconnect events
   eth.on('disconnect', handleDisconnect);
 
-  // Return cleanup function
   return () => {
     eth.removeListener('accountsChanged', handleAccountsChanged);
     eth.removeListener('disconnect', handleDisconnect);

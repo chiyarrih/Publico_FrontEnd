@@ -3,27 +3,27 @@ import { Table, Input, Select, Button, Badge, Card } from "../ui/blocks";
 import useAdminTransactions from "../../controller/hooks/useAdminTransactions";
 import TransactionDetailsModal from "../modals/TransactionDetailsModal";
 import type { BudgetProposal } from "../../model/types/admin";
+import useLedger from "@agency/controller/hooks/useLedger";
 
 export default function Transactions(){
-  const { 
-    proposals, 
-    loading, 
-    statusFilter, 
-    searchQuery,
-    departmentFilter,
-    dateRange,
-    showDatePicker,
-    handleStatusChange, 
-    handleSearchChange,
-    handleDepartmentChange,
-    handleDateRangeChange,
-    clearDateRange,
-    toggleDatePicker,
-    page, 
-    totalPages, 
-    handlePageChange, 
-    handleDelete 
-  } = useAdminTransactions();
+  const { ledgers,
+      page,
+      totalPages,
+      loading,
+      statusFilter,
+      searchQuery,
+      typeFilter,
+      dateRange,
+      showDatePicker,
+      handleStatusChange,
+      handleSearchChange,
+      handleTypeChange,
+      handleDateRangeChange,
+      clearDateRange,
+      toggleDatePicker,
+      handlePageChange,
+      refreshLedgers,setPage } = useLedger();
+  
   const [selectedProposal, setSelectedProposal] = useState<BudgetProposal | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [startDate, setStartDate] = useState<string>('');
@@ -107,7 +107,7 @@ export default function Transactions(){
             className="w-full sm:w-96"
           />
           <div className="ml-auto flex items-center gap-2">
-            <Select value={departmentFilter} onChange={e => handleDepartmentChange(e.target.value)}>
+            <Select value={typeFilter} onChange={e => handleTypeChange(e.target.value)}>
               <option value="All">All Departments</option>
               {departments.map(dept => (
                 <option key={dept} value={dept}>{dept}</option>
@@ -184,23 +184,23 @@ export default function Transactions(){
 
         {loading ? (
           <div className="py-8 text-center text-slate-500">Loading transactions...</div>
-        ) : proposals.length === 0 ? (
+        ) : ledgers.length === 0 ? (
           <div className="py-8 text-center text-slate-500">No transactions found</div>
         ) : (
           <>
             <Table
               head={["Transaction ID", "Date", "Department", "Project", "Amount", "Status", "Digital Signature", "Actions"]}
-              rows={proposals.map(proposal => [
+              rows={ledgers.map(proposal => [
                 <a 
                   onClick={() => handleViewDetails(proposal)}
                   className="text-sky-600 hover:underline cursor-pointer"
                 >
-                  {proposal.projectId}
+                  {proposal.txId}
                 </a>,
                 new Date(proposal.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' }),
                 proposal.department,
                 proposal.projectName,
-                "₱" + proposal.amountRequested.toLocaleString(),
+                "₱" + proposal.amount.toLocaleString(),
                 <Badge tone={tone(proposal.status)}>{proposal.status}</Badge>,
                 <code className="text-xs text-slate-500">{proposal.blockchainTxHash ? proposal.blockchainTxHash.slice(0, 12) + '...' : '—'}</code>,
                 <div className="flex gap-3 items-center">
@@ -214,15 +214,7 @@ export default function Transactions(){
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                     </svg>
                   </button>
-                  <button 
-                    onClick={() => handleDelete(proposal._id)}
-                    className="text-red-600 hover:text-red-800 transition-colors"
-                    title="Delete"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                  </button>
+                  
                 </div>
               ])}
             />

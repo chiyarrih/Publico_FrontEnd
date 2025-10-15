@@ -63,6 +63,11 @@ export class AuthService {
     return apiClient.get<{ citizens: User[] }>('/auth/getAll');
   }
 
+  // Check Agency Name Availability
+  static async checkAgencyNameAvailability(agencyName: string): Promise<{ available: boolean; agencyName: string }> {
+    return apiClient.get<{ available: boolean; agencyName: string }>(`/auth/check-agency-name/${encodeURIComponent(agencyName)}`);
+  }
+
   // Profile Management
   static async getUserProfile(userId: string): Promise<User> {
     return apiClient.get<User>(`/auth/profile/${userId}`);

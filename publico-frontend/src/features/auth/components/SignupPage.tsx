@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
+import { AuthService } from "../services/authApi";
 import { RegisterCitizenRequest, RegisterAgencyRequest, RegisterAdminRequest } from "../../../shared/types/auth";
 import { validateEmail, validatePassword } from "../../../utils/auth";
 import AuthLayout from "./AuthLayout";
@@ -9,7 +10,7 @@ import FormField from "./ui/FormField";
 import PasswordField from "./ui/PasswordField";
 import RadioRow from "./ui/RadioRow";
 import TermsAndConditionsModal from "./ui/TermsAndConditionsModal";
-import { Upload, X } from "lucide-react";
+import { Upload, X, AlertCircle, CheckCircle } from "lucide-react";
 
 type Role = "citizen" | "agency" | "admin";
 type Errors = Record<string, string>;
@@ -26,6 +27,7 @@ const SignupPage = () => {
   const [errs, setErrs] = useState<Errors>({});
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [hasReadTerms, setHasReadTerms] = useState(false);
+  const [agencyNameStatus, setAgencyNameStatus] = useState<'idle' | 'checking' | 'available' | 'taken'>('idle');
   const [documents, setDocuments] = useState<{
     agencyLicense: File | null;
     businessCertificate: File | null;
@@ -36,11 +38,56 @@ const SignupPage = () => {
     proofOfInsurance: null,
   });
 
+  // Real-time agency name validation
+  const checkAgencyName = useCallback(async (agencyName: string) => {
+    if (!agencyName.trim() || form.role !== 'agency') {
+      setAgencyNameStatus('idle');
+      return;
+    }
+
+    setAgencyNameStatus('checking');
+    
+    try {
+      const response = await AuthService.checkAgencyNameAvailability(agencyName);
+      setAgencyNameStatus(response.available ? 'available' : 'taken');
+    } catch (error) {
+      console.error('Error checking agency name:', error);
+      setAgencyNameStatus('idle');
+    }
+  }, [form.role]);
+
+  // Debounce the agency name check
+  useEffect(() => {
+    if (form.role === 'agency' && form.agencyName.trim()) {
+      const timer = setTimeout(() => {
+        checkAgencyName(form.agencyName);
+      }, 800); // 800ms delay
+
+      return () => clearTimeout(timer);
+    } else {
+      setAgencyNameStatus('idle');
+    }
+  }, [form.agencyName, form.role, checkAgencyName]);
+
+  // Reset agency name status when there's an error to avoid conflicts
+  useEffect(() => {
+    if (error && error.includes('has already registered') && error.includes('agency')) {
+      setAgencyNameStatus('taken');
+    } else if (error) {
+      setAgencyNameStatus('idle');
+    }
+  }, [error]);
+
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
     setForm(s => ({ ...s, [name]: type === "checkbox" ? checked : value }));
     if (errs[name]) setErrs(o => ({ ...o, [name]: "" }));
     if (error) clearError();
+    
+    // Reset agency name status when user types to clear any previous error state
+    if (name === 'agencyName') {
+      setAgencyNameStatus('idle');
+    }
   };
 
   const handleDocumentUpload = (type: keyof typeof documents, file: File | null) => {
@@ -208,7 +255,25 @@ const SignupPage = () => {
         }
       >
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded px-3 py-2 text-[12px] text-red-600 mb-3">{error}</div>
+          <div className={`border rounded px-3 py-2 text-[12px] mb-3 ${
+            error.includes('has already registered') && error.includes('agency')
+              ? 'bg-amber-50 border-amber-200 text-amber-800'
+              : 'bg-red-50 border-red-200 text-red-600'
+          }`}>
+            {error.includes('has already registered') && error.includes('agency') ? (
+              <div className="flex items-start gap-2">
+                <svg className="w-4 h-4 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+                <div>
+                  <div className="font-medium">Agency Already Registered</div>
+                  <div className="text-[11px] mt-1">{error}</div>
+                </div>
+              </div>
+            ) : (
+              error
+            )}
+          </div>
         )}
 
         <form className="space-y-3" onSubmit={onSubmit}>
@@ -233,7 +298,41 @@ const SignupPage = () => {
           {/* Agency-only */}
           {form.role === "agency" && (
             <>
-              <FormField label="Agency Name" name="agencyName" value={form.agencyName} onChange={onChange} disabled={isLoading} error={errs.agencyName} placeholder="e.g., Department of Transportation" />
+              <div className="space-y-1">
+                <div className="relative">
+                  <FormField label="Agency Name" name="agencyName" value={form.agencyName} onChange={onChange} disabled={isLoading} error={errs.agencyName} placeholder="e.g., Department of Transportation" />
+                  {form.agencyName && agencyNameStatus !== 'idle' && (
+                    <div className="absolute right-3 top-8 flex items-center">
+                      {agencyNameStatus === 'checking' && (
+                        <div className="w-4 h-4 border-2 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+                      )}
+                      {agencyNameStatus === 'available' && (
+                        <CheckCircle className="w-4 h-4 text-green-600" />
+                      )}
+                      {agencyNameStatus === 'taken' && (
+                        <AlertCircle className="w-4 h-4 text-red-600" />
+                      )}
+                    </div>
+                  )}
+                </div>
+                <div className="space-y-1">
+                  <p className="text-[11px] text-slate-500">
+                    <span className="font-medium">Note:</span> Only one representative per agency is allowed to register.
+                  </p>
+                  {form.agencyName && agencyNameStatus === 'available' && (
+                    <p className="text-[11px] text-green-600 flex items-center gap-1">
+                      <CheckCircle className="w-3 h-3" />
+                      Agency name is available
+                    </p>
+                  )}
+                  {form.agencyName && agencyNameStatus === 'taken' && (
+                    <p className="text-[11px] text-red-600 flex items-center gap-1">
+                      <AlertCircle className="w-3 h-3" />
+                      This agency name is already registered
+                    </p>
+                  )}
+                </div>
+              </div>
               <div className="grid grid-cols-2 gap-2">
                 <FormField label="Agency Code" name="agencyCode" value={form.agencyCode} onChange={onChange} disabled={isLoading} error={errs.agencyCode} placeholder="e.g., DOT" />
                 <FormField label="Contact Phone" name="contactPhone" value={form.contactPhone} onChange={onChange} disabled={isLoading} error={errs.contactPhone} placeholder="e.g., +63..." />

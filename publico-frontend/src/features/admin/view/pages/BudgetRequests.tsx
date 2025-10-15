@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { AdminService } from "../../services/admin.api";
 import { Card } from "../ui/blocks";
 import type { BudgetProposal } from "../../model/types/admin";
@@ -9,6 +9,8 @@ import {
 } from "../../controller/components/budget-requests";
 import ProjectApprovalModal from "../modals/ProjectApprovalModal";
 import { useNavigate } from "react-router-dom";
+import useSendFunds from "@admin/controller/hooks/useSendFunds";
+import { io, Socket } from "socket.io-client";
 
 export default function BudgetRequests() {
   const [items, setItems] = useState<BudgetProposal[]>([]);
@@ -21,8 +23,10 @@ export default function BudgetRequests() {
   const [selectedProposal, setSelectedProposal] = useState<BudgetProposal | null>(null);
   const [showApprovalModal, setShowApprovalModal] = useState(false);
   const itemsPerPage = 10;
+  const socketRef = useRef<Socket | null>(null);
+  const token = localStorage.getItem('publico_auth_token');
   const navigate = useNavigate();
-
+  const {onApprove} = useSendFunds({projectId:selectedProposal?.projectId});
   const loadProposals = async () => {
     setLoading(true);
     try {
@@ -44,6 +48,24 @@ export default function BudgetRequests() {
   useEffect(() => {
     loadProposals();
   }, [currentPage, selectedStatus]);
+  
+  useEffect(() => {
+    const socket = io('http://localhost:3001', {
+      auth: { token },
+    });
+
+    socketRef.current = socket;
+
+    socket.on('new_submited', (newData) => {
+      setItems((prev) => [newData, ...prev]);
+    });
+
+    
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [token]);
 
   // Filter logic - search only (department and status filtering done via API)
   const filtered = useMemo(() => {
@@ -63,26 +85,7 @@ export default function BudgetRequests() {
     setShowApprovalModal(true);
   };
 
-  const handleApprove = async (proposal: BudgetProposal) => {
-    // Show confirmation first
-    const ok = confirm("Approve this budget request? You can send funds afterward.");
-    if (!ok) return;
-
-    try {
-      // Try API call first
-      await AdminService.approveBudgetProposal(proposal.projectId);
-      // Only update UI if API call succeeds
-      setItems(prev => prev.map(p => p._id === proposal._id ? { ...p, status: "Approved" } : p));
-      setSelectedProposal({ ...proposal, status: "Approved" });
-      setShowApprovalModal(true);
-    } catch (err) {
-      console.error("Failed to approve proposal:", err);
-      const errorMessage = err instanceof Error ? err.message : "Unknown error occurred";
-      alert(`Failed to approve proposal: ${errorMessage}`);
-      // Don't update UI state or reopen modal on error
-      return;
-    }
-  };
+  
 
   const handleReject = async (proposal: BudgetProposal) => {
     if (!confirm("Reject this budget request?")) return;
@@ -168,10 +171,14 @@ export default function BudgetRequests() {
       {/* Project Approval Modal */}
       {selectedProposal && (
         <ProjectApprovalModal
+          isFunded={selectedProposal.isFunded}//TODO: call the project is already funded here
+          onApproved={()=>{
+            onApprove()
+            setShowApprovalModal(false);
+          }}
           isOpen={showApprovalModal}
           onClose={() => setShowApprovalModal(false)}
           proposal={selectedProposal}
-          onApprove={() => handleApprove(selectedProposal)}
           onReject={() => handleReject(selectedProposal)}
           onSendFunds={() => {
             setShowApprovalModal(false);

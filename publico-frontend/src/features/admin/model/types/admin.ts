@@ -23,6 +23,7 @@ export interface BudgetProposal {
   status: "Pending" | "Approved" | "Rejected";
   approvedBy?: string;
   approvalDate?: string;
+  isFunded?: boolean;
   blockchainTxHash?: string;
   address: string;
   privateKey: string;

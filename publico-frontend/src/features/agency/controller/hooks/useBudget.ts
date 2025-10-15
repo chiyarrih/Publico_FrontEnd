@@ -34,7 +34,7 @@ export default function useBudget() {
   const handleDownload = async (url: string) => {
   try {
     const filename = url.split("/").pop() || "download";
-    const response = await fetch(`${url}?download`, { mode: "cors" });
+    const response = await fetch(url, { mode: "cors" });
     const blob = await response.blob();
     const link = document.createElement("a");
     link.href = window.URL.createObjectURL(blob);
