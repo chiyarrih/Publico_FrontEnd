@@ -1,7 +1,7 @@
 import Loader from "@agency/controller/components/loaders/Loader";
 import useBudget from "@agency/controller/hooks/useBudget";
 import { Doc } from "interfaces/budget";
-import { File } from "lucide-react";
+import { File, Lock } from "lucide-react";
 import React from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
 import { Link } from "react-router-dom";
@@ -109,9 +109,12 @@ export default function Documents() {
       </InfiniteScroll>
 
       <div className="flex items-center justify-between p-3 text-xs bg-white border rounded-lg border-slate-200 text-slate-600">
-        <span>
-          🔐 All documents are verified and secured on the blockchain for
-          complete transparency.
+        <span className="flex items-center gap-2">
+          <Lock className="w-4 h-4" />
+          <span>
+        All documents are verified and secured on the blockchain for
+        complete transparency.
+          </span>
         </span>
         <Link to={`https://etherscan.io/`}>
           <button className="text-blue-600 hover:underline">
