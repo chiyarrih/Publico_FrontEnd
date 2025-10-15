@@ -1,7 +1,6 @@
-import { sendFunds } from "@admin/services/sendFundsService";
-import { useState } from "react";
+import { approveBudget, sendFunds } from "@admin/services/sendFundsService";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import toast from "react-hot-toast";
 
 export default function useSendFunds({projectId}:{projectId?:string}) {
   const [isOpeen, setIsOpen] = useState(false);
@@ -24,8 +23,11 @@ export default function useSendFunds({projectId}:{projectId?:string}) {
   };
 
   const onSend = async () => {
-    
-        await sendFunds({projectId: projectId})
+      await sendFunds({projectId: projectId})
+  }
+
+  const onApprove = async () => {
+      await approveBudget({projectId: projectId})
   }
 
   return {
@@ -35,6 +37,7 @@ export default function useSendFunds({projectId}:{projectId?:string}) {
     register,
     handleSubmit,
     errors,
-    onSend
+    onSend,
+    onApprove
   };
 }

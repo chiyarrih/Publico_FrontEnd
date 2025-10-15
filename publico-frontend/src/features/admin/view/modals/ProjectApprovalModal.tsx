@@ -10,6 +10,8 @@ interface ProjectApprovalModalProps {
   proposal: BudgetProposal;
   onReject: () => void;
   onSendFunds?: () => void;
+  onApproved?: () => void;
+  isFunded?: boolean;
 }
 
 export default function ProjectApprovalModal({
@@ -18,9 +20,10 @@ export default function ProjectApprovalModal({
   proposal,
   onReject,
   onSendFunds,
+  onApproved,
+  isFunded
 }: ProjectApprovalModalProps) {
   if (!isOpen) return null;
-  const {  onOpeen, isOpeen, onSend } = useSendFunds({projectId:proposal.projectId});
   const getStatusColor = (status: string) => {
     switch (status) {
       case "Approved":
@@ -249,7 +252,7 @@ export default function ProjectApprovalModal({
                   {proposal.status === "Pending" ? (
                     <>
                       <button
-                        onClick={()=>onSend()}
+                        onClick={onApproved}
                         className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-emerald-600 text-white rounded-xl font-medium hover:bg-emerald-700 transition-colors"
                       >
                         <CheckCircle size={20} />
@@ -270,10 +273,11 @@ export default function ProjectApprovalModal({
                         <span className="font-medium">Project Approved</span>
                       </div>
                       <button
+                        disabled={isFunded}//TODO:CALL THE IS FUNDED HERE
                         onClick={onSendFunds}
                         className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-sky-600 text-white rounded-xl font-medium hover:bg-sky-700 transition-colors"
                       >
-                        Send Funds to Agency
+                        {isFunded ? 'Project is already funded' : 'Send Funds to Agency'}
                       </button>
                     </>
                   )}
