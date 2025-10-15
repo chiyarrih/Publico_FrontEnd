@@ -32,8 +32,8 @@ export default function BudgetRequestsTable({
           </tr>
         </thead>
         <tbody>
-          {requests.map((request) => (
-            <tr key={request._id} className="bg-white hover:bg-slate-50/60 border-t border-slate-100">
+          {requests.map((request, index) => (
+            <tr key={index} className="bg-white hover:bg-slate-50/60 border-t border-slate-100">
               <td className="px-4 py-3">
                 <button
                   onClick={() => onView?.(request)}
