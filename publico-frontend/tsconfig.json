@@ -15,14 +15,17 @@
     "skipLibCheck": true,
     "incremental": true,
     "esModuleInterop": true,
-    "baseUrl": "src",
+
+    "baseUrl": ".",                       // <- important
     "paths": {
-      "@citizen/*": ["features/citizen/*"],
-      "@agency/*": ["features/agency/*"],
-      "@admin/*": ["features/admin/*"],
-      "@shared/*": ["shared/*"],
-      "@routes/*": ["routes/*"],
-      "@config/*": ["config/*"]
+      "@/*": ["src/*"],
+      "@config/*": ["src/config/*"],
+      "@citizen/*": ["src/features/citizen/*"],
+      "@agency/*": ["src/features/agency/*"],
+      "@admin/*": ["src/features/admin/*"],
+      "@shared/*": ["src/shared/*"],
+      "@utils/*": ["src/utils/*"],
+      "@routes/*": ["src/routes/*"]
     }
   },
   "include": ["src"],
