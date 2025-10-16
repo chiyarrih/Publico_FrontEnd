@@ -66,8 +66,11 @@ const Profile: React.FC = () => {
         </div>
       )}
 
-      <div className="bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs text-slate-600">
-        ⚠️ Prototype: data is stored locally in your browser.
+      <div className="bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs text-slate-600 flex items-center gap-2">
+        <svg className="w-4 h-4 text-yellow-500 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0zM12 9v4m0 4h.01" />
+        </svg>
+        <span>Prototype: data is stored locally in your browser.</span>
       </div>
     </div>
   );
