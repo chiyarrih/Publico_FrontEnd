@@ -3,6 +3,7 @@ import { Card, LineMini, PieMini, BarMini, Badge, Button } from "../ui/blocks";
 import { useAdminDashboard } from "../../controller/hooks/useAdminDashboard";
 import { usePendingBudgetCount } from "../../controller/hooks/usePendingBudgetCount";
 import { peso } from "../ui/blocks";
+import { BarangayProjectsMap } from "../components/BarangayProjectsMap";
 
 // KPI Card Icons
 const KpiIcon = ({ children, bg }: { children: React.ReactNode; bg: string }) => (
@@ -119,35 +120,7 @@ export default function Dashboard() {
           <div className="mb-3 text-base font-semibold text-slate-800">Department Budget Comparison</div>
           <BarMini data={depts} />
         </Card>
-        <Card>
-          <div className="mb-3 flex items-center justify-between">
-            <div className="text-base font-semibold text-slate-800">Active Projects by Barangay</div>
-            <button className="text-sm text-sky-600 hover:text-sky-700">✕</button>
-          </div>
-          
-          {/* Map Container */}
-          <div className="relative aspect-[4/3] w-full overflow-hidden rounded-lg border border-slate-200 bg-slate-100">
-            <div className="absolute inset-0 bg-[url('https://tile.openstreetmap.org/12/3479/1927.png')] bg-cover bg-center opacity-90" />
-            
-            {/* Map Controls */}
-            <div className="absolute left-3 top-3 flex flex-col gap-1">
-              <button className="flex h-8 w-8 items-center justify-center rounded border border-slate-300 bg-white text-lg font-semibold text-slate-700 shadow-sm hover:bg-slate-50">+</button>
-              <button className="flex h-8 w-8 items-center justify-center rounded border border-slate-300 bg-white text-lg font-semibold text-slate-700 shadow-sm hover:bg-slate-50">−</button>
-            </div>
-
-            {/* Info Popup */}
-            <div className="absolute right-3 top-3 w-48 rounded-lg border border-slate-200 bg-white p-3 shadow-lg">
-              <div className="mb-1 text-xs font-semibold text-slate-700">Bonuan Gueset</div>
-              <div className="mb-2 text-xs text-slate-500">Active Projects: <span className="font-semibold text-slate-700">5</span></div>
-              <button className="text-xs text-sky-600 hover:text-sky-700">View Details</button>
-            </div>
-
-            {/* Attribution */}
-            <div className="absolute bottom-1 right-2 text-[10px] text-slate-500">
-              © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer" className="text-sky-600">OpenStreetMap</a> contributors
-            </div>
-          </div>
-        </Card>
+        <BarangayProjectsMap />
       </div>
     </div>
   );
