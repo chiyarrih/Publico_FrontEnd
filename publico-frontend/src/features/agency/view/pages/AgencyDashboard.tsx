@@ -37,11 +37,7 @@ const AgencyDashboard: React.FC = () => {
     <div className="space-y-6">
       {/* Alerts */}
       <Card title={<div className="flex items-center gap-2">
-        <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-yellow-100 text-yellow-600">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-          </svg>
-        </span>
+        <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-slate-100">⚠️</span>
         <span>Smart Contract Alerts</span></div>}
         right={<button className="text-xs font-medium text-blue-600 hover:underline">View All</button>}>
         <div className="space-y-2">
@@ -49,7 +45,7 @@ const AgencyDashboard: React.FC = () => {
             <div key={i} className={`rounded px-3 py-2 ${a.color} border border-slate-100`}>
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-start gap-3">
-                  <span className="mt-0.5">{React.createElement(a.icon)}</span>
+                  <span className="mt-0.5">{a.icon}</span>
                   <div>
                     <div className="text-sm font-medium text-slate-900">{a.title}</div>
                     <div className="text-[12px] text-slate-600">{a.desc}</div>

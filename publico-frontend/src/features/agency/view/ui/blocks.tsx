@@ -27,7 +27,7 @@ export const AlertsList: React.FC<{ items: Alert[] }> = ({ items }) => (
         <div key={i} className={`rounded ${a.color} px-3 py-2 border border-slate-100`}>
           <div className="flex items-center justify-between text-xs text-slate-500">
             <span className="font-medium text-slate-900 flex items-center gap-2">
-              <span>{React.createElement(a.icon)}</span> {a.title}
+              <span>{a.icon}</span> {a.title}
             </span>
             <span>{a.date}</span>
           </div>
