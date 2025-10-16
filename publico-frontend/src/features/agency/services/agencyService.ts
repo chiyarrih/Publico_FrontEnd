@@ -1,4 +1,4 @@
-import { BudgetFormProps } from 'interfaces/budget';
+import { BudgetFormProps } from '../../../interfaces/budget';
 import { apiClient } from '../../../config/api';
 import { decrypt } from '../../../utils/encryptor';
 import { io } from 'socket.io-client';

@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useDashboardData } from "./useDashboardData";
 
 export type Alert = { color: string; icon: string; title: string; desc: string; date: string };
 export type Kpi = { label: string; value: string | number; delta?: string; up?: boolean };
@@ -8,6 +9,7 @@ export type Project = { name: string; dept: string; pct: number; color: string; 
 
 export function useAgencyDashboard() {
   const [tab, setTab] = useState<"budget" | "proposal">("budget");
+  const dashboardData = useDashboardData();
 
   const alerts: Alert[] = [
     { color: "bg-rose-50",  icon: "⚠️", title: "Budget Overrun",       desc: "Bridge Repair is 8% over budget", date: "2023-09-15" },
@@ -18,8 +20,8 @@ export function useAgencyDashboard() {
   const kpis: Kpi[] = [
     { label: "Annual Budget",        value: "₱24.5M" },
     { label: "Monthly Allocation",   value: "₱1.3M", delta: "₱150K over this month", up: false },
-    { label: "Active Projects",      value: 18 },
-    { label: "Pending Approvals",    value: 3 },
+    { label: "Active Projects",      value: dashboardData.activeProjectsCount },
+    { label: "Pending Approvals",    value: dashboardData.pendingApprovalsCount },
   ];
 
   const spendingSeries: SpendPoint[] = [
@@ -49,8 +51,14 @@ export function useAgencyDashboard() {
   };
 
   return useMemo(() => ({
-    alerts, kpis, spendingSeries, statusPie, projects, tab,
+    alerts, 
+    kpis, 
+    spendingSeries, 
+    statusPie, 
+    projects, 
+    tab,
     switchTab: (t: "budget" | "proposal") => setTab(t),
     submitBudget,
-  }), [tab]);
+    dashboardData,
+  }), [tab, dashboardData]);
 }

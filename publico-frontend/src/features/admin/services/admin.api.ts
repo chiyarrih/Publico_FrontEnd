@@ -38,6 +38,12 @@ export class AdminService {
     const response = await apiClient.get<{ data: BudgetProposal[] }>('/agency/projects/all');
     return response.data || [];
   }
+
+  // Get count of pending budget proposals (uses totalItems from paginated endpoint)
+  static async getPendingBudgetCount(): Promise<number> {
+    const response = await AdminService.getAllBudgetProposals(1, 1, 'Pending');
+    return response.totalItems ?? (response.data?.length ?? 0);
+  }
   
   // Approve budget proposal — use PUT to match backend route
   static async approveBudgetProposal(projectId: string): Promise<any> {

@@ -1,6 +1,7 @@
 import React from "react";
 import { Card, LineMini, PieMini, BarMini, Badge, Button } from "../ui/blocks";
 import { useAdminDashboard } from "../../controller/hooks/useAdminDashboard";
+import { usePendingBudgetCount } from "../../controller/hooks/usePendingBudgetCount";
 import { peso } from "../ui/blocks";
 
 // KPI Card Icons
@@ -41,6 +42,7 @@ const Icons = {
 
 export default function Dashboard() {
   const { loading, data } = useAdminDashboard();
+  const { count: pendingCount } = usePendingBudgetCount();
   if (loading) return null;
 
   const { totals, utilizationSeries, categories, depts } = data;
@@ -81,7 +83,7 @@ export default function Dashboard() {
             <KpiIcon bg="bg-amber-500">{Icons.clipboard}</KpiIcon>
             <div className="flex-1">
               <div className="text-xs font-medium text-slate-500">Pending Requests</div>
-              <div className="mt-1 text-2xl font-bold text-slate-900">{totals.pending}</div>
+              <div className="mt-1 text-2xl font-bold text-slate-900">{pendingCount}</div>
               <div className="mt-1 text-xs text-slate-400">3 urgent</div>
             </div>
           </div>

@@ -1,5 +1,7 @@
 import React from "react";
 import { useAgencyDashboard } from "../../controller/hooks/useAgencyDashboard";
+import { ActiveProjectsCard } from "../components/ActiveProjectsCard";
+import { PendingApprovalsCard } from "../components/PendingApprovalsCard";
 import {
   LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, Legend,
   ResponsiveContainer, PieChart, Pie, Cell
@@ -30,8 +32,17 @@ const UploadIcon = () => (
 );
 
 const AgencyDashboard: React.FC = () => {
-  const { alerts, kpis, spendingSeries, statusPie, projects, tab, switchTab, submitBudget } =
-    useAgencyDashboard();
+  const { 
+    alerts, 
+    kpis, 
+    spendingSeries, 
+    statusPie, 
+    projects, 
+    tab, 
+    switchTab, 
+    submitBudget,
+    dashboardData,
+  } = useAgencyDashboard();
 
   return (
     <div className="space-y-6">
@@ -95,6 +106,18 @@ const AgencyDashboard: React.FC = () => {
             </ResponsiveContainer>
           </div>
         </Card>
+      </div>
+
+      {/* Active Projects and Pending Approvals - Dynamic Data */}
+      <div className="grid gap-3 lg:grid-cols-2">
+        <ActiveProjectsCard 
+          milestones={dashboardData.approvedMilestones} 
+          isLoading={dashboardData.isLoading} 
+        />
+        <PendingApprovalsCard 
+          requests={dashboardData.pendingRequests} 
+          isLoading={dashboardData.isLoading} 
+        />
       </div>
 
       {/* Projects */}
