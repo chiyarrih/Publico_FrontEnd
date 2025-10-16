@@ -1,6 +1,9 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, ElementType } from "react";
+import { AlertTriangle, Clock, FileText } from "lucide-react";
 
-export type Alert = { color: string; icon: string; title: string; desc: string; date: string };
+
+
+export type Alert = { color: string; icon: ElementType; title: string; desc: string; date: string };
 export type Kpi = { label: string; value: string | number; delta?: string; up?: boolean };
 export type SpendPoint = { m: string; actual: number; budget: number };
 export type PieSlice = { name: string; value: number; color: string };
@@ -10,9 +13,9 @@ export function useAgencyDashboard() {
   const [tab, setTab] = useState<"budget" | "proposal">("budget");
 
   const alerts: Alert[] = [
-    { color: "bg-rose-50",  icon: "⚠️", title: "Budget Overrun",       desc: "Bridge Repair is 8% over budget", date: "2023-09-15" },
-    { color: "bg-amber-50", icon: "🕒", title: "Pending Disbursement", desc: "Q4 infra funds awaiting approval", date: "2023-09-14" },
-    { color: "bg-sky-50",   icon: "📄", title: "Document Expiration",  desc: "Contract #TR-2023-45 in 14 days",  date: "2023-09-10" },
+    { color: "bg-rose-50",  icon: AlertTriangle, title: "Budget Overrun",       desc: "Bridge Repair is 8% over budget", date: "2023-09-15" },
+    { color: "bg-amber-50", icon: Clock, title: "Pending Disbursement", desc: "Q4 infra funds awaiting approval", date: "2023-09-14" },
+    { color: "bg-sky-50",   icon: FileText, title: "Document Expiration",  desc: "Contract #TR-2023-45 in 14 days",  date: "2023-09-10" },
   ];
 
   const kpis: Kpi[] = [

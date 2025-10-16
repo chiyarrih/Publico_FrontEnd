@@ -1,8 +1,10 @@
+import { AlertTriangle, Clock, FileText, type LucideIcon } from "lucide-react";
+
 /* ---------- Dashboard data ---------- */
-export const dashboardAlerts = [
-  { color: "bg-rose-50", icon: "⚠️", title: "Budget Overrun", desc: "Downtown Bridge Repair Project is 8% over budget", date: "2023-09-15" },
-  { color: "bg-amber-50", icon: "🕒", title: "Pending Disbursement", desc: "Q4 infrastructure funds awaiting approval", date: "2023-09-14" },
-  { color: "bg-sky-50", icon: "📄", title: "Document Expiration", desc: "Contract #TR-2023-45 expires in 14 days", date: "2023-09-10" },
+export const dashboardAlerts: { color: string; icon: LucideIcon; title: string; desc: string; date: string }[] = [
+  { color: "bg-rose-50", icon: AlertTriangle, title: "Budget Overrun", desc: "Downtown Bridge Repair Project is 8% over budget", date: "2023-09-15" },
+  { color: "bg-amber-50", icon: Clock, title: "Pending Disbursement", desc: "Q4 infrastructure funds awaiting approval", date: "2023-09-14" },
+  { color: "bg-sky-50", icon: FileText, title: "Document Expiration", desc: "Contract #TR-2023-45 expires in 14 days", date: "2023-09-10" },
 ];
 
 export const spending = [

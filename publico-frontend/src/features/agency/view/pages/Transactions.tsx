@@ -147,9 +147,25 @@ export default function Transactions() {
       </div>
 
       {/* Footer Note */}
-      <div className="p-3 text-xs bg-white border rounded-lg border-slate-200 text-slate-600">
-        ✅ All transactions are immutably recorded on the blockchain for complete
-        transparency.
+      <div className="flex items-center p-3 text-xs bg-white border rounded-lg border-slate-200 text-slate-600">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className="w-4 h-4 mr-2 text-emerald-500 shrink-0"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth={2}
+        >
+          <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+          />
+        </svg>
+        <span>
+          All transactions are immutably recorded on the blockchain for complete
+          transparency.
+        </span>
       </div>
     </div>
   );

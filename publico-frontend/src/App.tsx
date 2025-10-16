@@ -111,6 +111,7 @@ export default function App() {
             <Route index element={<Navigate to="dashboard" replace />} />
             <Route path="dashboard" element={<Safe><AgencyDashboard /></Safe>} />
             {/* NEW routes */}
+            
             <Route path="milestones" element={<Safe><Milestones /></Safe>} />
             <Route path="milestones/:id" element={<Safe><MilestoneDetail /></Safe>} />
             {/* existing */}
@@ -121,6 +122,7 @@ export default function App() {
             <Route path="faqs" element={<Safe><FAQs /></Safe>} />
             <Route path="support" element={<Safe><ContactSupport /></Safe>} />
             <Route path="profile" element={<Safe><AgencyProfile /></Safe>} />
+            
           </Route>
 
           {/* Admin */}

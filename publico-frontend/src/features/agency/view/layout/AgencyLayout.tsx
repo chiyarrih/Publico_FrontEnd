@@ -172,8 +172,8 @@ export default function AgencyLayout() {
       </div>
       <nav className="space-y-1">
         <NavLink to="/agency" end className={linkClass}><I.dashboard/><span>Dashboard</span></NavLink>
+        <NavLink to="/agency/budgets" className={linkClass}><I.budget/><span>Project Proposal</span></NavLink>
         <NavLink to="/agency/milestones" className={linkClass}><I.docs/><span>Project Milestones</span></NavLink>
-        <NavLink to="/agency/budgets" className={linkClass}><I.budget/><span>Budgets</span></NavLink>
         <NavLink to="/agency/documents" className={linkClass}><I.docs/><span>Documents</span></NavLink>
         <NavLink to="/agency/transactions" className={linkClass}><I.ledger/><span>Transaction Ledger</span></NavLink>
         <NavLink to="/agency/alerts" className={linkClass}><I.alert/><span>Smart Contract Alerts</span></NavLink>

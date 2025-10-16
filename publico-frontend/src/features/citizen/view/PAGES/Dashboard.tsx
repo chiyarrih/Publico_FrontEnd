@@ -188,7 +188,7 @@ export default function Dashboard() {
             <div key={a.key} className={`rounded-md ${a.color} border border-slate-200 px-4 py-3`}>
               <div className="flex items-center justify-between text-xs text-slate-500">
                 <span className="flex items-center gap-2 font-medium text-slate-900">
-                  {a.icon} {a.title}
+                  {React.createElement(a.icon, { className: "inline-block" })} {a.title}
                 </span>
                 <span>{a.date}</span>
               </div>

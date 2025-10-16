@@ -196,7 +196,7 @@ export default function MilestoneDetail() {
   const [selectedPhase, setSelectedPhase] = useState<any>(null);
   const {milestoneId} = useMilestoneId({id:id});
   // In real app, this would fetch from API based on id
-  const milestone = milestoneId;
+  const milestone = (milestoneId && milestoneId.length > 0) ? milestoneId[0] : mockMilestone;
 
   const handleUploadProof = (phase: any) => {
     setSelectedPhase(phase);
@@ -331,7 +331,7 @@ export default function MilestoneDetail() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                       </svg>
-                      View F
+                      View
                     </button>
                   </>
                 )}
@@ -392,7 +392,7 @@ export default function MilestoneDetail() {
         </div>
         
         <button
-          onClick={() => handleUploadProof(milestone?.phases[0])}
+          onClick={() => handleUploadProof(milestone?.phases?.[1])}
           className="inline-flex items-center gap-2 px-4 py-2 text-white bg-blue-600 rounded hover:bg-blue-700"
         >
           <Upload className="w-4 h-4" />
@@ -461,5 +461,4 @@ export default function MilestoneDetail() {
     </div>
   );
 }
-
 
