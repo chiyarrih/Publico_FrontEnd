@@ -1,6 +1,6 @@
+import { BudgetFormProps } from '@/interfaces/budget';
+import { Milestone } from '@/interfaces/user';
 import { fetchProjectsProposed, sendBudgetProposal } from '@agency/services/agencyService';
-import { BudgetFormProps } from 'interfaces/budget';
-import { Milestone } from 'interfaces/user';
 import { useEffect, useRef, useState } from 'react';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import {toast} from 'react-hot-toast';

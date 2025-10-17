@@ -1,6 +1,6 @@
+import { Doc } from "@/interfaces/budget";
 import Loader from "@agency/controller/components/loaders/Loader";
 import useBudget from "@agency/controller/hooks/useBudget";
-import { Doc } from "interfaces/budget";
 import { File } from "lucide-react";
 import React from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
@@ -9,7 +9,7 @@ import { Link } from "react-router-dom";
 const Status: React.FC<{ s: Doc["status"] }> = ({ s }) => (
   <span
     className={`text-xs px-2 py-0.5 rounded ${
-      s === "Verified"
+      s === "Approved"
         ? "bg-emerald-100 text-emerald-700"
         : "bg-amber-100 text-amber-700"
     }`}

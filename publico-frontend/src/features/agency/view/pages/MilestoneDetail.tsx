@@ -256,7 +256,7 @@ export default function MilestoneDetail() {
           <div>
             <div className="mb-1 text-sm text-gray-600">Timeline</div>
             <div className="text-lg font-bold">
-              {new Date(milestone.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} - {new Date(milestone.endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+              {new Date(milestone?.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} - {new Date(milestone.endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
             </div>
           </div>
         </div>
@@ -267,7 +267,7 @@ export default function MilestoneDetail() {
         <div className="w-full h-2 mt-2 bg-gray-200 rounded-full">
           <div 
             className="h-2 transition-all duration-300 bg-blue-600 rounded-full"
-            style={{ width: `${milestone.overallProgress}%` }}
+            style={{ width: `${milestone.overallProgress ?? ''}%` }}
           />
         </div>
       </div>

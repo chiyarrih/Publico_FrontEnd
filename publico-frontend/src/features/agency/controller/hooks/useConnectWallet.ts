@@ -1,8 +1,8 @@
 import { useState, useRef } from "react";
 import { connect, Socket } from "socket.io-client";
 import { fetchUsers } from "@agency/services/agencyService";
-import { UseData } from "interfaces/user";
 import useWallet from "../../../../shared/hooks/useWallet";
+import { UseData } from "@/interfaces/user";
 
 export default function useConnectWallet() {
   const [isEditing, setIsEditing] = useState(false);

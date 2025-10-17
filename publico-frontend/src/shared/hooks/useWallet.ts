@@ -17,6 +17,7 @@ import {
 // Role-specific services
 import { updateAdminToConnected, connectWalletToBackend, decryptPrivateKey } from "../../features/admin/services/walletService";
 import { updateToConnected } from "../../features/agency/services/agencyService";
+import toast from "react-hot-toast";
 
 // Wallet type handling
 export type WalletType = 'metamask' | 'privateKey';
@@ -65,6 +66,11 @@ export default function useWallet(options: UseWalletOptions) {
   const [balancePhp, setBalancePhp] = useState("0");
   const [isLoadingProfile, setIsLoadingProfile] = useState(false);
   const hasFetchedProfile = useRef(false);
+  const privatekey = localStorage.getItem('publico_user_data');
+  if (!privatekey) throw new Error('Private key not found. Please log in again.');
+  
+  const toJson = JSON.parse(privatekey);
+  const plainPrivateKey = toJson.user.agency_web3_account.privateKey;
 
   const walletData: WalletData = {
     connected: walletConnected,
@@ -155,21 +161,9 @@ export default function useWallet(options: UseWalletOptions) {
       let decrypted;
 
       if (role === 'Admin') {
-        decrypted = await decryptPrivateKey(privateKey);
+        decrypted = await decryptPrivateKey(plainPrivateKey);
       } else {
-        const response = await fetch("http://localhost:5000/api/decrypt/private", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ privateKey })
-        });
-
-        const json = await response.json();
-        if (!response.ok) {
-          alert("Failed to decrypt private key");
-          return;
-        }
-
-        decrypted = json.decryptedKey;
+        decrypted = await decryptPrivateKey(plainPrivateKey);
       }
 
       if (decrypted) {

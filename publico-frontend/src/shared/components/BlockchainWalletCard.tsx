@@ -172,8 +172,8 @@ export default function BlockchainWalletCard({
             <Button
               variant="outline"
               onClick={() => {
+                handleConnectPrivateKey();
                 setShowConnectModal(false);
-                setShowPrivateKeyModal(true);
               }}
               className="justify-start w-full gap-3"
             >

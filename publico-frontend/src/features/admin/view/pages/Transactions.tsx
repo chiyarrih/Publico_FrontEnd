@@ -28,6 +28,7 @@ export default function Transactions(){
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [startDate, setStartDate] = useState<string>('');
   const [endDate, setEndDate] = useState<string>('');
+  const [dateError, setDateError] = useState<string>('');
   const datePickerRef = useRef<HTMLDivElement>(null);
 
   const handleViewDetails = (proposal: BudgetProposal) => {
@@ -40,16 +41,48 @@ export default function Transactions(){
     setSelectedProposal(null);
   };
 
+  // Validate date range
+  const validateDateRange = (start: string, end: string): boolean => {
+    if (!start || !end) return true;
+    
+    const startDateObj = new Date(start);
+    const endDateObj = new Date(end);
+    
+    if (endDateObj < startDateObj) {
+      setDateError('End date cannot be before start date');
+      return false;
+    }
+    
+    setDateError('');
+    return true;
+  };
+
+  const handleStartDateChange = (newStartDate: string) => {
+    setStartDate(newStartDate);
+    if (endDate) {
+      validateDateRange(newStartDate, endDate);
+    }
+  };
+
+  const handleEndDateChange = (newEndDate: string) => {
+    setEndDate(newEndDate);
+    if (startDate) {
+      validateDateRange(startDate, newEndDate);
+    }
+  };
+
   const handleApplyDateRange = () => {
-    if (startDate && endDate) {
+    if (startDate && endDate && validateDateRange(startDate, endDate)) {
       handleDateRangeChange(startDate, endDate);
       toggleDatePicker();
+      setDateError('');
     }
   };
 
   const handleClearDateRange = () => {
     setStartDate('');
     setEndDate('');
+    setDateError('');
     clearDateRange();
     toggleDatePicker();
   };
@@ -143,8 +176,9 @@ export default function Transactions(){
                         <Input
                           type="date"
                           value={startDate}
-                          onChange={(e) => setStartDate(e.target.value)}
-                          className="text-sm"
+                          max={endDate}
+                          onChange={(e) => handleStartDateChange(e.target.value)}
+                          className={`text-sm ${dateError ? 'border-red-500' : ''}`}
                         />
                       </div>
                       <div>
@@ -154,16 +188,23 @@ export default function Transactions(){
                         <Input
                           type="date"
                           value={endDate}
-                          onChange={(e) => setEndDate(e.target.value)}
-                          className="text-sm"
+                          min={startDate}
+                          onChange={(e) => handleEndDateChange(e.target.value)}
+                          className={`text-sm ${dateError ? 'border-red-500' : ''}`}
                         />
                       </div>
                     </div>
                     
+                    {dateError && (
+                      <div className="text-xs text-red-600 bg-red-50 px-3 py-2 rounded">
+                        {dateError}
+                      </div>
+                    )}
+                    
                     <div className="flex gap-2 pt-2">
                       <Button
                         onClick={handleApplyDateRange}
-                        disabled={!startDate || !endDate}
+                        disabled={!startDate || !endDate || !!dateError}
                         className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         Apply Filter

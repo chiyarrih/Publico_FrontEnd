@@ -78,7 +78,6 @@ const BudgetsInner: React.FC = () => {
       <div className="p-4 bg-white border rounded-lg border-slate-200">
         <div className="flex items-center justify-between gap-3">
           <div className="text-lg font-semibold text-slate-900">Project Proposals</div>
-          <button onClick={()=>setTab("new")} className="px-3 text-sm text-white bg-blue-600 rounded h-9 hover:bg-blue-700">+ New Proposal</button>
         </div>
 
         {/* tabs */}

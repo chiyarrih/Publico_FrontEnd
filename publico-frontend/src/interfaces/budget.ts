@@ -10,7 +10,7 @@ export interface BudgetFormProps{
 }
 
 export interface Doc  {
-  name: string; dept: string; cat: string; date: string; size: string; status: "Verified" | "Pending";
+  name: string; dept: string; cat: string; date: string; size: string; status: "Approved" | "Pending";
 };
 
 export interface TransactionFormModalProps {

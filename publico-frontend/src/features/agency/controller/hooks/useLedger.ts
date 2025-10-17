@@ -23,7 +23,7 @@ export default function useLedger() {
     currentPage: number,
     status: string,
     search: string = "",
-    type: string = "All",
+    department: string = "All",
     dateFilter: { start: string; end: string } | null = null
   ) => {
     if (!agencyId) return;
@@ -32,7 +32,7 @@ export default function useLedger() {
     try {
       // When searching or date filtering — fetch all pages
       if (search.trim() || dateFilter) {
-        await loadAllLedgersForSearch(status, search, type, dateFilter);
+        await loadAllLedgersForSearch(status, search,   department, dateFilter);
       } else {
         const data = await fetchLedger(currentPage, limit);
         let filtered = data.data || [];
@@ -43,8 +43,8 @@ export default function useLedger() {
         }
 
         // Optional type filter (like department)
-        if (type !== "All") {
-          filtered = filtered.filter((item: any) => item.type === type);
+        if (department !== "All") {
+          filtered = filtered.filter((item: any) => item.department === department);
         }
 
         setLedgers(filtered);

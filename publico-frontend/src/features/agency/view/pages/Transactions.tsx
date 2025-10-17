@@ -1,5 +1,5 @@
 import useLedger from "@agency/controller/hooks/useLedger";
-import React from "react";
+import React, { useState, useEffect, useRef } from "react";
 
 type Row = {
   date: string;
@@ -39,7 +39,86 @@ export default function Transactions() {
     clearDateRange,
     toggleDatePicker,
     handlePageChange,
-    refreshLedgers,setPage } = useLedger();
+    refreshLedgers,
+    setPage } = useLedger();
+
+  const [startDate, setStartDate] = useState<string>('');
+  const [endDate, setEndDate] = useState<string>('');
+  const [dateError, setDateError] = useState<string>('');
+  const datePickerRef = useRef<HTMLDivElement>(null);
+
+  const departments = [
+    "Department of Health",
+    "Department of Education",
+    "Department of Public Works and Highways"
+  ];
+
+  const statuses = ["All", "Pending", "Approved", "Rejected"];
+
+  // Validate date range
+  const validateDateRange = (start: string, end: string): boolean => {
+    if (!start || !end) return true; // Allow empty dates
+    
+    const startDateObj = new Date(start);
+    const endDateObj = new Date(end);
+    
+    if (endDateObj < startDateObj) {
+      setDateError('End date cannot be before start date');
+      return false;
+    }
+    
+    setDateError('');
+    return true;
+  };
+
+  const handleStartDateChange = (newStartDate: string) => {
+    setStartDate(newStartDate);
+    if (endDate) {
+      validateDateRange(newStartDate, endDate);
+    }
+  };
+
+  const handleEndDateChange = (newEndDate: string) => {
+    setEndDate(newEndDate);
+    if (startDate) {
+      validateDateRange(startDate, newEndDate);
+    }
+  };
+
+  const handleApplyDateRange = () => {
+    if (startDate && endDate && validateDateRange(startDate, endDate)) {
+      handleDateRangeChange(startDate, endDate);
+      toggleDatePicker();
+      setDateError('');
+    }
+  };
+
+  const handleClearDateRange = () => {
+    setStartDate('');
+    setEndDate('');
+    setDateError('');
+    clearDateRange();
+    toggleDatePicker();
+  };
+
+  // Close date picker when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (datePickerRef.current && !datePickerRef.current.contains(event.target as Node)) {
+        if (showDatePicker) {
+          toggleDatePicker();
+        }
+      }
+    };
+
+    if (showDatePicker) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showDatePicker, toggleDatePicker]);
 
   return (
     <div className="space-y-4">
@@ -49,18 +128,108 @@ export default function Transactions() {
         <div className="flex items-center gap-2 mt-3">
           <input
             placeholder="Search transactions..."
+            value={searchQuery}
+            onChange={(e) => handleSearchChange(e.target.value)}
             className="w-full px-3 text-sm border rounded h-9 border-slate-300"
           />
-          <select className="px-2 text-sm border rounded h-9 border-slate-300">
-            <option>All Dates</option>
+          
+          {/* Date Range Picker */}
+          <div className="relative" ref={datePickerRef}>
+            <button
+              onClick={toggleDatePicker}
+              className={`px-3 text-sm border rounded h-9 border-slate-300 whitespace-nowrap ${
+                dateRange ? 'bg-blue-50 border-blue-500 text-blue-700' : ''
+              }`}
+            >
+              {dateRange ? `${dateRange.start} - ${dateRange.end}` : 'All Dates'}
+            </button>
+            
+            {showDatePicker && (
+              <div className="absolute right-0 top-full mt-2 p-4 bg-white border border-slate-200 rounded-lg shadow-lg z-10 min-w-80">
+                <div className="space-y-4">
+                  <h3 className="text-sm font-semibold text-slate-900">Select Date Range</h3>
+                  
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-medium text-slate-600 mb-1">
+                        Start Date
+                      </label>
+                      <input
+                        type="date"
+                        value={startDate}
+                        max={endDate}
+                        onChange={(e) => handleStartDateChange(e.target.value)}
+                        className={`w-full px-3 text-sm border rounded h-9 ${
+                          dateError ? 'border-red-500' : 'border-slate-300'
+                        }`}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-slate-600 mb-1">
+                        End Date
+                      </label>
+                      <input
+                        type="date"
+                        value={endDate}
+                        min={startDate}
+                        onChange={(e) => handleEndDateChange(e.target.value)}
+                        className={`w-full px-3 text-sm border rounded h-9 ${
+                          dateError ? 'border-red-500' : 'border-slate-300'
+                        }`}
+                      />
+                    </div>
+                  </div>
+                  
+                  {dateError && (
+                    <div className="text-xs text-red-600 bg-red-50 px-3 py-2 rounded">
+                      {dateError}
+                    </div>
+                  )}
+                  
+                  <div className="flex gap-2 pt-2">
+                    <button
+                      onClick={handleApplyDateRange}
+                      disabled={!startDate || !endDate || !!dateError}
+                      className="flex-1 px-3 text-sm bg-blue-600 text-white rounded h-9 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Apply Filter
+                    </button>
+                    <button
+                      onClick={handleClearDateRange}
+                      className="px-3 text-sm border rounded h-9 border-slate-300 hover:bg-slate-50"
+                    >
+                      Clear
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Department Filter */}
+          <select 
+            value={typeFilter} 
+            onChange={(e) => handleTypeChange(e.target.value)}
+            className="px-2 text-sm border rounded h-9 border-slate-300"
+          >
+            <option value="All">All Departments</option>
+            {departments.map((dept) => (
+              <option key={dept} value={dept}>{dept}</option>
+            ))}
           </select>
-          <select className="px-2 text-sm border rounded h-9 border-slate-300">
-            <option>All Departments</option>
+
+          {/* Status Filter */}
+          <select 
+            value={statusFilter} 
+            onChange={(e) => handleStatusChange(e.target.value)}
+            className="px-2 text-sm border rounded h-9 border-slate-300"
+          >
+            {statuses.map((status) => (
+              <option key={status} value={status}>{status === "All" ? "All Statuses" : status}</option>
+            ))}
           </select>
-          <select className="px-2 text-sm border rounded h-9 border-slate-300">
-            <option>All Statuses</option>
-          </select>
-          <button className="px-3 text-sm border rounded h-9 border-slate-300">
+
+          <button className="px-3 text-sm border rounded h-9 border-slate-300 hover:bg-slate-50">
             Export
           </button>
         </div>
@@ -75,7 +244,6 @@ export default function Transactions() {
               <th className="px-4 py-3 text-left">Department</th>
               <th className="px-4 py-3 text-left">Project</th>
               <th className="px-4 py-3 text-left">Amount</th>
-              <th className="px-4 py-3 text-left">Status</th>
               <th className="px-4 py-3 text-left">Signature</th>
               <th className="px-4 py-3" />
             </tr>
@@ -96,9 +264,6 @@ export default function Transactions() {
                   <td className="px-4 py-3">{r.department || "—"}</td>
                   <td className="px-4 py-3">{r.projectName || "—"}</td>
                   <td className="px-4 py-3">${r.amount?.toLocaleString() || 0}</td>
-                  <td className="px-4 py-3">
-                    <Tag s={r.status || "Pending"} />
-                  </td>
                   <td className="px-4 py-3">
                     {r.blockchainTxHash
                       ? r.blockchainTxHash.slice(0, 10) + "…"
