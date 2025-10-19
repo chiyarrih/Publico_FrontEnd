@@ -36,5 +36,6 @@ export interface Milestone  {
   title: string
   targetDate: string
   budget: string
+  budgetPercentage?: number // Percentage of total budget (0-100)
   deliverables: string
 }

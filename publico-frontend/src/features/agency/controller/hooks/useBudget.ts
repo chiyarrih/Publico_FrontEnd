@@ -33,12 +33,14 @@ export default function useBudget() {
     },
   });
   const [milestones, setMilestones] = useState<Milestone[]>([
-    { id: "1", title: "", targetDate: "", budget: "", deliverables: "" },
+    { id: "1", title: "", targetDate: "", budget: "", budgetPercentage: 0, deliverables: "" },
   ])
+  const [totalBudget, setTotalBudget] = useState<number>(0)
+  const [usePercentageMode, setUsePercentageMode] = useState<boolean>(true)
 
   const addMilestone = () => {
     const newId = (milestones.length + 1).toString()
-    setMilestones([...milestones, { id: newId, title: "", targetDate: "", budget: "", deliverables: "" }])
+    setMilestones([...milestones, { id: newId, title: "", targetDate: "", budget: "", budgetPercentage: 0, deliverables: "" }])
   }
 
   const removeMilestone = (id: string) => {
@@ -47,8 +49,49 @@ export default function useBudget() {
     }
   }
 
-  const updateMilestone = (id: string, field: keyof Milestone, value: string) => {
+  const updateMilestone = (id: string, field: keyof Milestone, value: string | number) => {
     setMilestones(milestones.map((m) => (m.id === id ? { ...m, [field]: value } : m)))
+  }
+
+  // Calculate total percentage
+  const calculateTotalPercentage = () => {
+    return milestones.reduce((sum, m) => sum + (m.budgetPercentage || 0), 0)
+  }
+
+  // Auto-distribute budget equally across milestones
+  const autoDistributeEqually = () => {
+    const percentage = milestones.length > 0 ? Math.floor(100 / milestones.length) : 0
+    const remainder = 100 - (percentage * milestones.length)
+    
+    setMilestones(milestones.map((m, index) => ({
+      ...m,
+      budgetPercentage: index === 0 ? percentage + remainder : percentage,
+      budget: totalBudget > 0 ? String(Math.round((totalBudget * (index === 0 ? percentage + remainder : percentage)) / 100)) : ""
+    })))
+  }
+
+  // Update budget based on percentage
+  const updateBudgetFromPercentage = (id: string, percentage: number) => {
+    setMilestones(milestones.map((m) => {
+      if (m.id === id) {
+        const calculatedBudget = totalBudget > 0 ? Math.round((totalBudget * percentage) / 100) : 0
+        return { ...m, budgetPercentage: percentage, budget: String(calculatedBudget) }
+      }
+      return m
+    }))
+  }
+
+  // Update percentage based on budget
+  const updatePercentageFromBudget = (id: string, budget: string) => {
+    const budgetNum = parseFloat(budget) || 0
+    const percentage = totalBudget > 0 ? Math.round((budgetNum / totalBudget) * 100) : 0
+    
+    setMilestones(milestones.map((m) => {
+      if (m.id === id) {
+        return { ...m, budget, budgetPercentage: percentage }
+      }
+      return m
+    }))
   }
 
   const handleDownload = async (url: string) => {
@@ -69,13 +112,40 @@ export default function useBudget() {
 const onSubmit: SubmitHandler<BudgetFormProps> = async (data) => {
   try {
     setIsLoading(true);
-    // 👇 include milestones
+    
+    // Validate milestones
+    if (milestones.length === 0) {
+      toast.error("Please add at least one milestone/phase.");
+      setIsLoading(false);
+      return;
+    }
+
+    // Validate that total percentage equals 100%
+    const totalPercentage = calculateTotalPercentage()
+    if (Math.abs(totalPercentage - 100) > 0.1) { // Allow small rounding errors
+      toast.error(`Total budget percentage must equal 100%. Currently: ${totalPercentage.toFixed(1)}%`);
+      setIsLoading(false);
+      return;
+    }
+
+    // Validate all milestones have required fields
+    const invalidMilestones = milestones.filter(m => 
+      !m.title || !m.targetDate || !m.budget || !m.deliverables
+    )
+    if (invalidMilestones.length > 0) {
+      toast.error("Please fill in all milestone fields.");
+      setIsLoading(false);
+      return;
+    }
+
+    // 👇 include milestones with percentage data
     await sendBudgetProposal(data, files, milestones);
     reset();
     setFiles([]);
-    setMilestones([]);
+    setMilestones([{ id: "1", title: "", targetDate: "", budget: "", budgetPercentage: 0, deliverables: "" }]);
+    setTotalBudget(0);
 
-    toast.success("Budget proposed successfully.");
+    toast.success("Budget proposed successfully with automatic phase distribution.");
   } catch (error) {
     console.error(error);
     toast.error("Failed to submit budget proposal.");
@@ -143,6 +213,14 @@ const onSubmit: SubmitHandler<BudgetFormProps> = async (data) => {
     addMilestone,
     removeMilestone,
     updateMilestone,
-    milestones
+    milestones,
+    totalBudget,
+    setTotalBudget,
+    usePercentageMode,
+    setUsePercentageMode,
+    calculateTotalPercentage,
+    autoDistributeEqually,
+    updateBudgetFromPercentage,
+    updatePercentageFromBudget
   };
 }

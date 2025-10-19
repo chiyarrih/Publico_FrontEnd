@@ -6,7 +6,27 @@ import FileUploadBox from "../cards/FileUploadBox"
 
 
 export default function ProposalForm({ setTab }: { setTab: (e: string) => void }) {
-  const { register, handleSubmit, errors, onSubmit, isLoading, files, setFiles,addMilestone,removeMilestone,updateMilestone,milestones } = useBudget()
+  const { 
+    register, 
+    handleSubmit, 
+    errors, 
+    onSubmit, 
+    isLoading, 
+    files, 
+    setFiles,
+    addMilestone,
+    removeMilestone,
+    updateMilestone,
+    milestones,
+    totalBudget,
+    setTotalBudget,
+    usePercentageMode,
+    setUsePercentageMode,
+    calculateTotalPercentage,
+    autoDistributeEqually,
+    updateBudgetFromPercentage,
+    updatePercentageFromBudget
+  } = useBudget()
   const [startDate, setStartDate] = useState<string>("")
   const [endDate, setEndDate] = useState<string>("")
 
@@ -95,9 +115,16 @@ const today = new Date().toISOString().split("T")[0]
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">₱</span>
                 <input
-                  {...register("amountRequested", { required: "Estimated budget is required" })}
+                  {...register("amountRequested", { 
+                    required: "Estimated budget is required",
+                    onChange: (e) => {
+                      const value = parseFloat(e.target.value) || 0
+                      setTotalBudget(value)
+                    }
+                  })}
                   className="w-full pl-7 pr-3 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                   placeholder="1,500,000"
+                  type="number"
                 />
               </div>
               {errors.amountRequested && (
@@ -176,15 +203,53 @@ const today = new Date().toISOString().split("T")[0]
 
         <div className="pt-4 border-t border-slate-200">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-medium text-slate-700">Project Milestones</h3>
-            <button
-              type="button"
-              onClick={addMilestone}
-              className="px-3 py-1.5 text-xs font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-all"
-            >
-              + Add Milestone
-            </button>
+            <h3 className="text-sm font-medium text-slate-700">Project Milestones / Phases <span className="text-red-500">*</span></h3>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={autoDistributeEqually}
+                className="px-3 py-1.5 text-xs font-medium text-emerald-600 bg-emerald-50 rounded-lg hover:bg-emerald-100 transition-all flex items-center gap-1"
+                disabled={!totalBudget || milestones.length === 0}
+              >
+                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                </svg>
+                Auto-Distribute
+              </button>
+              <button
+                type="button"
+                onClick={addMilestone}
+                className="px-3 py-1.5 text-xs font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-all"
+              >
+                + Add Phase
+              </button>
+            </div>
           </div>
+
+          {/* Budget Distribution Summary */}
+          {totalBudget > 0 && (
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4 mb-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                  </svg>
+                  <div>
+                    <div className="text-sm font-semibold text-slate-900">Total Project Budget: ₱{totalBudget.toLocaleString()}</div>
+                    <div className="text-xs text-slate-600">Distributed across {milestones.length} phase{milestones.length !== 1 ? 's' : ''}</div>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className={`text-lg font-bold ${Math.abs(calculateTotalPercentage() - 100) < 0.1 ? 'text-emerald-600' : 'text-red-600'}`}>
+                    {calculateTotalPercentage().toFixed(1)}%
+                  </div>
+                  <div className="text-xs text-slate-600">
+                    {Math.abs(calculateTotalPercentage() - 100) < 0.1 ? '✓ Complete' : `${(100 - calculateTotalPercentage()).toFixed(1)}% remaining`}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className="space-y-4">
             {milestones.map((milestone, index) => (
@@ -202,7 +267,7 @@ const today = new Date().toISOString().split("T")[0]
                   )}
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   {/* Milestone Title */}
                   <div className="md:col-span-2">
                     <label className="block text-xs font-medium text-slate-700 mb-1">
@@ -253,24 +318,51 @@ const today = new Date().toISOString().split("T")[0]
                       className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-white"
                   />
                   </div>
-                  {/* Budget */}
+                  {/* Budget Percentage */}
                   <div>
                     <label className="block text-xs font-medium text-slate-700 mb-1">
-                      Budget <span className="text-red-500">*</span>
+                      Budget % <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="number"
+                        min="0"
+                        max="100"
+                        step="0.1"
+                        value={milestone.budgetPercentage || 0}
+                        onChange={(e) => {
+                          const percentage = parseFloat(e.target.value) || 0
+                          updateBudgetFromPercentage(milestone.id, percentage)
+                        }}
+                        className="w-full px-3 pr-8 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-white"
+                        placeholder="0"
+                      />
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">%</span>
+                    </div>
+                  </div>
+
+                  {/* Budget Amount (calculated) */}
+                  <div>
+                    <label className="block text-xs font-medium text-slate-700 mb-1">
+                      Budget Amount <span className="text-red-500">*</span>
                     </label>
                     <div className="relative">
                       <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">₱</span>
                       <input
                         value={milestone.budget}
-                        onChange={(e) => updateMilestone(milestone.id, "budget", e.target.value)}
+                        onChange={(e) => updatePercentageFromBudget(milestone.id, e.target.value)}
                         className="w-full pl-7 pr-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-white"
                         placeholder="Budget"
+                        type="number"
                       />
                     </div>
+                    <p className="text-xs text-slate-500 mt-1">
+                      {milestone.budgetPercentage ? `${milestone.budgetPercentage.toFixed(1)}% of total budget` : 'Enter percentage or amount'}
+                    </p>
                   </div>
 
                   {/* Deliverables */}
-                  <div className="md:col-span-2">
+                  <div className="md:col-span-3">
                     <label className="block text-xs font-medium text-slate-700 mb-1">
                       Deliverables <span className="text-red-500">*</span>
                     </label>
