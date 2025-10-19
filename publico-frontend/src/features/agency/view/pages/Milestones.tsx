@@ -115,7 +115,7 @@ export default function Milestones() {
       </div>
 
       {/* Approved Projects Section */}
-      <div className="mb-6">
+      <div className="mb-6"> 
         <h2 className="mb-4 text-lg font-semibold">Approved Projects</h2>
         
         <div className="overflow-hidden bg-white border border-gray-200 rounded-lg">
