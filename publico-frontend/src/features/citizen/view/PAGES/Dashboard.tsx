@@ -90,14 +90,14 @@ const DashboardCard: React.FC<{
   right?: React.ReactNode; 
   children: React.ReactNode; 
 }> = ({ title, right, children }) => (
-  <div className="rounded-xl border border-slate-200 bg-white">
+  <div className="card">
     {(title || right) && (
-      <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
-        <div className="text-sm font-semibold text-slate-700">{title}</div>
+      <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4 bg-gradient-to-r from-gray-50 to-white">
+        <div className="section-title">{title}</div>
         {right}
       </div>
     )}
-    <div className="p-4">{children}</div>
+    <div className="p-6">{children}</div>
   </div>
 );
 
@@ -109,19 +109,19 @@ const ProjectProgressBar: React.FC<{
   color?: "blue" | "green" | "amber" | "slate" 
 }> = ({ percentage, color = "blue" }) => {
   const colorClasses = {
-    green: "bg-emerald-500",
-    amber: "bg-amber-500",
-    slate: "bg-slate-400",
-    blue: "bg-blue-600"
+    green: "bg-gradient-to-r from-emerald-500 to-teal-500",
+    amber: "bg-gradient-to-r from-amber-500 to-orange-500",
+    slate: "bg-gray-400",
+    blue: "bg-gradient-to-r from-blue-600 to-indigo-600"
   };
   
   const barColor = colorClasses[color];
   const safePercentage = Math.max(0, Math.min(100, percentage));
   
   return (
-    <div className="h-2 w-full rounded-full bg-slate-100">
+    <div className="progress">
       <div 
-        className={`h-2 rounded-full ${barColor}`} 
+        className={`progress-bar ${barColor}`} 
         style={{ width: `${safePercentage}%` }} 
       />
     </div>
@@ -133,19 +133,19 @@ const ProjectProgressBar: React.FC<{
  */
 const StatusPill: React.FC<{ status: string }> = ({ status }) => {
   const statusStyles: Record<string, string> = {
-    Verified: "bg-emerald-50 text-emerald-700 border-emerald-200",
-    Pending: "bg-amber-50 text-amber-700 border-amber-200",
-    Flagged: "bg-rose-50 text-rose-700 border-rose-200",
-    "In Progress": "bg-blue-50 text-blue-700 border-blue-200",
-    "Near Completion": "bg-emerald-50 text-emerald-700 border-emerald-200",
-    "Just Started": "bg-slate-50 text-slate-600 border-slate-200",
+    Verified: "pill pill-green",
+    Pending: "pill pill-yellow",
+    Flagged: "pill pill-red",
+    "In Progress": "pill pill-blue",
+    "Near Completion": "pill pill-green",
+    "Just Started": "pill pill-gray",
   };
   
-  const defaultStyle = "bg-slate-50 text-slate-600 border-slate-200";
+  const defaultStyle = "pill pill-gray";
   const style = statusStyles[status] ?? defaultStyle;
   
   return (
-    <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${style}`}>
+    <span className={style}>
       {status}
     </span>
   );
@@ -165,24 +165,31 @@ const ProjectRow: React.FC<{
     }) ?? "—";
 
   return (
-    <div className={`rounded-md border border-slate-200 ${compact ? "px-4 py-3" : "p-4"}`}>
-      <div className="flex items-center justify-between">
+    <div className={`rounded-xl border border-gray-200/60 bg-white hover:shadow-md transition-shadow duration-200 ${compact ? "px-5 py-4" : "p-5"}`}>
+      <div className="flex items-center justify-between mb-3">
         <div>
-          <div className="font-medium text-slate-900">{project.name}</div>
-          <div className="text-xs text-slate-500">
-            {project.dept && `${project.dept} • `}
-            Budget: {formatCurrency(project.budget)}
-            {" • "}Spent: {formatCurrency(project.spent)}
+          <div className="font-semibold text-gray-900">{project.name}</div>
+          <div className="text-xs text-gray-600 mt-1 flex items-center gap-2">
+            {project.dept && (
+              <span className="inline-flex items-center gap-1">
+                <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                </svg>
+                {project.dept}
+              </span>
+            )}
+            <span>Budget: {formatCurrency(project.budget)}</span>
+            <span>Spent: {formatCurrency(project.spent)}</span>
           </div>
         </div>
         <StatusPill status={project.status} />
       </div>
-      <div className="mt-3 space-y-1">
+      <div className="space-y-2">
         <ProjectProgressBar percentage={project.pct} color={project.barColor} />
-        <div className="flex items-center justify-between text-xs text-slate-500">
-          <span>{project.pct}%</span>
-          <button className="text-blue-600 hover:underline">
-            View Details
+        <div className="flex items-center justify-between text-xs">
+          <span className="font-semibold text-gray-700">{project.pct}% Complete</span>
+          <button className="font-semibold text-blue-600 hover:text-blue-700 transition-colors">
+            View Details →
           </button>
         </div>
       </div>
@@ -451,8 +458,12 @@ export default function Dashboard() {
   if (loading) {
     return (
       <div className="space-y-8">
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="flex flex-col items-center justify-center h-96">
+          <div className="relative">
+            <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600"></div>
+            <div className="absolute inset-0 rounded-full border-4 border-gray-200"></div>
+          </div>
+          <p className="mt-4 text-gray-600 font-medium">Loading dashboard...</p>
         </div>
       </div>
     );
@@ -461,13 +472,21 @@ export default function Dashboard() {
   if (error) {
     return (
       <div className="min-h-[400px] flex items-center justify-center">
-        <div className="text-center p-8">
-          <h3 className="text-lg font-medium text-gray-900 mb-2">Dashboard Error</h3>
-          <p className="text-gray-600 mb-4">{error}</p>
+        <div className="card max-w-md p-8 text-center">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100 mb-4">
+            <svg className="h-8 w-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">Dashboard Error</h3>
+          <p className="text-gray-600 mb-6">{error}</p>
           <button 
             onClick={reload}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            className="btn-primary"
           >
+            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
             Try Again
           </button>
         </div>
@@ -485,28 +504,36 @@ export default function Dashboard() {
       <DashboardCard
         title={
           <div className="flex items-center gap-2">
-            <span className="text-amber-500">◎</span>
+            <svg className="h-5 w-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
             <span>Smart Contract Alerts</span>
           </div>
         }
       >
         <div className="space-y-3">
           {uiAlerts.length === 0 && (
-            <div className="rounded-md border border-slate-200 px-4 py-3 text-sm text-slate-600">
-              No alerts.
+            <div className="alert alert-info flex items-center gap-2">
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span className="text-sm font-medium">No alerts at this time</span>
             </div>
           )}
           {uiAlerts.map((alert) => (
-            <div key={alert.key} className={`rounded-md ${alert.color} border border-slate-200 px-4 py-3`}>
-              <div className="flex items-center justify-between text-xs text-slate-500">
-                <span className="flex items-center gap-2 font-medium text-slate-900">
-                  {alert.icon} {alert.title}
-                </span>
-                <span>{alert.date}</span>
+            <div key={alert.key} className={`alert ${alert.color === 'bg-amber-50' ? 'alert-warning' : alert.color === 'bg-emerald-50' ? 'alert-success' : alert.color === 'bg-rose-50' ? 'alert-error' : 'alert-info'}`}>
+              <div className="flex items-start gap-3 w-full">
+                <span className="text-2xl flex-shrink-0">{alert.icon}</span>
+                <div className="flex-1">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="font-semibold text-sm">{alert.title}</span>
+                    <span className="text-xs opacity-70">{alert.date}</span>
+                  </div>
+                  {alert.desc && (
+                    <div className="text-sm opacity-90">{alert.desc}</div>
+                  )}
+                </div>
               </div>
-              {alert.desc && (
-                <div className="mt-1 text-sm text-slate-600">{alert.desc}</div>
-              )}
             </div>
           ))}
         </div>
