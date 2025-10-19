@@ -15,36 +15,50 @@ const today = new Date().toISOString().split("T")[0]
 
 
   return (
-        <div className="w-full p-6 mx-auto bg-white border rounded-xl border-slate-200 shadow-sm">
-      <div className="mb-6 pb-4 border-b border-slate-200">
-        <h2 className="text-xl font-semibold text-slate-900">Create New Proposal</h2>
-        <p className="mt-1 text-sm text-slate-500">Fill in the details for your project proposal</p>
+        <div className="w-full p-8 mx-auto bg-white border rounded-2xl border-slate-200/60 shadow-lg">
+      <div className="mb-8 pb-6 border-b border-slate-100">
+        <div className="flex items-center gap-3 mb-3">
+          <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center">
+            <svg className="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+          </div>
+          <div>
+            <h2 className="text-2xl font-bold text-slate-900">Create New Proposal</h2>
+            <p className="text-sm text-slate-600">Fill in the details for your project proposal</p>
+          </div>
+        </div>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         <div className="space-y-4">
           {/* Project Title */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1.5">
+            <label className="block text-sm font-semibold text-slate-700 mb-2">
               Project Title <span className="text-red-500">*</span>
             </label>
             <input
               {...register("projectName", { required: "Project title is required" })}
-              className="w-full px-3 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              className="w-full px-4 py-3 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-slate-50/50 hover:bg-white"
               placeholder="e.g., Riverside Flood Barrier"
             />
-            {errors.projectName && <p className="mt-1.5 text-xs text-red-600">{errors.projectName.message}</p>}
+            {errors.projectName && <p className="mt-2 text-xs text-red-600 flex items-center gap-1">
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              {errors.projectName.message}
+            </p>}
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Department */}
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">
+              <label className="block text-sm font-semibold text-slate-700 mb-2">
                 Department <span className="text-red-500">*</span>
               </label>
               <select
                 {...register("department", { required: "Department is required" })}
-                className="w-full px-3 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-white"
+                className="w-full px-4 py-3 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-slate-50/50 hover:bg-white"
               >
                 <option value="">Select Department</option>
                 <option value="Department of Health">Department of Health</option>
@@ -273,18 +287,32 @@ const today = new Date().toISOString().split("T")[0]
           </div>
         </div>
 
-        <div className="flex items-center gap-3 pt-4 border-t border-slate-200">
+        <div className="flex items-center gap-4 pt-6 border-t border-slate-100">
           <button
             type="submit"
             disabled={isLoading}
-            className="px-6 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+            className="px-8 py-3 text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl transform hover:scale-[1.02]"
           >
-            {isLoading ? "Submitting..." : "Submit Proposal"}
+            {isLoading ? (
+              <span className="flex items-center gap-2">
+                <svg className="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                Submitting...
+              </span>
+            ) : (
+              <span className="flex items-center gap-2">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                </svg>
+                Submit Proposal
+              </span>
+            )}
           </button>
           <button
             type="button"
             onClick={() => setTab("proposals")}
-            className="px-6 py-2.5 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 transition-all"
+            className="px-6 py-3 text-sm font-semibold text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all"
           >
             Cancel
           </button>
