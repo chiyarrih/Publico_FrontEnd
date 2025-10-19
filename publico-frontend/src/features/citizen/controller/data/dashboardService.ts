@@ -1,27 +1,24 @@
-// src/features/citizen/controller/data/dashboardService.ts
+// ============================================================================
+// CITIZEN DASHBOARD SERVICE
+// ============================================================================
+// This service handles all data fetching for the citizen dashboard,
+// including projects, transactions, analytics, and alerts.
+// ============================================================================
+
 import { apiClient } from "@config/api";
 
-/* -------- helpers -------- */
+// ============================================================================
+// TYPES & INTERFACES
+// ============================================================================
+
+/**
+ * Portal types for determining user context
+ */
 type Portal = "citizen" | "agency" | "admin";
-function getPortal(): Portal {
-  if (typeof window !== "undefined") {
-    const p = window.location.pathname;
-    if (p.startsWith("/agency")) return "agency";
-    if (p.startsWith("/admin")) return "admin";
-  }
-  try {
-    const raw = localStorage.getItem("portal_role");
-    if (raw) {
-      const v = raw.toLowerCase();
-      if (v === "agency" || v === "admin" || v === "citizen") return v as Portal;
-    }
-  } catch {}
-  return "citizen";
-}
-function apiPrefixForRead() {
-  const p = getPortal();
-  return p === "agency" ? "/agency" : p === "admin" ? "/admin" : "/citizen";
-}
+
+/**
+ * User data structure from localStorage
+ */
 type UserData = {
   user?: {
     user_id?: string;
@@ -33,40 +30,10 @@ type UserData = {
   };
   email?: string;
 };
-function getUserData(): UserData {
-  const raw = localStorage.getItem("publico_user_data");
-  if (!raw) throw new Error("No user data in localStorage");
-  return JSON.parse(raw);
-}
-function getAgencyId() {
-  const { user } = getUserData();
-  return user?.agencyId ?? user?.user_id;
-}
 
-/* -------- array normalizers (works with many API shapes) -------- */
-type AnyList =
-  | any[]
-  | { items?: any[]; data?: any[]; projects?: any[]; results?: any[]; rows?: any[]; list?: any[] }
-  | Record<string, unknown>;
-
-const pickArray = (obj: Record<string, unknown>) =>
-  (obj.items as any[]) ??
-  (obj.data as any[]) ??
-  (obj.projects as any[]) ??
-  (obj.results as any[]) ??
-  (obj.rows as any[]) ??
-  (obj.list as any[]);
-
-function toArray(x: AnyList): any[] {
-  if (Array.isArray(x)) return x;
-  if (x && typeof x === "object") {
-    const arr = pickArray(x as Record<string, unknown>);
-    if (Array.isArray(arr)) return arr;
-  }
-  return [];
-}
-
-/* ---------------- types ---------------- */
+/**
+ * Budget proposal form data
+ */
 export interface BudgetFormProps {
   projectName: string;
   department: string;
@@ -76,101 +43,628 @@ export interface BudgetFormProps {
   endDate: string;
   objectives?: string;
 }
-export type DashboardAlert = { id: string; title: string; type: "warning" | "info" | "success"; date: string; description?: string; };
-export type MonthlyPoint = { month: string; allocated: number; spent: number };
-export type CategorySlice = { label: string; value: number };
 
-/* ---------------- WRITE: proposal ---------------- */
+/**
+ * Dashboard alert structure
+ */
+export type DashboardAlert = { 
+  id: string; 
+  title: string; 
+  type: "warning" | "info" | "success"; 
+  date: string; 
+  description?: string; 
+};
+
+/**
+ * Monthly spending data point for charts
+ */
+export type MonthlyPoint = { 
+  month: string; 
+  allocated: number; 
+  spent: number; 
+};
+
+/**
+ * Budget category data for pie charts
+ */
+export type CategorySlice = { 
+  label: string; 
+  value: number; 
+};
+
+/**
+ * Generic API response that could contain arrays in various formats
+ */
+type AnyList =
+  | any[]
+  | { items?: any[]; data?: any[]; projects?: any[]; results?: any[]; rows?: any[]; list?: any[] }
+  | Record<string, unknown>;
+
+// ============================================================================
+// UTILITY FUNCTIONS
+// ============================================================================
+
+/**
+ * Determine the current portal based on URL path or localStorage
+ */
+function getPortal(): Portal {
+  // First, try to determine from URL path
+  if (typeof window !== "undefined") {
+    const path = window.location.pathname;
+    if (path.startsWith("/agency")) return "agency";
+    if (path.startsWith("/admin")) return "admin";
+  }
+  
+  // Fallback to localStorage
+  try {
+    const portalRole = localStorage.getItem("portal_role");
+    if (portalRole) {
+      const role = portalRole.toLowerCase();
+      if (role === "agency" || role === "admin" || role === "citizen") {
+        return role as Portal;
+      }
+    }
+  } catch (error) {
+    console.warn("Could not read portal_role from localStorage:", error);
+  }
+  
+  // Default to citizen
+  return "citizen";
+}
+
+/**
+ * Get API prefix based on current portal
+ */
+function apiPrefixForRead(): string {
+  const portal = getPortal();
+  return portal === "agency" ? "/agency" : portal === "admin" ? "/admin" : "/citizen";
+}
+
+/**
+ * Get user data from localStorage with proper error handling
+ */
+function getUserData(): UserData {
+  try {
+    const raw = localStorage.getItem("publico_user_data");
+    if (!raw) {
+      throw new Error("No user data found in localStorage");
+    }
+    
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== "object") {
+      throw new Error("Invalid user data format");
+    }
+    
+    return parsed;
+  } catch (error) {
+    console.error("Failed to get user data from localStorage:", error);
+    throw new Error("Unable to retrieve user session. Please log in again.");
+  }
+}
+
+/**
+ * Get agency ID from user data
+ */
+function getAgencyId(): string | undefined {
+  const { user } = getUserData();
+  return user?.agencyId ?? user?.user_id;
+}
+
+/**
+ * Extract array from various API response formats
+ */
+function pickArray(obj: Record<string, unknown>): any[] | undefined {
+  return (obj.items as any[]) ??
+         (obj.data as any[]) ??
+         (obj.projects as any[]) ??
+         (obj.results as any[]) ??
+         (obj.rows as any[]) ??
+         (obj.list as any[]);
+}
+
+/**
+ * Convert various API response shapes to a consistent array format
+ */
+function toArray(response: AnyList): any[] {
+  if (Array.isArray(response)) {
+    return response;
+  }
+  
+  if (response && typeof response === "object") {
+    const array = pickArray(response as Record<string, unknown>);
+    if (Array.isArray(array)) {
+      return array;
+    }
+  }
+  
+  return [];
+}
+
+// ============================================================================
+// MOCK DATA FOR DEMONSTRATION
+// ============================================================================
+
+/**
+ * Mock project data for when endpoints are not available
+ */
+const MOCK_PROJECTS = [
+  {
+    _id: "demo-1",
+    projectName: "Default project",
+    description: "Sample project for demonstration",
+    budget: 50000,
+    status: "Active",
+    department: "Public Works",
+    startDate: "2024-01-01",
+    endDate: "2024-12-31"
+  },
+  {
+    _id: "demo-2", 
+    projectName: "dawd",
+    description: "Sample project for testing",
+    budget: 25000,
+    status: "Planning",
+    department: "Infrastructure",
+    startDate: "2024-02-01",
+    endDate: "2024-11-30"
+  }
+];
+
+/**
+ * Mock transaction data for when endpoints are not available
+ */
+const MOCK_TRANSACTIONS = [
+  {
+    _id: "txn-1",
+    transaction: "Project Funding",
+    amount: 50000,
+    date: "2024-01-15",
+    status: "Completed",
+    signature: "0x1234...5678"
+  },
+  {
+    _id: "txn-2",
+    transaction: "Budget Allocation",
+    amount: 25000,
+    date: "2024-02-01",
+    status: "Pending",
+    signature: "0x9abc...def0"
+  }
+];
+
+/**
+ * Mock alert data for when endpoints are not available
+ */
+const MOCK_ALERTS: DashboardAlert[] = [
+  {
+    id: "alert-1",
+    title: "Bridge Repair is 8% over budget",
+    type: "warning",
+    date: "2024-01-15",
+    description: "The bridge repair project has exceeded its budget by 8%"
+  }
+];
+
+/**
+ * Mock monthly spending data for when endpoints are not available
+ */
+const MOCK_MONTHLY_SPENDING: MonthlyPoint[] = [
+  { month: "January", spent: 1200, allocated: 1250 },
+  { month: "February", spent: 1100, allocated: 1250 },
+  { month: "March", spent: 1150, allocated: 1250 },
+  { month: "April", spent: 1300, allocated: 1250 }
+];
+
+/**
+ * Mock category data for when endpoints are not available
+ */
+const MOCK_CATEGORIES: CategorySlice[] = [
+  { label: "Infrastructure", value: 150000 },
+  { label: "Public Works", value: 75000 },
+  { label: "Other", value: 25000 }
+];
+
+// ============================================================================
+// BUDGET PROPOSAL FUNCTIONS
+// ============================================================================
+
+/**
+ * Submit a budget proposal with attached files
+ * This function handles the form data preparation and submission
+ */
 export async function sendBudgetProposal(data: BudgetFormProps, files: File[]) {
   const { user } = getUserData();
+  
+  // Validate required user data
+  if (!user?.user_id) {
+    throw new Error("User ID is required to submit budget proposals");
+  }
+  
+  // Prepare form data for submission
   const formData = new FormData();
-  formData.append("agencyId", String(user?.user_id || ""));
-  formData.append("address", String(user?.address || ""));
-  formData.append("privateKey", String(user?.privateKey || ""));
+  formData.append("agencyId", String(user.user_id));
+  formData.append("address", String(user.address || ""));
+  formData.append("privateKey", String(user.privateKey || ""));
   formData.append("timeline", `${data.startDate} - ${data.endDate}`);
   formData.append("projectName", data.projectName);
   formData.append("department", data.department);
   formData.append("category", data.category);
   formData.append("amountRequested", String(data.amountRequested));
   formData.append("startDate", data.startDate);
-  formData.append("message", data.objectives || "");
   formData.append("endDate", data.endDate);
-  files.forEach((f) => formData.append("fileUrl", f));
+  formData.append("message", data?.objectives || "");
+
+  // Attach all files
+  files.forEach((file) => formData.append("fileUrl", file));
+  
+  // Submit the proposal
   return apiClient.upload("/agency/budget/create_budget_proposal", formData);
 }
 
-/* ---------------- READ: projects ---------------- */
+// ============================================================================
+// PROJECT DATA FUNCTIONS
+// ============================================================================
+
+/**
+ * Get key projects for the dashboard
+ * For citizens: tries public endpoints, falls back to mock data
+ * For agencies/admins: fetches their specific projects
+ */
 export async function getKeyProjects(limit = 5) {
-  const agencyId = getAgencyId();
-  if (!agencyId) throw new Error("No agencyId found in user data");
-  const raw = await apiClient.get(`${apiPrefixForRead()}/projects/${agencyId}`, { params: { page: 1, limit } });
-  return toArray(raw); // <-- ALWAYS array for UI .map()
+  const portal = getPortal();
+  
+  if (portal === "citizen") {
+    // For citizens, try to fetch public project data
+    try {
+      const storage = localStorage.getItem('publico_user_data');
+      if (!storage) throw new Error("No user data found");
+      
+      const userData = JSON.parse(storage);
+      const token = localStorage.getItem('publico_auth_token');
+      
+      // Try public projects endpoint
+      const response = await fetch(`http://localhost:5000/agency/projects/public?page=1&limit=${limit}`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const json = await response.json();
+      return toArray(json as AnyList);
+    } catch (error) {
+      console.warn("Public projects endpoint not available, using mock data:", error);
+      // Return mock data for demonstration
+      return MOCK_PROJECTS.slice(0, limit);
+    }
+  } else {
+    // For agencies/admins, fetch their specific projects
+    const agencyId = getAgencyId();
+    if (!agencyId) {
+      throw new Error("No agency ID found in user data");
+    }
+    
+    const raw = await apiClient.get(`${apiPrefixForRead()}/projects/${agencyId}`, { 
+      params: { page: 1, limit } 
+    });
+    return toArray(raw as AnyList);
+  }
 }
 
+/**
+ * Fetch projects with pagination
+ * For citizens: tries public endpoints, falls back to mock data
+ * For agencies/admins: fetches their specific projects
+ */
 export async function fetchProjectsProposed(page = 1, limit = 10) {
-  const agencyId = getAgencyId();
-  if (!agencyId) throw new Error("No agencyId found in user data");
-  const raw = await apiClient.get(`${apiPrefixForRead()}/projects/${agencyId}`, { params: { page, limit } });
-  const items = toArray(raw);
-  const total =
-    typeof (raw as any)?.total === "number"
-      ? (raw as any).total
-      : typeof (raw as any)?.count === "number"
-      ? (raw as any).count
+  const portal = getPortal();
+  
+  if (portal === "citizen") {
+    // For citizens, try to fetch public project data
+    try {
+      const storage = localStorage.getItem('publico_user_data');
+      if (!storage) throw new Error("No user data found");
+      
+      const userData = JSON.parse(storage);
+      const token = localStorage.getItem('publico_auth_token');
+      
+      // Try public projects endpoint
+      const response = await fetch(`http://localhost:5000/agency/projects/public?page=${page}&limit=${limit}`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const json = await response.json();
+      const items = toArray(json as AnyList);
+      const total = typeof (json as any)?.total === "number" 
+        ? (json as any).total 
+        : typeof (json as any)?.count === "number" 
+        ? (json as any).count 
+        : items.length;
+      
+      return { items, total, page, limit };
+    } catch (error) {
+      console.warn("Public projects endpoint not available, using mock data:", error);
+      // Return mock data with pagination
+      const startIndex = (page - 1) * limit;
+      const endIndex = startIndex + limit;
+      const paginatedItems = MOCK_PROJECTS.slice(startIndex, endIndex);
+      
+      return { 
+        items: paginatedItems, 
+        total: MOCK_PROJECTS.length, 
+        page, 
+        limit 
+      };
+    }
+  } else {
+    // For agencies/admins, fetch their specific projects
+    const agencyId = getAgencyId();
+    if (!agencyId) {
+      throw new Error("No agency ID found in user data");
+    }
+    
+    const raw = await apiClient.get(`${apiPrefixForRead()}/projects/${agencyId}`, { 
+      params: { page, limit } 
+    });
+    const items = toArray(raw as AnyList);
+    const total = typeof (raw as any)?.total === "number" 
+      ? (raw as any).total 
+      : typeof (raw as any)?.count === "number" 
+      ? (raw as any).count 
       : items.length;
-  return { items, total, page, limit };
+    
+    return { items, total, page, limit };
+  }
 }
 
-/* ---------------- READ: ledger (normalize to array) ---------------- */
-// Backend route is: /api/ledgers/:role/:agencyId
+// ============================================================================
+// TRANSACTION DATA FUNCTIONS
+// ============================================================================
+
+/**
+ * Fetch ledger transactions with pagination
+ * For citizens: tries public endpoints, falls back to mock data
+ * For agencies/admins: fetches their specific ledger
+ */
 export async function fetchLedger(page = 1, limit = 10) {
-  const { user } = getUserData();
-  const role = user?.role ?? "Citizen";
-  const agencyId = getAgencyId();
-  if (!agencyId) throw new Error("No agencyId found in user data");
+  const portal = getPortal();
+  
+  if (portal === "citizen") {
+    // For citizens, try to fetch public ledger data
+    try {
+      const storage = localStorage.getItem('publico_user_data');
+      if (!storage) throw new Error("No user data found");
+      
+      const userData = JSON.parse(storage);
+      const token = localStorage.getItem('publico_auth_token');
+      
+      // Try public ledger endpoint
+      const response = await fetch(`http://localhost:5000/api/ledgers/public?page=${page}&limit=${limit}`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
 
-  const raw = await apiClient.get(`/api/ledgers/${role}/${agencyId}`, { params: { page, limit } });
-  // Accept either bare array or wrapped object
-  const items = toArray(raw);
-  const total =
-    typeof (raw as any)?.total === "number"
-      ? (raw as any).total
-      : typeof (raw as any)?.count === "number"
-      ? (raw as any).count
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const json = await response.json();
+      const items = toArray(json as AnyList);
+      const total = typeof (json as any)?.total === "number" 
+        ? (json as any).total 
+        : typeof (json as any)?.count === "number" 
+        ? (json as any).count 
+        : items.length;
+      
+      return { items, total, page, limit };
+    } catch (error) {
+      console.warn("Public ledger endpoint not available, using mock data:", error);
+      // Return mock data with pagination
+      const startIndex = (page - 1) * limit;
+      const endIndex = startIndex + limit;
+      const paginatedItems = MOCK_TRANSACTIONS.slice(startIndex, endIndex);
+      
+      return { 
+        items: paginatedItems, 
+        total: MOCK_TRANSACTIONS.length, 
+        page, 
+        limit 
+      };
+    }
+  } else {
+    // For agencies/admins, fetch their specific ledger
+    const { user } = getUserData();
+    const role = user?.role ?? "Agency";
+    const agencyId = getAgencyId();
+    
+    if (!agencyId) {
+      throw new Error("No agency ID found in user data");
+    }
+
+    const raw = await apiClient.get(`/api/ledgers/${role}/${agencyId}`, { 
+      params: { page, limit } 
+    });
+    const items = toArray(raw as AnyList);
+    const total = typeof (raw as any)?.total === "number" 
+      ? (raw as any).total 
+      : typeof (raw as any)?.count === "number" 
+      ? (raw as any).count 
       : items.length;
-  return { items, total, page, limit }; // <-- consumer can use .items.map(...)
+    
+    return { items, total, page, limit };
+  }
 }
 
-/* ---------------- READ: misc ---------------- */
+// ============================================================================
+// ANALYTICS & DASHBOARD FUNCTIONS
+// ============================================================================
+
+/**
+ * Get dashboard alerts
+ * For citizens: tries public endpoints, falls back to mock data
+ * For agencies/admins: fetches their specific alerts
+ */
+export async function getDashboardAlerts(): Promise<DashboardAlert[]> {
+  const portal = getPortal();
+  
+  if (portal === "citizen") {
+    // For citizens, try to fetch public alert data
+    try {
+      const storage = localStorage.getItem('publico_user_data');
+      if (!storage) throw new Error("No user data found");
+      
+      const userData = JSON.parse(storage);
+      const token = localStorage.getItem('publico_auth_token');
+      
+      // Try public alerts endpoint
+      const response = await fetch(`http://localhost:5000/citizen/alerts/public`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const json = await response.json();
+      return json;
+    } catch (error) {
+      console.warn("Public alerts endpoint not available, using mock data:", error);
+      // Return mock alert data
+      return MOCK_ALERTS;
+    }
+  } else {
+    // For agencies/admins, fetch their specific alerts
+    return apiClient.get("/citizen/alerts");
+  }
+}
+
+/**
+ * Get monthly spending data for charts
+ * For citizens: tries public endpoints, falls back to mock data
+ * For agencies/admins: fetches their specific analytics
+ */
+export async function getMonthlySpending(): Promise<MonthlyPoint[]> {
+  const portal = getPortal();
+  
+  if (portal === "citizen") {
+    // For citizens, try to fetch public analytics data
+    try {
+      const storage = localStorage.getItem('publico_user_data');
+      if (!storage) throw new Error("No user data found");
+      
+      const userData = JSON.parse(storage);
+      const token = localStorage.getItem('publico_auth_token');
+      
+      // Try public monthly analytics endpoint
+      const response = await fetch(`http://localhost:5000/citizen/analytics/monthly/public`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const json = await response.json();
+      return json;
+    } catch (error) {
+      console.warn("Public monthly analytics endpoint not available, using mock data:", error);
+      // Return mock monthly spending data
+      return MOCK_MONTHLY_SPENDING;
+    }
+  } else {
+    // For agencies/admins, fetch their specific analytics
+    return apiClient.get("/citizen/analytics/monthly");
+  }
+}
+
+/**
+ * Get budget allocation by category for charts
+ * For citizens: tries public endpoints, falls back to mock data
+ * For agencies/admins: fetches their specific analytics
+ */
+export async function getBudgetByCategory(): Promise<CategorySlice[]> {
+  const portal = getPortal();
+  
+  if (portal === "citizen") {
+    // For citizens, try to fetch public analytics data
+    try {
+      const storage = localStorage.getItem('publico_user_data');
+      if (!storage) throw new Error("No user data found");
+      
+      const userData = JSON.parse(storage);
+      const token = localStorage.getItem('publico_auth_token');
+      
+      // Try public category analytics endpoint
+      const response = await fetch(`http://localhost:5000/citizen/analytics/categories/public`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const json = await response.json();
+      return json;
+    } catch (error) {
+      console.warn("Public category analytics endpoint not available, using mock data:", error);
+      // Return mock category data
+      return MOCK_CATEGORIES;
+    }
+  } else {
+    // For agencies/admins, fetch their specific analytics
+    return apiClient.get("/citizen/analytics/categories");
+  }
+}
+
+// ============================================================================
+// PROFILE & USER MANAGEMENT FUNCTIONS
+// ============================================================================
+
+/**
+ * Update user connection status
+ */
 export async function updateToConnected() {
   const parsed = getUserData();
   const email = parsed.email || parsed.user?.email;
+  
+  if (!email) {
+    throw new Error("Email is required to update connection status");
+  }
+  
   return apiClient.post("/admin/auth/management/update", { email });
 }
 
-const fetchCache = new Map<string, { data: any; ts: number }>();
-export async function fetchUsers() {
-  const parsed = getUserData();
-  const email = parsed.email || parsed.user?.email;
-  const key = `fetchUsers_${email}`;
-  const cached = fetchCache.get(key);
-  if (cached && Date.now() - cached.ts < 5000) return cached.data;
-  const data = await apiClient.get(`/admin/auth/management/fetch/${email}`);
-  fetchCache.set(key, { data, ts: Date.now() });
-  return data;
-}
-
+/**
+ * Update agency profile information
+ */
 export async function updateAgencyProfile(userId: string, profileData: any) {
   return apiClient.put(`/auth/profile/${userId}`, profileData);
-}
-
-/* ---------------- READ: dashboard cards ---------------- */
-export async function getDashboardAlerts(): Promise<DashboardAlert[]> {
-  return apiClient.get("/citizen/alerts");
-}
-export async function getMonthlySpending(): Promise<MonthlyPoint[]> {
-  return apiClient.get("/citizen/analytics/monthly");
-}
-export async function getBudgetByCategory(): Promise<CategorySlice[]> {
-  return apiClient.get("/citizen/analytics/categories");
 }

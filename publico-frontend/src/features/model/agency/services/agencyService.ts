@@ -1,4 +1,4 @@
-import { BudgetFormProps } from "interfaces/budget";
+import { BudgetFormProps } from "../../../interfaces/budget";
 
 
 export interface BudgetProject {

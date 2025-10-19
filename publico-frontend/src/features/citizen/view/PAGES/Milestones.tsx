@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getKeyProjects } from "../../controller/data/dashboardService";
+import { useDebounce } from "../../controller/hooks/useDebounce";
 
 type ProjectRow = {
   _id?: string;
@@ -51,6 +52,7 @@ const RowCard: React.FC<{ row: ProjectRow; onClick: () => void }> = ({ row, onCl
 const Milestones: React.FC = () => {
   const navigate = useNavigate();
   const [q, setQ] = useState("");
+  const debouncedQ = useDebounce(q, 300); // Debounce search input
   const [dept, setDept] = useState("All Departments");
   const [status, setStatus] = useState("All Statuses");
 
@@ -78,12 +80,13 @@ const Milestones: React.FC = () => {
     return rows.filter((r) => {
       const name = (r.projectName ?? "").toLowerCase();
       const code = (r._id ?? r.code ?? "").toLowerCase();
-      const mQ   = !q || name.includes(q.toLowerCase()) || code.includes(q.toLowerCase());
+      const searchQuery = debouncedQ.toLowerCase();
+      const mQ   = !debouncedQ || name.includes(searchQuery) || code.includes(searchQuery);
       const mDept = dept === "All Departments" || r.department === dept;
       const mStat = status === "All Statuses" || r.status === status;
       return mQ && mDept && mStat;
     });
-  }, [q, dept, status, rows]);
+  }, [debouncedQ, dept, status, rows]);
 
   return (
     <div className="space-y-6">

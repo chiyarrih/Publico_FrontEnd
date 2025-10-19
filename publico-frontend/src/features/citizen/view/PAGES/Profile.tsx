@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import toast from "react-hot-toast";
 import { useProfile } from "../../controller/hooks/useProfile";
 import ChangePasswordModal from "../components/ChangePasswordModal";
 import ProfileTabs, { TabKey } from "../components/ProfileTabs";
@@ -62,14 +63,24 @@ const Profile: React.FC = () => {
         phone_number: form.phone_number,
         address: form.address,
       });
-      alert("Profile updated successfully ✅");
+      toast.success("Profile updated successfully!", {
+        duration: 3000,
+        position: "top-right",
+      });
     } catch (err) {
       // Error handled by hook
+      toast.error("Failed to update profile. Please try again.", {
+        duration: 4000,
+        position: "top-right",
+      });
     }
   };
 
   const handlePasswordChangeSuccess = () => {
-    alert("Password changed successfully ✅");
+    toast.success("Password changed successfully!", {
+      duration: 3000,
+      position: "top-right",
+    });
   };
 
   if (isLoading && !user) {
