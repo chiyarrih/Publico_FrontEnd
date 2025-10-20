@@ -6,12 +6,12 @@ export const Card: React.FC<
 > = ({ className = "", title, right, children }) => (
   <div className={`card ${className}`}>
     {(title || right) && (
-      <div className="flex items-center justify-between border-b px-5 py-3">
+      <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4 bg-gradient-to-r from-gray-50 to-white">
         <div className="section-title">{title}</div>
         {right}
       </div>
     )}
-    <div className={title || right ? "p-5" : ""}>{children}</div>
+    <div className={title || right ? "p-6" : "p-6"}>{children}</div>
   </div>
 );
 
@@ -22,7 +22,7 @@ export const PrimaryBtn: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement>>
 }) => (
   <button
     {...rest}
-    className={`inline-flex items-center gap-2 rounded bg-[#2563eb] px-4 py-2 text-sm font-medium text-white hover:bg-[#1d4fd8] ${className}`}
+    className={`btn-primary ${className}`}
   />
 );
 
@@ -32,14 +32,14 @@ export const OutlineBtn: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement>>
 }) => (
   <button
     {...rest}
-    className={`inline-flex items-center gap-2 rounded border border-slate-300 bg-white px-3 py-1.5 text-sm hover:bg-slate-50 ${className}`}
+    className={`btn-secondary ${className}`}
   />
 );
 
 /* =============== LABELLED FIELDS =============== */
 export const Field: React.FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (
   <label className="block">
-    <div className="mb-1 text-[12px] text-slate-600">{label}</div>
+    <div className="mb-2 text-sm font-medium text-gray-700">{label}</div>
     {children}
   </label>
 );
@@ -47,21 +47,21 @@ export const Field: React.FC<{ label: string; children: React.ReactNode }> = ({ 
 export const Input = (p: React.InputHTMLAttributes<HTMLInputElement>) => (
   <input
     {...p}
-    className={`w-full rounded border border-slate-300 bg-white px-3 py-2 text-sm focus:ring-2 focus:ring-blue-100 ${p.className || ""}`}
+    className={`input-field ${p.className || ""}`}
   />
 );
 
 export const Select = (p: React.SelectHTMLAttributes<HTMLSelectElement>) => (
   <select
     {...p}
-    className={`w-full rounded border border-slate-300 bg-white px-2 py-2 text-sm ${p.className || ""}`}
+    className={`select-field ${p.className || ""}`}
   />
 );
 
 export const Textarea = (p: React.TextareaHTMLAttributes<HTMLTextAreaElement>) => (
   <textarea
     {...p}
-    className={`w-full rounded border border-slate-300 bg-white px-3 py-2 text-sm focus:ring-2 focus:ring-blue-100 ${p.className || ""}`}
+    className={`textarea-field ${p.className || ""}`}
   />
 );
 
@@ -89,6 +89,6 @@ export const statusToPill = (v: string) =>
 /* =============== PROGRESS BAR =============== */
 export const Progress: React.FC<{ pct: number; color?: string }> = ({ pct, color = "#3b82f6" }) => (
   <div className="progress">
-    <div className="progress-bar" style={{ width: `${pct}%`, backgroundColor: color }} />
+    <div className="progress-bar bg-gradient-to-r from-blue-500 to-indigo-500" style={{ width: `${Math.min(100, Math.max(0, pct))}%` }} />
   </div>
 );

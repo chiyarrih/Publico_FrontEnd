@@ -30,17 +30,22 @@ export const ActiveProjectsCard: React.FC<ActiveProjectsCardProps> = ({
 }) => {
   if (isLoading) {
     return (
-      <div className="rounded-xl border border-slate-200 bg-white">
-        <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
-          <div className="text-[15px] font-semibold text-slate-800">Active Projects</div>
+      <div className="rounded-2xl border border-slate-200/60 bg-white shadow-sm">
+        <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4 bg-gradient-to-r from-slate-50/50 to-white">
+          <div className="flex items-center gap-2">
+            <div className="h-6 w-6 rounded bg-slate-100 animate-pulse"></div>
+            <div className="h-5 w-32 rounded bg-slate-200 animate-pulse"></div>
+          </div>
         </div>
-        <div className="p-4">
-          <div className="space-y-3">
+        <div className="p-6">
+          <div className="space-y-4">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="animate-pulse rounded border border-slate-200 p-4">
-                <div className="h-4 w-3/4 rounded bg-slate-200"></div>
-                <div className="mt-2 h-3 w-1/2 rounded bg-slate-200"></div>
-                <div className="mt-3 h-2 w-full rounded bg-slate-200"></div>
+              <div key={i} className="rounded-xl border border-slate-200 p-5">
+                <div className="animate-pulse">
+                  <div className="h-5 w-3/4 rounded bg-slate-200 mb-3"></div>
+                  <div className="h-4 w-1/2 rounded bg-slate-200 mb-4"></div>
+                  <div className="h-3 w-full rounded-full bg-slate-200"></div>
+                </div>
               </div>
             ))}
           </div>
@@ -51,15 +56,26 @@ export const ActiveProjectsCard: React.FC<ActiveProjectsCardProps> = ({
 
   if (milestones.length === 0) {
     return (
-      <div className="rounded-xl border border-slate-200 bg-white">
-        <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
-          <div className="text-[15px] font-semibold text-slate-800">Active Projects</div>
+      <div className="rounded-2xl border border-slate-200/60 bg-white shadow-sm">
+        <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4 bg-gradient-to-r from-slate-50/50 to-white">
+          <div className="flex items-center gap-2">
+            <div className="h-6 w-6 rounded bg-blue-100 flex items-center justify-center">
+              <svg className="h-4 w-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+              </svg>
+            </div>
+            <span className="text-lg font-semibold text-slate-900">Active Projects</span>
+          </div>
         </div>
-        <div className="p-4">
-          <div className="flex flex-col items-center justify-center py-8 text-center">
-            <div className="mb-2 text-4xl">📋</div>
-            <div className="text-sm font-medium text-slate-700">No Active Projects</div>
-            <div className="text-xs text-slate-500">
+        <div className="p-6">
+          <div className="flex flex-col items-center justify-center py-12 text-center">
+            <div className="mb-4 h-16 w-16 rounded-full bg-slate-100 flex items-center justify-center">
+              <svg className="h-8 w-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </div>
+            <div className="text-base font-semibold text-slate-700">No Active Projects</div>
+            <div className="text-sm text-slate-500 mt-1">
               Your approved projects will appear here
             </div>
           </div>
@@ -69,32 +85,52 @@ export const ActiveProjectsCard: React.FC<ActiveProjectsCardProps> = ({
   }
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white">
-      <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
-        <div className="text-[15px] font-semibold text-slate-800">
-          Active Projects ({milestones.length})
+    <div className="rounded-2xl border border-slate-200/60 bg-white shadow-sm hover:shadow-md transition-all duration-300">
+      <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4 bg-gradient-to-r from-slate-50/50 to-white">
+        <div className="flex items-center gap-2">
+          <div className="h-6 w-6 rounded bg-blue-100 flex items-center justify-center">
+            <svg className="h-4 w-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+            </svg>
+          </div>
+          <span className="text-lg font-semibold text-slate-900">
+            Active Projects ({milestones.length})
+          </span>
         </div>
-        <button className="text-xs font-medium text-blue-600 hover:underline">
-          View All
+        <button className="text-sm font-semibold text-blue-600 hover:text-blue-700 transition-colors">
+          View All →
         </button>
       </div>
-      <div className="p-4">
-        <div className="space-y-3">
+      <div className="p-6">
+        <div className="space-y-4">
           {milestones.slice(0, 4).map((milestone) => (
-            <div key={milestone._id} className="rounded border border-slate-200 p-4">
-              <div className="flex items-center justify-between">
+            <div key={milestone._id} className="group rounded-xl border border-slate-200 p-5 hover:shadow-md hover:border-slate-300 transition-all duration-200">
+              <div className="flex items-start justify-between mb-3">
                 <div className="flex-1">
-                  <div className="text-sm font-semibold text-slate-800">
-                    {milestone.projectName}
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="h-2 w-2 rounded-full" style={{ backgroundColor: getProgressColor(milestone.overallProgress) }}></div>
+                    <div className="font-semibold text-slate-900 group-hover:text-slate-700 transition-colors">
+                      {milestone.projectName}
+                    </div>
                   </div>
-                  <div className="text-xs text-slate-500">
-                    {milestone.department} • Budget: ₱
-                    {milestone.totalBudget.toLocaleString()}
+                  <div className="flex items-center gap-3 text-xs text-slate-500">
+                    <span className="flex items-center gap-1">
+                      <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                      </svg>
+                      {milestone.department}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                      </svg>
+                      ₱{milestone.totalBudget.toLocaleString()}
+                    </span>
                   </div>
                 </div>
-                <div className="ml-4 flex items-center gap-2">
+                <div className="flex items-center gap-3">
                   <span
-                    className="inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-medium ring-1"
+                    className="inline-flex items-center rounded-full px-3 py-1.5 text-xs font-semibold ring-1 shadow-sm"
                     style={{
                       backgroundColor: `${getStatusColor(milestone.overallStatus)}15`,
                       color: getStatusColor(milestone.overallStatus),
@@ -103,19 +139,22 @@ export const ActiveProjectsCard: React.FC<ActiveProjectsCardProps> = ({
                   >
                     {milestone.overallStatus}
                   </span>
-                  <span className="text-xs font-medium text-slate-600">
-                    {milestone.overallProgress}%
-                  </span>
+                  <div className="text-right">
+                    <div className="text-lg font-bold text-slate-900">{milestone.overallProgress}%</div>
+                    <div className="text-xs text-slate-500">Complete</div>
+                  </div>
                 </div>
               </div>
-              <div className="mt-3 h-2 w-full rounded bg-slate-100">
-                <div
-                  className="h-2 rounded transition-all"
-                  style={{
-                    width: `${milestone.overallProgress}%`,
-                    backgroundColor: getProgressColor(milestone.overallProgress),
-                  }}
-                />
+              <div className="relative">
+                <div className="h-3 w-full rounded-full bg-slate-100 overflow-hidden">
+                  <div
+                    className="h-full rounded-full transition-all duration-500 ease-out"
+                    style={{
+                      width: `${milestone.overallProgress}%`,
+                      background: `linear-gradient(90deg, ${getProgressColor(milestone.overallProgress)} 0%, ${getProgressColor(milestone.overallProgress)}dd 100%)`,
+                    }}
+                  />
+                </div>
               </div>
             </div>
           ))}

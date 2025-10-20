@@ -10,8 +10,11 @@ export default function AgencyVerification() {
     error,
     searchTerm,
     statusFilter,
-    setSearchTerm,
-    setStatusFilter,
+    currentPage,
+    totalPages,
+    handleSearchChange,
+    handleStatusChange,
+    handlePageChange,
     refreshAgencies,
   } = useAgencyVerification();
 
@@ -69,16 +72,6 @@ export default function AgencyVerification() {
     }
   };
 
-  const filteredAgencies = (agencies || []).filter(agency => {
-    const matchesSearch = 
-      agency.agency_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      agency.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      agency.department?.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesStatus = statusFilter === "All Statuses" || agency.status === statusFilter;
-    
-    return matchesSearch && matchesStatus;
-  });
 
   if (loading) {
     return (
@@ -127,7 +120,7 @@ export default function AgencyVerification() {
             type="text"
             placeholder="Search agencies by name, email, or department..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => handleSearchChange(e.target.value)}
             className="w-full"
           />
         </div>
@@ -147,10 +140,10 @@ export default function AgencyVerification() {
             Export List
           </Button>
           
-          <Select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+          <Select value={statusFilter} onChange={(e) => handleStatusChange(e.target.value)}>
             <option value="All Statuses">All Statuses</option>
-            <option value="Pending">Pending</option>
             <option value="Approved">Approved</option>
+            <option value="Pending">Pending</option>
             <option value="Rejected">Rejected</option>
           </Select>
         </div>
@@ -189,7 +182,7 @@ export default function AgencyVerification() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredAgencies.map((agency) => (
+              {agencies.map((agency) => (
                 <tr key={agency._id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className="text-sm font-medium text-blue-600 hover:text-blue-800 cursor-pointer">
@@ -237,6 +230,31 @@ export default function AgencyVerification() {
             </tbody>
           </table>
         </div>
+        
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between px-6 py-3 border-t border-gray-200">
+            <div className="text-sm text-gray-500">
+              Page {currentPage} of {totalPages}
+            </div>
+            <div className="flex gap-2">
+              <Button 
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Previous
+              </Button>
+              <Button 
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Next
+              </Button>
+            </div>
+          </div>
+        )}
       </Card>
 
       {/* Review Modal */}

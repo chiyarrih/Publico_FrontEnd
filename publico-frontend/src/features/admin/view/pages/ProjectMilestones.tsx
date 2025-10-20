@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useProjectMilestones } from "../../controller/hooks/useProjectMilestones";
 import { Panel, Pill, IconButton } from "../ui/kit";
@@ -14,8 +14,16 @@ export default function ProjectMilestones(){
   const [dept, setDept] = useState("All");
   const [state, setState] = useState("All");
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [allMilestones, setAllMilestones] = useState<any[]>([]);
   
   const { milestones, budgetProjects, loading, error, fetchMilestones } = useProjectMilestones('all');
+
+  // Store all milestones for dropdown options (never filtered)
+  useEffect(() => {
+    if (milestones.length > 0 && allMilestones.length === 0) {
+      setAllMilestones(milestones);
+    }
+  }, [milestones, allMilestones.length]);
 
   const filtered = useMemo(()=>milestones.filter(p =>
     (dept==="All"||p.department===dept) &&
@@ -66,7 +74,7 @@ export default function ProjectMilestones(){
             onChange={e=>{setDept(e.target.value); handleFilterChange();}}
           >
             <option>All</option>
-            {Array.from(new Set(milestones.map(m => m.department))).map(dept => (
+            {Array.from(new Set(allMilestones.map(m => m.department))).map(dept => (
               <option key={dept} value={dept}>{dept}</option>
             ))}
           </select>
@@ -76,7 +84,7 @@ export default function ProjectMilestones(){
             onChange={e=>{setState(e.target.value); handleFilterChange();}}
           >
             <option>All</option>
-            {Array.from(new Set(milestones.map(m => m.overallStatus))).map(status => (
+            {Array.from(new Set(allMilestones.map(m => m.overallStatus))).map(status => (
               <option key={status} value={status}>{status}</option>
             ))}
           </select>

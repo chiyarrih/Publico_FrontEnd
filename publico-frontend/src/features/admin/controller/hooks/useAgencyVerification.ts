@@ -14,7 +14,7 @@ export interface AgencyVerificationData {
   isPending: boolean;
   isVerified: boolean; // Email verification status
   isAgencyVerified?: boolean; // Agency application approval status
-  status: "Pending" | "Approved" | "Rejected";
+  status: "Approved" | "Pending" | "Rejected";
   documents?: Array<{
     name: string;
     size: number;
@@ -34,6 +34,10 @@ export function useAgencyVerification() {
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("All Statuses");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [allAgencies, setAllAgencies] = useState<AgencyVerificationData[]>([]);
+  const itemsPerPage = 10;
 
   const fetchAgencies = async () => {
     try {
@@ -41,21 +45,72 @@ export function useAgencyVerification() {
       setError(null);
       const data = await AgencyVerificationService.getAllAgencies();
       // Ensure data is always an array
-      setAgencies(Array.isArray(data) ? data : []);
+      const agenciesData = Array.isArray(data) ? data : [];
+      setAllAgencies(agenciesData);
+      
+      // Apply pagination and filtering
+      applyFiltersAndPagination(agenciesData, currentPage, statusFilter, searchTerm);
     } catch (err: any) {
       const errorMessage = err.message || "Failed to fetch agencies";
       setError(errorMessage);
       console.error("Error fetching agencies:", err);
       // Set empty array on error to prevent undefined filter calls
       setAgencies([]);
+      setAllAgencies([]);
       toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
   };
 
+  const applyFiltersAndPagination = (
+    data: AgencyVerificationData[], 
+    page: number, 
+    status: string, 
+    search: string
+  ) => {
+    // Apply filters
+    let filtered = data.filter(agency => {
+      const matchesSearch = 
+        agency.agency_name?.toLowerCase().includes(search.toLowerCase()) ||
+        agency.email?.toLowerCase().includes(search.toLowerCase()) ||
+        agency.department?.toLowerCase().includes(search.toLowerCase());
+      
+      const matchesStatus = status === "All Statuses" || agency.status === status;
+      
+      return matchesSearch && matchesStatus;
+    });
+
+    // Apply pagination
+    const totalFilteredItems = filtered.length;
+    const totalPages = Math.ceil(totalFilteredItems / itemsPerPage);
+    const startIndex = (page - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const paginatedAgencies = filtered.slice(startIndex, endIndex);
+
+    setAgencies(paginatedAgencies);
+    setTotalPages(totalPages);
+  };
+
   const refreshAgencies = () => {
     fetchAgencies();
+  };
+
+  const handleSearchChange = (search: string) => {
+    setSearchTerm(search);
+    setCurrentPage(1);
+    applyFiltersAndPagination(allAgencies, 1, statusFilter, search);
+  };
+
+  const handleStatusChange = (status: string) => {
+    setStatusFilter(status);
+    setCurrentPage(1);
+    applyFiltersAndPagination(allAgencies, 1, status, searchTerm);
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    applyFiltersAndPagination(allAgencies, page, statusFilter, searchTerm);
   };
 
   const approveAgency = async (agencyId: string) => {
@@ -103,8 +158,13 @@ export function useAgencyVerification() {
     error,
     searchTerm,
     statusFilter,
+    currentPage,
+    totalPages,
     setSearchTerm,
     setStatusFilter,
+    handleSearchChange,
+    handleStatusChange,
+    handlePageChange,
     refreshAgencies,
     approveAgency,
     rejectAgency,

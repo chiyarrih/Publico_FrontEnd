@@ -57,7 +57,6 @@ export default function BudgetRequestsFilters({
           <option value="All">All Statuses</option>
           <option value="Pending">Pending</option>
           <option value="Approved">Approved</option>
-          <option value="Reviewed">Reviewed</option>
           <option value="Rejected">Rejected</option>
         </Select>
 

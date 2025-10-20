@@ -23,6 +23,7 @@ export default function Transactions(){
       toggleDatePicker,
       handlePageChange,
       refreshLedgers,setPage } = useLedger();
+
   
   const [selectedProposal, setSelectedProposal] = useState<BudgetProposal | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -107,9 +108,10 @@ export default function Transactions(){
   }, [showDatePicker, toggleDatePicker]);
 
   const tone = (s: string) => {
-    if (s === "Approved") return "green";
-    if (s === "Pending") return "yellow";
-    if (s === "Rejected") return "red";
+    const status = s.toLowerCase();
+    if (status === "verified") return "green";
+    if (status === "pending") return "yellow";
+    if (status === "rejected") return "red";
     return "gray";
   };
 
@@ -148,9 +150,9 @@ export default function Transactions(){
             </Select>
             <Select value={statusFilter} onChange={e => handleStatusChange(e.target.value)}>
               <option value="All">All Statuses</option>
-              <option value="Pending">Pending</option>
-              <option value="Approved">Approved</option>
-              <option value="Rejected">Rejected</option>
+              <option value="pending">Pending</option>
+              <option value="verified">Verified</option>
+              <option value="rejected">Rejected</option>
             </Select>
             <div className="relative" ref={datePickerRef}>
               <Button 

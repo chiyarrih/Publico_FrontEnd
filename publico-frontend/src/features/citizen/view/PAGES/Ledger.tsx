@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Card, Select, Input, OutlineBtn, statusToPill } from "../../../../shared/ui";
 import { fetchLedger } from "../../controller/data/dashboardService";
+import { useDebounce } from "../../controller/hooks/useDebounce";
 
 type Tx = {
   date?: string;
@@ -12,7 +13,7 @@ type Tx = {
 };
 
 const money = (n?: number) =>
-  typeof n === "number" ? n.toLocaleString(undefined, { style: "currency", currency: "USD", maximumFractionDigits: 0 }) : "-";
+  typeof n === "number" ? n.toLocaleString("en-PH", { style: "currency", currency: "PHP", maximumFractionDigits: 0 }) : "-";
 
 const DEPTS    = ["All Departments","Health","Education","Infrastructure","Utilities","Administration"] as const;
 const PERIODS  = ["This Month","Last 30 Days","This Quarter","This Year"] as const;
@@ -20,6 +21,7 @@ const STATUSES = ["Verified","Pending","Flagged","All"] as const;
 
 export default function Ledger() {
   const [query, setQuery]     = useState("");
+  const debouncedQuery        = useDebounce(query, 300); // Debounce search input
   const [period, setPeriod]   = useState<typeof PERIODS[number]>("This Month");
   const [dept, setDept]       = useState<typeof DEPTS[number]>("All Departments");
   const [status, setStatus]   = useState<typeof STATUSES[number]>("Verified");
@@ -49,6 +51,7 @@ export default function Ledger() {
     return () => { ignore = true; };
   }, [page]);
 
+  // Client-side filtering for better UX (combine with server pagination for production)
   const filtered = useMemo(() => {
     const now = new Date();
     const startOfMonth   = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -56,7 +59,7 @@ export default function Ledger() {
     const startOfYear    = new Date(now.getFullYear(), 0, 1);
     const start = period === "This Month" ? startOfMonth : period === "Last 30 Days" ? new Date(now.getTime() - 30*24*3600*1000)
                   : period === "This Quarter" ? startOfQuarter : startOfYear;
-    const q = query.trim().toLowerCase();
+    const q = debouncedQuery.trim().toLowerCase(); // Use debounced query
     return rows.filter(r => {
       const dOk  = r.date ? new Date(r.date) >= start : true;
       const dep  = dept === "All Departments" || r.dept === dept;
@@ -64,11 +67,12 @@ export default function Ledger() {
       const text = q === "" || `${r.project ?? ""} ${r.dept ?? ""} ${r.signature ?? ""}`.toLowerCase().includes(q);
       return dOk && dep && st && text;
     });
-  }, [rows, query, period, dept, status]);
+  }, [rows, debouncedQuery, period, dept, status]);
 
-  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  // Note: For production, move filtering to backend and use server-side pagination
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
   const setSafePage = (p:number) => setPage(Math.min(Math.max(1,p), totalPages));
-  const pageRows = filtered.slice(0, pageSize);
+  const pageRows = filtered.slice((page - 1) * pageSize, page * pageSize);
 
   const exportCSV = () => {
     const header = ["Date","Department","Project","Amount","Status","Signature"];
@@ -132,7 +136,7 @@ export default function Ledger() {
           <div className="text-xs text-slate-500">
             Showing <span className="font-medium">{filtered.length ? (page-1)*pageSize+1 : 0}</span> to{" "}
             <span className="font-medium">{Math.min(page*pageSize, filtered.length)}</span> of{" "}
-            <span className="font-medium">{total}</span> results
+            <span className="font-medium">{filtered.length}</span> results
           </div>
           <div className="flex items-center gap-1">
             <button onClick={()=>setSafePage(page-1)} disabled={page===1} className="rounded border border-slate-300 px-2 py-1 text-sm disabled:opacity-50">‹</button>

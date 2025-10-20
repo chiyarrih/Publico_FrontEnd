@@ -30,17 +30,13 @@ export default function useLedger() {
     setLoading(true);
 
     try {
-      // When searching or date filtering — fetch all pages
-      if (search.trim() || dateFilter) {
-        await loadAllLedgersForSearch(status, search,   department, dateFilter);
+      // When searching, date filtering, or status filtering — fetch all pages and paginate client-side
+      if (search.trim() || dateFilter || status !== "All") {
+        await loadAllLedgersForSearch(status, search, department, dateFilter, currentPage);
       } else {
         const data = await fetchLedger(currentPage, limit);
         let filtered = data.data || [];
-
-        // Example filter by status
-        if (status !== "All") {
-          filtered = filtered.filter((item: any) => item.status === status);
-        }
+        
 
         // Optional type filter (like department)
         if (department !== "All") {
@@ -62,19 +58,20 @@ export default function useLedger() {
     status: string,
     search: string,
     type: string,
-    dateFilter: { start: string; end: string } | null = null
+    dateFilter: { start: string; end: string } | null = null,
+    currentPage: number = 1
   ) => {
     try {
       let allLedgers: any[] = [];
-      let currentPage = 1;
+      let page = 1;
       let hasMore = true;
 
       while (hasMore) {
-        const data = await fetchLedger(currentPage, limit);
+        const data = await fetchLedger(page, limit);
         if (data.data && data.data.length > 0) {
           allLedgers = [...allLedgers, ...data.data];
-          currentPage++;
-          hasMore = currentPage <= (data.pagination?.totalPages || 1);
+          page++;
+          hasMore = page <= (data.pagination?.totalPages || 1);
         } else {
           hasMore = false;
         }
@@ -98,7 +95,9 @@ export default function useLedger() {
       }
 
       if (status !== "All") {
-        filtered = filtered.filter((ledger) => ledger.status === status);
+        filtered = filtered.filter((ledger) => 
+          ledger.status?.toLowerCase() === status.toLowerCase()
+        );
       }
 
       if (type !== "All") {
@@ -116,8 +115,15 @@ export default function useLedger() {
         });
       }
 
-      setLedgers(filtered);
-      setTotalPages(1); // All results in one page
+      // Calculate pagination
+      const totalFilteredItems = filtered.length;
+      const totalPages = Math.ceil(totalFilteredItems / limit);
+      const startIndex = (currentPage - 1) * limit;
+      const endIndex = startIndex + limit;
+      const paginatedLedgers = filtered.slice(startIndex, endIndex);
+
+      setLedgers(paginatedLedgers);
+      setTotalPages(totalPages);
     } catch (err) {
       console.error("Failed to load all ledgers for search:", err);
       setLedgers([]);

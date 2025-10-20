@@ -7,21 +7,64 @@ import {
   ResponsiveContainer, PieChart, Pie, Cell
 } from "recharts";
 
-/* -- tiny UI bits (kept inline to minimize files) -- */
-const Card: React.FC<React.PropsWithChildren<{ title?: React.ReactNode; right?: React.ReactNode; className?: string }>> =
-({ title, right, className = "", children }) => (
-  <div className={`rounded-xl border border-slate-200 bg-white ${className}`}>
-    {(title || right) && <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
-      <div className="text-[15px] font-semibold text-slate-800">{title}</div>{right}</div>}
-    <div className="p-4">{children}</div>
+/* -- Enhanced UI Components -- */
+const Card: React.FC<React.PropsWithChildren<{ title?: React.ReactNode; right?: React.ReactNode; className?: string; variant?: 'default' | 'elevated' | 'gradient' }>> =
+({ title, right, className = "", children, variant = 'default' }) => {
+  const cardClasses = {
+    default: "rounded-2xl border border-slate-200/60 bg-white shadow-sm hover:shadow-md transition-all duration-300",
+    elevated: "rounded-2xl border border-slate-200/60 bg-white shadow-lg hover:shadow-xl transition-all duration-300",
+    gradient: "rounded-2xl border border-slate-200/60 bg-gradient-to-br from-white to-slate-50 shadow-lg hover:shadow-xl transition-all duration-300"
+  };
+  
+  return (
+    <div className={`${cardClasses[variant]} ${className}`}>
+      {(title || right) && (
+        <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4 bg-gradient-to-r from-slate-50/50 to-white">
+          <div className="text-lg font-semibold text-slate-900">{title}</div>
+          {right}
+        </div>
+      )}
+      <div className="p-6">{children}</div>
+    </div>
+  );
+};
+
+const pill = (t:"blue"|"green"|"yellow"|"red"|"gray"|"purple"|"indigo"="gray")=>{
+  const m={
+    blue:"bg-blue-50 text-blue-700 ring-blue-200 shadow-blue-100",
+    green:"bg-emerald-50 text-emerald-700 ring-emerald-200 shadow-emerald-100",
+    yellow:"bg-yellow-50 text-yellow-700 ring-yellow-200 shadow-yellow-100",
+    red:"bg-red-50 text-red-700 ring-red-200 shadow-red-100",
+    gray:"bg-slate-50 text-slate-700 ring-slate-200 shadow-slate-100",
+    purple:"bg-purple-50 text-purple-700 ring-purple-200 shadow-purple-100",
+    indigo:"bg-indigo-50 text-indigo-700 ring-indigo-200 shadow-indigo-100"
+  };
+  return `inline-flex items-center rounded-full px-3 py-1.5 text-xs font-semibold ring-1 shadow-sm ${m[t]}`;
+};
+
+const StatCard: React.FC<{ label: string; value: string; delta?: string; trend?: 'up' | 'down' | 'neutral'; icon?: React.ReactNode }> = 
+({ label, value, delta, trend = 'neutral', icon }) => (
+  <div className="group rounded-2xl border border-slate-200/60 bg-gradient-to-br from-white to-slate-50 p-6 shadow-sm hover:shadow-lg hover:scale-[1.02] transition-all duration-300">
+    <div className="flex items-center justify-between mb-3">
+      <div className="text-sm font-medium text-slate-600">{label}</div>
+      {icon && <div className="text-slate-400 group-hover:text-slate-600 transition-colors">{icon}</div>}
+    </div>
+    <div className="text-2xl font-bold text-slate-900 mb-1">{value}</div>
+    {delta && (
+      <div className={`flex items-center gap-1 text-sm font-medium ${
+        trend === 'up' ? 'text-emerald-600' : trend === 'down' ? 'text-red-600' : 'text-slate-500'
+      }`}>
+        {trend === 'up' && <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+        </svg>}
+        {trend === 'down' && <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" />
+        </svg>}
+        {delta}
+      </div>
+    )}
   </div>
 );
-const pill = (t:"blue"|"green"|"yellow"|"red"|"gray"="gray")=>{
-  const m={blue:"bg-blue-50 text-blue-700 ring-blue-200",green:"bg-emerald-50 text-emerald-700 ring-emerald-200",
-           yellow:"bg-yellow-50 text-yellow-700 ring-yellow-200",red:"bg-red-50 text-red-700 ring-red-200",
-           gray:"bg-slate-50 text-slate-700 ring-slate-200"};
-  return `inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-medium ring-1 ${m[t]}`;
-};
 /* -------------------------------------------------------------------- */
 
 const UploadIcon = () => (
@@ -45,24 +88,36 @@ const AgencyDashboard: React.FC = () => {
   } = useAgencyDashboard();
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 p-1">
+      {/* Page Header */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-slate-900 mb-2">Agency Dashboard</h1>
+        <p className="text-slate-600">Monitor your projects, budgets, and performance metrics</p>
+      </div>
+
       {/* Alerts */}
-      <Card title={<div className="flex items-center gap-2">
-        <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-slate-100">⚠️</span>
-        <span>Smart Contract Alerts</span></div>}
-        right={<button className="text-xs font-medium text-blue-600 hover:underline">View All</button>}>
-        <div className="space-y-2">
+      <Card 
+        title={<div className="flex items-center gap-3">
+          <div className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-amber-100">
+            <svg className="h-5 w-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          </div>
+          <span>Smart Contract Alerts</span></div>}
+        right={<button className="text-sm font-semibold text-blue-600 hover:text-blue-700 transition-colors">View All →</button>}
+        variant="elevated">
+        <div className="space-y-3">
           {alerts.map((a,i)=>(
-            <div key={i} className={`rounded px-3 py-2 ${a.color} border border-slate-100`}>
-              <div className="flex items-center justify-between gap-3">
+            <div key={i} className={`rounded-xl px-4 py-3 ${a.color} border border-slate-100 hover:shadow-md transition-all duration-200`}>
+              <div className="flex items-center justify-between gap-4">
                 <div className="flex items-start gap-3">
-                  <span className="mt-0.5">{a.icon}</span>
+                  <span className="text-lg mt-0.5">{a.icon}</span>
                   <div>
-                    <div className="text-sm font-medium text-slate-900">{a.title}</div>
-                    <div className="text-[12px] text-slate-600">{a.desc}</div>
+                    <div className="font-semibold text-slate-900">{a.title}</div>
+                    <div className="text-sm text-slate-600 mt-1">{a.desc}</div>
                   </div>
                 </div>
-                <span className="text-[12px] text-slate-500">{a.date}</span>
+                <span className="text-sm text-slate-500 font-medium">{a.date}</span>
               </div>
             </div>
           ))}
@@ -70,38 +125,131 @@ const AgencyDashboard: React.FC = () => {
       </Card>
 
       {/* KPIs */}
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        {kpis.map((k,i)=>(
-          <Card key={i}>
-            <div className="text-[12px] text-slate-500">{k.label}</div>
-            <div className="mt-1 text-xl font-semibold text-slate-900">{k.value}</div>
-            {k.delta && <div className={`text-xs ${k.up?"text-emerald-600":"text-rose-600"}`}>{k.delta}</div>}
-          </Card>
-        ))}
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+        {kpis.map((k,i)=>{
+          const icons = [
+            <svg key="budget" className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+            </svg>,
+            <svg key="allocation" className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>,
+            <svg key="projects" className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+            </svg>,
+            <svg key="approvals" className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          ];
+          return (
+            <StatCard 
+              key={i}
+              label={k.label}
+              value={k.value}
+              delta={k.delta}
+              trend={k.up ? 'up' : k.delta ? 'down' : 'neutral'}
+              icon={icons[i]}
+            />
+          );
+        })}
       </div>
 
       {/* Charts */}
-      <div className="grid gap-3 lg:grid-cols-2">
-        <Card title="Monthly Spending vs. Allocation">
-          <div className="h-[280px]">
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Card 
+          title={<div className="flex items-center gap-2">
+            <div className="h-6 w-6 rounded bg-blue-100 flex items-center justify-center">
+              <svg className="h-4 w-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+            </div>
+            Monthly Spending vs. Allocation
+          </div>}
+          variant="gradient">
+          <div className="h-[320px]">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={spendingSeries} margin={{ left:-10, right:10, top:10 }}>
-                <CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="m" /><YAxis /><Tooltip /><Legend />
-                <Line type="monotone" dataKey="actual" name="Actual Spending" stroke="#2563eb" strokeWidth={2} dot={false}/>
-                <Line type="monotone" dataKey="budget" name="Allocated Budget" stroke="#94a3b8" strokeWidth={2} dot={false}/>
+              <LineChart data={spendingSeries} margin={{ left: 20, right: 20, top: 20, bottom: 20 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                <XAxis 
+                  dataKey="m" 
+                  stroke="#64748b" 
+                  style={{ fontSize: '12px' }}
+                  tickLine={false}
+                  axisLine={false}
+                />
+                <YAxis 
+                  stroke="#64748b" 
+                  style={{ fontSize: '12px' }}
+                  tickLine={false}
+                  axisLine={false}
+                />
+                <Tooltip 
+                  contentStyle={{ 
+                    borderRadius: '12px', 
+                    border: '1px solid #e2e8f0',
+                    backgroundColor: 'white',
+                    boxShadow: '0 10px 25px rgba(0,0,0,0.1)'
+                  }} 
+                />
+                <Legend />
+                <Line 
+                  type="monotone" 
+                  dataKey="actual" 
+                  name="Actual Spending" 
+                  stroke="#3b82f6" 
+                  strokeWidth={3} 
+                  dot={{ fill: '#3b82f6', strokeWidth: 2, r: 4 }}
+                  activeDot={{ r: 6, stroke: '#3b82f6', strokeWidth: 2 }}
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="budget" 
+                  name="Allocated Budget" 
+                  stroke="#94a3b8" 
+                  strokeWidth={3} 
+                  strokeDasharray="5 5"
+                  dot={{ fill: '#94a3b8', strokeWidth: 2, r: 4 }}
+                  activeDot={{ r: 6, stroke: '#94a3b8', strokeWidth: 2 }}
+                />
               </LineChart>
             </ResponsiveContainer>
           </div>
         </Card>
 
-        <Card title="Project Status Overview">
-          <div className="h-[280px]">
+        <Card 
+          title={<div className="flex items-center gap-2">
+            <div className="h-6 w-6 rounded bg-purple-100 flex items-center justify-center">
+              <svg className="h-4 w-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
+              </svg>
+            </div>
+            Project Status Overview
+          </div>}
+          variant="gradient">
+          <div className="h-[320px]">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
-                <Pie data={statusPie} dataKey="value" nameKey="name" outerRadius={90} label>
+                <Pie 
+                  data={statusPie} 
+                  dataKey="value" 
+                  nameKey="name" 
+                  outerRadius={100} 
+                  innerRadius={40}
+                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                  labelLine={false}
+                >
                   {statusPie.map((s,i)=><Cell key={i} fill={s.color}/>)}
                 </Pie>
-                <Tooltip/><Legend/>
+                <Tooltip 
+                  contentStyle={{ 
+                    borderRadius: '12px', 
+                    border: '1px solid #e2e8f0',
+                    backgroundColor: 'white',
+                    boxShadow: '0 10px 25px rgba(0,0,0,0.1)'
+                  }} 
+                />
+                <Legend />
               </PieChart>
             </ResponsiveContainer>
           </div>
@@ -120,42 +268,94 @@ const AgencyDashboard: React.FC = () => {
         />
       </div>
 
-      {/* Projects */}
-      <Card title="Department Projects" right={<button className="text-xs font-medium text-blue-600 hover:underline">View All Projects</button>}>
-        <div className="space-y-3">
-          {projects.map((p,i)=>(
-            <div key={i} className="rounded border border-slate-200 p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="text-sm font-semibold text-slate-800">{p.name}</div>
-                  <div className="text-xs text-slate-500">{p.dept}{p.budget?` • Budget: ${p.budget}`:""}{p.spent?` • Spent: ${p.spent}`:""}</div>
-                </div>
-                <span className="text-xs text-slate-500">{p.pct}%</span>
-              </div>
-              <div className="mt-3 h-2 w-full rounded bg-slate-100">
-                <div className="h-2 rounded" style={{ width:`${p.pct}%`, backgroundColor:p.color }}/>
-              </div>
+      {/* Projects and Recent Activity */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Card 
+          title={<div className="flex items-center gap-2">
+            <div className="h-6 w-6 rounded bg-indigo-100 flex items-center justify-center">
+              <svg className="h-4 w-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+              </svg>
             </div>
-          ))}
-        </div>
-      </Card>
+            Department Projects
+          </div>}
+          right={<button className="text-sm font-semibold text-blue-600 hover:text-blue-700 transition-colors">View All →</button>}
+          variant="elevated">
+          <div className="space-y-4">
+            {projects.map((p,i)=>(
+              <div key={i} className="group rounded-xl border border-slate-200 p-5 hover:shadow-md hover:border-slate-300 transition-all duration-200">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex-1">
+                    <div className="font-semibold text-slate-900 group-hover:text-slate-700 transition-colors">{p.name}</div>
+                    <div className="text-sm text-slate-600 mt-1">{p.dept}</div>
+                    {(p.budget || p.spent) && (
+                      <div className="flex items-center gap-4 mt-2 text-xs text-slate-500">
+                        {p.budget && <span>Budget: {p.budget}</span>}
+                        {p.spent && <span>Spent: {p.spent}</span>}
+                      </div>
+                    )}
+                  </div>
+                  <div className="text-right">
+                    <div className="text-lg font-bold text-slate-900">{p.pct}%</div>
+                    <div className="text-xs text-slate-500">Complete</div>
+                  </div>
+                </div>
+                <div className="relative">
+                  <div className="h-3 w-full rounded-full bg-slate-100 overflow-hidden">
+                    <div 
+                      className="h-full rounded-full transition-all duration-500 ease-out"
+                      style={{ 
+                        width: `${p.pct}%`, 
+                        background: `linear-gradient(90deg, ${p.color} 0%, ${p.color}dd 100%)`
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card>
 
-
-        <Card title="Recent Activity">
-          <ul className="space-y-3 text-sm">
-            <li className="flex items-start gap-2"><span className={pill("green")}>Approved</span>
-              <div><div className="text-slate-700">Budget Amendment Approved</div>
-                <div className="text-[12px] text-slate-500">Q3 Infrastructure Budget +₱250,000 • 2 hours ago</div></div></li>
-            <li className="flex items-start gap-2"><span className={pill("yellow")}>Pending</span>
-              <div><div className="text-slate-700">Project Proposal Submitted</div>
-                <div className="text-[12px] text-slate-500">Downtown Bridge Repair • yesterday</div></div></li>
-            <li className="flex items-start gap-2"><span className={pill("blue")}>Verified</span>
-              <div><div className="text-slate-700">Document Uploaded</div>
-                <div className="text-[12px] text-slate-500">Annual Financial Report 2023 • 2 days ago</div></div></li>
+        <Card 
+          title={<div className="flex items-center gap-2">
+            <div className="h-6 w-6 rounded bg-emerald-100 flex items-center justify-center">
+              <svg className="h-4 w-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            Recent Activity
+          </div>}
+          variant="elevated">
+          <ul className="space-y-4">
+            <li className="flex items-start gap-3 p-3 rounded-lg hover:bg-slate-50 transition-colors">
+              <span className={pill("green")}>Approved</span>
+              <div className="flex-1">
+                <div className="font-medium text-slate-900">Budget Amendment Approved</div>
+                <div className="text-sm text-slate-600 mt-1">Q3 Infrastructure Budget +₱250,000</div>
+                <div className="text-xs text-slate-500 mt-1">2 hours ago</div>
+              </div>
+            </li>
+            <li className="flex items-start gap-3 p-3 rounded-lg hover:bg-slate-50 transition-colors">
+              <span className={pill("yellow")}>Pending</span>
+              <div className="flex-1">
+                <div className="font-medium text-slate-900">Project Proposal Submitted</div>
+                <div className="text-sm text-slate-600 mt-1">Downtown Bridge Repair</div>
+                <div className="text-xs text-slate-500 mt-1">yesterday</div>
+              </div>
+            </li>
+            <li className="flex items-start gap-3 p-3 rounded-lg hover:bg-slate-50 transition-colors">
+              <span className={pill("purple")}>Verified</span>
+              <div className="flex-1">
+                <div className="font-medium text-slate-900">Document Uploaded</div>
+                <div className="text-sm text-slate-600 mt-1">Annual Financial Report 2023</div>
+                <div className="text-xs text-slate-500 mt-1">2 days ago</div>
+              </div>
+            </li>
           </ul>
         </Card>
       </div>
-    );
+    </div>
+  );
 };
 
 export default AgencyDashboard;
