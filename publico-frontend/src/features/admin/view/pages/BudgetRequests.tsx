@@ -175,9 +175,10 @@ export default function BudgetRequests() {
       {/* Project Approval Modal */}
       {selectedProposal && (
         <ProjectApprovalModal
-          isFunded={selectedProposal.isFunded}//TODO: call the project is already funded here
+          isFunded={selectedProposal.isFunded}
           onApproved={()=>{
             onApprove()
+            setShowApprovalModal(false)
           }}
           isOpen={showApprovalModal}
           onClose={() => setShowApprovalModal(false)}

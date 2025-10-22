@@ -148,10 +148,10 @@ const onSubmit: SubmitHandler<BudgetFormProps> = async (data) => {
     toast.success("Budget proposed successfully with automatic phase distribution.");
   } catch (error) {
     console.error(error);
-    toast.error("Failed to submit budget proposal.");
+    toast.error(error instanceof Error ? error.message : "An error occurred while submitting the budget proposal.");
   } finally {
     setIsLoading(false);
-  }
+  } 
 };
 
 

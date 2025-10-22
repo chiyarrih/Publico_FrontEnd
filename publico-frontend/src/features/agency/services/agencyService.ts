@@ -56,7 +56,7 @@ export const sendBudgetProposal = async (
   const json = await response.json();
   if (!response.ok) {
     console.error(json);
-    throw new Error(json.message || "Failed to submit proposal");
+    throw new Error(json.message || json.error );
   }
 
   return json;

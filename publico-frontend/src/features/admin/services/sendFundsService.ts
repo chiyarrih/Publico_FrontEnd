@@ -36,7 +36,11 @@ export const sendFunds = async ({ projectId }: Props) => {
     const toJson = await response.json();
     if (!response.ok) {
         console.log(toJson.message);
-        toast.error("Insufficient funds.")
+        if (toJson.message.toString().toLowerCase() == "Transaction has been reverted by the EVM".toLowerCase()) {
+          toast.error("Insufficient funds.")
+        }else{
+          toast.error(toJson.message)
+        }
     }else{
         toast.success("Funded successfuly!")
     }
