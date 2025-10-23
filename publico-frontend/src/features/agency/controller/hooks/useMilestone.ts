@@ -3,18 +3,35 @@ import { useEffect, useState } from "react";
 
 export default function useMilestone(){
     const [milestone, setMilestone] = useState<any[]>([])
+    const [loading, setLoading] = useState(false)
+    const [error, setError] = useState<string | null>(null)
 
     const fetchMilestones = async () => {
-        const data = await getProjectMilestoneAsAgency();
-        setMilestone(data);
+        try {
+            setLoading(true)
+            setError(null)
+            const data = await getProjectMilestoneAsAgency();
+            if (data && Array.isArray(data)) {
+                setMilestone(data);
+            } else {
+                setMilestone([]);
+            }
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Failed to fetch milestones');
+            setMilestone([]);
+        } finally {
+            setLoading(false)
+        }
     }
-
 
     useEffect(()=>{
         fetchMilestones()
-    }, [milestone])
+    }, []) // Remove milestone from dependency array to prevent infinite loop
 
     return {
-        milestone
+        milestone,
+        loading,
+        error,
+        refetch: fetchMilestones
     }
 }

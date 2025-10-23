@@ -216,19 +216,48 @@ const MOCK_PROJECTS = [
 const MOCK_TRANSACTIONS = [
   {
     _id: "txn-1",
-    transaction: "Project Funding",
-    amount: 50000,
     date: "2024-01-15",
-    status: "Completed",
+    dept: "Department of Public Works and Highways",
+    project: "Bridge Construction Project",
+    amount: 50000000,
+    status: "Verified",
     signature: "0x1234...5678"
   },
   {
     _id: "txn-2",
-    transaction: "Budget Allocation",
-    amount: 25000,
     date: "2024-02-01",
-    status: "Pending",
+    dept: "Department of Education",
+    project: "School Building Renovation",
+    amount: 25000000,
+    status: "Verified",
     signature: "0x9abc...def0"
+  },
+  {
+    _id: "txn-3",
+    date: "2024-02-15",
+    dept: "Department of Health",
+    project: "Hospital Equipment Upgrade",
+    amount: 15000000,
+    status: "Verified",
+    signature: "0x5678...9abc"
+  },
+  {
+    _id: "txn-4",
+    date: "2024-03-01",
+    dept: "Department of Public Works and Highways",
+    project: "Road Maintenance",
+    amount: 30000000,
+    status: "Verified",
+    signature: "0xdef0...1234"
+  },
+  {
+    _id: "txn-5",
+    date: "2024-03-15",
+    dept: "Department of Education",
+    project: "Computer Lab Setup",
+    amount: 12000000,
+    status: "Verified",
+    signature: "0x9abc...5678"
   }
 ];
 
@@ -307,14 +336,14 @@ export async function sendBudgetProposal(data: BudgetFormProps, files: File[]) {
 
 /**
  * Get key projects for the dashboard
- * For citizens: tries public endpoints, falls back to mock data
+ * For citizens: tries public milestone endpoints, falls back to mock data
  * For agencies/admins: fetches their specific projects
  */
 export async function getKeyProjects(limit = 5) {
   const portal = getPortal();
   
   if (portal === "citizen") {
-    // For citizens, try to fetch public project data
+    // For citizens, try to fetch public milestone data
     try {
       const storage = localStorage.getItem('publico_user_data');
       if (!storage) throw new Error("No user data found");
@@ -322,11 +351,10 @@ export async function getKeyProjects(limit = 5) {
       const userData = JSON.parse(storage);
       const token = localStorage.getItem('publico_auth_token');
       
-      // Try public projects endpoint
-      const response = await fetch(`http://localhost:5000/agency/projects/public?page=1&limit=${limit}`, {
+      // Try public milestones endpoint (no authentication required)
+      const response = await fetch(`http://localhost:5000/citizen/milestones/public?page=1&limit=${limit}`, {
         method: "GET",
         headers: {
-          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
       });
@@ -336,9 +364,11 @@ export async function getKeyProjects(limit = 5) {
       }
 
       const json = await response.json();
-      return toArray(json as AnyList);
+      // Extract data array from response
+      const milestones = json.data || json;
+      return Array.isArray(milestones) ? milestones : [];
     } catch (error) {
-      console.warn("Public projects endpoint not available, using mock data:", error);
+      console.warn("Public milestones endpoint not available, using mock data:", error);
       // Return mock data for demonstration
       return MOCK_PROJECTS.slice(0, limit);
     }
@@ -358,14 +388,14 @@ export async function getKeyProjects(limit = 5) {
 
 /**
  * Fetch projects with pagination
- * For citizens: tries public endpoints, falls back to mock data
+ * For citizens: tries public milestone endpoints, falls back to mock data
  * For agencies/admins: fetches their specific projects
  */
 export async function fetchProjectsProposed(page = 1, limit = 10) {
   const portal = getPortal();
   
   if (portal === "citizen") {
-    // For citizens, try to fetch public project data
+    // For citizens, try to fetch public milestone data
     try {
       const storage = localStorage.getItem('publico_user_data');
       if (!storage) throw new Error("No user data found");
@@ -373,11 +403,10 @@ export async function fetchProjectsProposed(page = 1, limit = 10) {
       const userData = JSON.parse(storage);
       const token = localStorage.getItem('publico_auth_token');
       
-      // Try public projects endpoint
-      const response = await fetch(`http://localhost:5000/agency/projects/public?page=${page}&limit=${limit}`, {
+      // Try public milestones endpoint (no authentication required)
+      const response = await fetch(`http://localhost:5000/citizen/milestones/public?page=${page}&limit=${limit}`, {
         method: "GET",
         headers: {
-          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
       });
@@ -387,16 +416,12 @@ export async function fetchProjectsProposed(page = 1, limit = 10) {
       }
 
       const json = await response.json();
-      const items = toArray(json as AnyList);
-      const total = typeof (json as any)?.total === "number" 
-        ? (json as any).total 
-        : typeof (json as any)?.count === "number" 
-        ? (json as any).count 
-        : items.length;
+      const items = json.data || json;
+      const total = json.totalItems || (Array.isArray(items) ? items.length : 0);
       
-      return { items, total, page, limit };
+      return { items: Array.isArray(items) ? items : [], total, page, limit };
     } catch (error) {
-      console.warn("Public projects endpoint not available, using mock data:", error);
+      console.warn("Public milestones endpoint not available, using mock data:", error);
       // Return mock data with pagination
       const startIndex = (page - 1) * limit;
       const endIndex = startIndex + limit;
@@ -430,6 +455,45 @@ export async function fetchProjectsProposed(page = 1, limit = 10) {
   }
 }
 
+/**
+ * Get a specific milestone by ID for citizens
+ */
+export async function getMilestoneById(milestoneId: string) {
+  const portal = getPortal();
+  
+  if (portal === "citizen") {
+    // For citizens, try to fetch public milestone data
+    try {
+      const storage = localStorage.getItem('publico_user_data');
+      if (!storage) throw new Error("No user data found");
+      
+      const userData = JSON.parse(storage);
+      const token = localStorage.getItem('publico_auth_token');
+      
+      // Try public milestone by ID endpoint (no authentication required)
+      const response = await fetch(`http://localhost:5000/citizen/milestones/public/${milestoneId}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const json = await response.json();
+      return json;
+    } catch (error) {
+      console.warn("Public milestone endpoint not available:", error);
+      throw error;
+    }
+  } else {
+    // For agencies/admins, fetch their specific milestone
+    return apiClient.get(`/milestone/${milestoneId}`);
+  }
+}
+
 // ============================================================================
 // TRANSACTION DATA FUNCTIONS
 // ============================================================================
@@ -449,13 +513,13 @@ export async function fetchLedger(page = 1, limit = 10) {
       if (!storage) throw new Error("No user data found");
       
       const userData = JSON.parse(storage);
-      const token = localStorage.getItem('publico_auth_token');
+      // const token = localStorage.getItem('publico_auth_token'); // Removed token for public endpoint
       
-      // Try public ledger endpoint
-      const response = await fetch(`http://localhost:5000/api/ledgers/public?page=${page}&limit=${limit}`, {
+      // Try public ledger endpoint (no authentication required)
+      const response = await fetch(`http://localhost:5000/citizen/ledger/public?page=${page}&limit=${limit}`, {
         method: "GET",
         headers: {
-          Authorization: `Bearer ${token}`,
+          // Authorization: `Bearer ${token}`, // Removed Authorization header
           "Content-Type": "application/json",
         },
       });
@@ -465,12 +529,20 @@ export async function fetchLedger(page = 1, limit = 10) {
       }
 
       const json = await response.json();
-      const items = toArray(json as AnyList);
-      const total = typeof (json as any)?.total === "number" 
-        ? (json as any).total 
-        : typeof (json as any)?.count === "number" 
-        ? (json as any).count 
-        : items.length;
+      
+      // Transform the data to match frontend expectations
+      const items = json.data?.map((item: any) => ({
+        _id: item._id,
+        date: item.date ? new Date(item.date).toLocaleDateString() : undefined,
+        dept: item.department,
+        project: item.projectName,
+        amount: item.amount,
+        status: item.status === 'Verified' ? 'Verified' : item.status === 'completed' ? 'Verified' : 'Pending',
+        signature: item.signature || item.blockchainTxHash,
+        purpose: item.purpose
+      })) || [];
+      
+      const total = json.pagination?.totalItems || items.length;
       
       return { items, total, page, limit };
     } catch (error) {

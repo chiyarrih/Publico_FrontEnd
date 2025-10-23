@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { getKeyProjects } from "../../controller/data/dashboardService";
+import { getMilestoneById } from "../../controller/data/dashboardService";
 
 const peso = (n: number | undefined) =>
   typeof n === "number" ? n.toLocaleString("en-PH", { style: "currency", currency: "PHP", maximumFractionDigits: 0 }) : "-";
@@ -43,11 +43,10 @@ const MilestoneDetail: React.FC = () => {
     (async () => {
       try {
         setLoading(true); setErr(null);
-        const list = await getKeyProjects(200); // array
-        const p = list.find((x: any) => String(x._id ?? x.code) === String(id));
-        if (!ignore) setProject(p ?? null);
+        const milestone = await getMilestoneById(String(id));
+        if (!ignore) setProject(milestone ?? null);
       } catch (e: any) {
-        if (!ignore) setErr(e?.message || "Failed to load project");
+        if (!ignore) setErr(e?.message || "Failed to load milestone");
       } finally {
         if (!ignore) setLoading(false);
       }
@@ -57,14 +56,14 @@ const MilestoneDetail: React.FC = () => {
 
   const title = project?.projectName ?? "-";
   const department = project?.department ?? "-";
-  const budget = project?.budget;
+  const budget = project?.totalBudget;
   const start = project?.startDate;
   const end   = project?.endDate;
-  const status = (project?.status as string) || "In Progress";
+  const status = (project?.overallStatus as string) || "In Progress";
 
-  // simple derived progress (if backend does not provide)
+  // Get progress from milestone data
   const overallProgress = useMemo(() => {
-    if (typeof project?.progress === "number") return project.progress;
+    if (typeof project?.overallProgress === "number") return project.overallProgress;
     return status === "Completed" ? 100 : status === "Pending" ? 0 : 45;
   }, [project, status]);
 
@@ -117,11 +116,44 @@ const MilestoneDetail: React.FC = () => {
         <AlertBanner kind="info">Planning updates synced from agency portal.</AlertBanner>
       </div>
 
-      {/* Phase placeholder */}
-      <div className="rounded-xl border border-slate-200 bg-white p-6">
-        <div className="mb-2 text-sm font-semibold text-slate-700">{status} Phase</div>
-        <div className="text-sm text-slate-600">Latest update will appear here when the agency posts phase updates.</div>
-      </div>
+      {/* Milestone Phases */}
+      {project?.phases && project.phases.length > 0 && (
+        <div className="rounded-xl border border-slate-200 bg-white p-6">
+          <div className="mb-4 text-sm font-semibold text-slate-700">Project Phases</div>
+          <div className="space-y-4">
+            {project.phases.map((phase: any, index: number) => (
+              <div key={index} className="border border-slate-100 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="text-sm font-medium text-slate-900">{phase.phaseName}</div>
+                  <Pill tone={phase.status === 'Completed' ? 'green' : phase.status === 'In Progress' ? 'blue' : 'gray'}>
+                    {phase.status}
+                  </Pill>
+                </div>
+                <div className="mb-2">
+                  <div className="flex items-center justify-between text-xs text-slate-500 mb-1">
+                    <span>Progress</span>
+                    <span>{phase.progress || 0}%</span>
+                  </div>
+                  <Progress value={phase.progress || 0} tone={phase.status === 'Completed' ? 'green' : 'blue'} />
+                </div>
+                <div className="grid grid-cols-2 gap-4 text-xs">
+                  <div>
+                    <span className="text-slate-500">Budget:</span>
+                    <span className="ml-1 font-medium">{peso(phase.budget)}</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-500">Spent:</span>
+                    <span className="ml-1 font-medium">{peso(phase.spent || 0)}</span>
+                  </div>
+                </div>
+                {phase.description && (
+                  <div className="mt-2 text-xs text-slate-600">{phase.description}</div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

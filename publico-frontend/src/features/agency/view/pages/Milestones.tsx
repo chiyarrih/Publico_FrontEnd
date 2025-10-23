@@ -48,9 +48,8 @@ export default function Milestones() {
   const [search, setSearch] = useState("");
   const [dept, setDept] = useState("All");
   const [state, setState] = useState("All");
-  const [loading, setLoading] = useState(false);
-  const {milestone} = useMilestone()
-  const milestones = milestone; // In real app, this would come from API
+  const {milestone, loading, error} = useMilestone()
+  const milestones = milestone || []; // In real app, this would come from API
 
   const filtered = useMemo(() => milestones?.filter(p =>
     (dept === "All" || p.department === dept) &&
@@ -67,6 +66,30 @@ export default function Milestones() {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-lg">Loading milestones...</div>
+      </div>
+    );
+  }
+
+  // Show empty state if no milestones and no error
+  if (!loading && !error && milestones.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="text-gray-600 mb-2">No milestones found</div>
+          <div className="text-gray-500 text-sm">You don't have any project milestones assigned yet.</div>
+          <div className="text-gray-500 text-sm">Contact your administrator to get milestones assigned to your agency.</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="text-red-600 mb-2">Error loading milestones</div>
+          <div className="text-gray-600 text-sm">{error}</div>
+        </div>
       </div>
     );
   }
