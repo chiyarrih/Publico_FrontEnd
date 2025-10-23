@@ -9,9 +9,15 @@ type ProjectRow = {
   projectName?: string;
   department?: string;
   budget?: number;
+  totalBudget?: number;
   startDate?: string;
   endDate?: string;
   status?: string;
+  overallStatus?: string;
+  agencyId?: {
+    agency_name?: string;
+    email?: string;
+  };
 };
 
 const peso = (n: number | undefined) =>
@@ -27,22 +33,21 @@ const RowCard: React.FC<{ row: ProjectRow; onClick: () => void }> = ({ row, onCl
       onKeyDown={(e) => e.key === "Enter" && onClick()}
     >
       <div className="col-span-2 text-sm text-slate-500">{row.code ?? row._id}</div>
-      <div className="col-span-3">
+      <div className="col-span-2">
         <div className="text-sm font-medium text-slate-900 leading-5">{row.projectName ?? "-"}</div>
       </div>
       <div className="col-span-2">
         <span className="text-slate-500 text-sm">{row.department ?? "-"}</span>
       </div>
       <div className="col-span-2">
-        <button className="text-blue-600 hover:underline text-sm font-semibold">{peso(row.budget)}</button>
+        <span className="text-slate-500 text-sm">{row.agencyId?.agency_name ?? "-"}</span>
       </div>
-      <div className="col-span-2 text-sm text-slate-500">
-        {row.startDate ? new Date(row.startDate).toLocaleDateString() : "-"} —{" "}
-        {row.endDate ? new Date(row.endDate).toLocaleDateString() : "-"}
+      <div className="col-span-2">
+        <button className="text-blue-600 hover:underline text-sm font-semibold">{peso(row.totalBudget || row.budget)}</button>
       </div>
       <div className="col-span-1 flex justify-end">
         <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium bg-blue-50 text-blue-700 border-blue-200">
-          {row.status ?? "In Progress"}
+          {row.overallStatus || (row.status ?? "In Progress")}
         </span>
       </div>
     </div>
@@ -112,8 +117,8 @@ const Milestones: React.FC = () => {
       <div className="rounded-xl border border-slate-200 bg-white">
         <div className="border-b border-slate-200 px-6 py-3 text-sm font-medium text-slate-600">Approved Projects</div>
         <div className="grid grid-cols-12 gap-4 px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
-          <div className="col-span-2">Project ID</div><div className="col-span-3">Project Name</div><div className="col-span-2">Department</div>
-          <div className="col-span-2">Budget</div><div className="col-span-2">Timeline</div><div className="col-span-1 text-right">Status</div>
+          <div className="col-span-2">Project ID</div><div className="col-span-2">Project Name</div><div className="col-span-2">Department</div>
+          <div className="col-span-2">Agency</div><div className="col-span-2">Budget</div><div className="col-span-1 text-right">Status</div>
         </div>
         {err && <div className="px-6 py-4 text-sm text-rose-600">{err}</div>}
         {loading && <div className="px-6 py-4 text-sm text-slate-500">Loading projects…</div>}
