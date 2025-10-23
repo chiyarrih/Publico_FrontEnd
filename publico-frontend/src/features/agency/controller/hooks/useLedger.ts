@@ -196,6 +196,73 @@ export default function useLedger() {
     loadLedgers(page, statusFilter, searchQuery, typeFilter, dateRange);
   };
 
+  const fetchAllLedgersForExport = async (): Promise<any[]> => {
+    if (!agencyId) return [];
+    
+    try {
+      let allLedgers: any[] = [];
+      let currentPage = 1;
+      let hasMore = true;
+
+      while (hasMore) {
+        const data = await fetchLedger(currentPage, limit);
+        if (data.data && data.data.length > 0) {
+          allLedgers = [...allLedgers, ...data.data];
+          currentPage++;
+          hasMore = currentPage <= (data.pagination?.totalPages || 1);
+        } else {
+          hasMore = false;
+        }
+      }
+
+      // Apply current filters to all data
+      let filtered = allLedgers;
+
+      if (searchQuery.trim()) {
+        filtered = filtered.filter((ledger) => {
+          const text = [
+            ledger.txId,
+            ledger.id,
+            ledger.projectName,
+            ledger.amount,
+            ledger.department,
+            ledger.agencyId?.name,
+            ledger.agencyId?.email,
+          ]
+            .join(" ")
+            .toLowerCase();
+          return text.includes(searchQuery.toLowerCase());
+        });
+      }
+
+      if (statusFilter !== "All") {
+        filtered = filtered.filter((ledger) => 
+          ledger.status?.toLowerCase() === statusFilter.toLowerCase()
+        );
+      }
+
+      if (typeFilter !== "All") {
+        filtered = filtered.filter((ledger) => ledger.department === typeFilter);
+      }
+
+      if (dateRange) {
+        filtered = filtered.filter((ledger) => {
+          const ledgerDate = new Date(ledger.createdAt);
+          const startDate = new Date(dateRange.start);
+          const endDate = new Date(dateRange.end);
+          startDate.setHours(0, 0, 0, 0);
+          endDate.setHours(23, 59, 59, 999);
+          return ledgerDate >= startDate && ledgerDate <= endDate;
+        });
+      }
+
+      return filtered;
+    } catch (err) {
+      console.error("Failed to fetch all ledgers for export:", err);
+      return [];
+    }
+  };
+
   return {
     ledgers,
     page,
@@ -214,6 +281,7 @@ export default function useLedger() {
     toggleDatePicker,
     handlePageChange,
     refreshLedgers,
+    fetchAllLedgersForExport,
     setPage
   };
 }
