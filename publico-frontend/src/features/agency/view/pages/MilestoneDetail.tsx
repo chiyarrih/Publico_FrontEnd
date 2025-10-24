@@ -194,7 +194,7 @@ export default function MilestoneDetail() {
   const navigate = useNavigate();
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [selectedPhase, setSelectedPhase] = useState<any>(null);
-  const {milestoneId} = useMilestoneId({id:id});
+  const {milestoneId, loading, error} = useMilestoneId({id:id});
   // In real app, this would fetch from API based on id
   const milestone = milestoneId;
 
@@ -208,6 +208,22 @@ export default function MilestoneDetail() {
     console.log('Uploading file:', file.name, 'Description:', description);
     alert(`Proof of work uploaded for ${selectedPhase?.phaseName}: ${description}`);
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-lg">Loading milestone details...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-red-600">Error: {error}</div>
+      </div>
+    );
+  }
 
   if (!milestone) {
     return (

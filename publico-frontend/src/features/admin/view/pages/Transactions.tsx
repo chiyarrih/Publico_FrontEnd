@@ -4,6 +4,7 @@ import useAdminTransactions from "../../controller/hooks/useAdminTransactions";
 import TransactionDetailsModal from "../modals/TransactionDetailsModal";
 import type { BudgetProposal } from "../../model/types/admin";
 import useLedger from "@agency/controller/hooks/useLedger";
+import { useExportLedger } from "../../controller/hooks/useExportLedger";
 
 export default function Transactions(){
   const { ledgers,
@@ -22,8 +23,11 @@ export default function Transactions(){
       clearDateRange,
       toggleDatePicker,
       handlePageChange,
-      refreshLedgers,setPage } = useLedger();
+      refreshLedgers,
+      fetchAllLedgersForExport,
+      setPage } = useLedger();
 
+  const { exportToCSV, isExporting } = useExportLedger();
   
   const [selectedProposal, setSelectedProposal] = useState<BudgetProposal | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -107,6 +111,14 @@ export default function Transactions(){
     };
   }, [showDatePicker, toggleDatePicker]);
 
+  // Debug: Log ledger data structure
+  useEffect(() => {
+    if (ledgers.length > 0) {
+      console.log('Sample ledger data:', ledgers[0]);
+      console.log('Agency ID structure:', ledgers[0].agencyId);
+    }
+  }, [ledgers]);
+
   const tone = (s: string) => {
     const status = s.toLowerCase();
     if (status === "verified") return "green";
@@ -125,11 +137,15 @@ export default function Transactions(){
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-lg font-semibold">Transaction Ledger</h1>
-        <Button className="bg-blue-600 hover:bg-blue-700">
+        <Button 
+          onClick={() => exportToCSV(fetchAllLedgersForExport)}
+          disabled={isExporting || ledgers.length === 0}
+          className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
           <svg className="w-4 h-4 mr-2 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
           </svg>
-          Export Ledger
+          {isExporting ? 'Exporting...' : 'Export Ledger'}
         </Button>
       </div>
 
@@ -232,7 +248,7 @@ export default function Transactions(){
         ) : (
           <>
             <Table
-              head={["Transaction ID", "Date", "Department", "Project", "Amount", "Status", "Digital Signature", "Actions"]}
+              head={["Transaction ID", "Agency ID", "Date", "Department", "Project", "Amount", "Status", "Digital Signature", "Actions"]}
               rows={ledgers.map(proposal => [
                 <a 
                   onClick={() => handleViewDetails(proposal)}
@@ -240,6 +256,9 @@ export default function Transactions(){
                 >
                   {proposal.txId}
                 </a>,
+                <span className="text-xs font-mono text-slate-600">
+                  {proposal.agencyId?.name || proposal.agencyId?.email || (typeof proposal.agencyId === 'string' ? proposal.agencyId : proposal.agencyId?._id || 'N/A')}
+                </span>,
                 new Date(proposal.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' }),
                 proposal.department,
                 proposal.projectName,
