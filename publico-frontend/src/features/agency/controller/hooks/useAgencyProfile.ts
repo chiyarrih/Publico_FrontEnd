@@ -70,6 +70,7 @@ export const useAgencyProfile = (): UseAgencyProfileReturn => {
         email: rawUserData.email,
         isVerified: rawUserData.isVerified,
         date_registered: rawUserData.date_registered,
+        privateKey: ""
       };
       
       setUser(agencyUser);
