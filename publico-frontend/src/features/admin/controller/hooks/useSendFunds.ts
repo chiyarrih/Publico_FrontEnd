@@ -18,7 +18,7 @@ export default function useSendFunds({projectId}:{projectId?:string}) {
     console.log("Submitted data:", data);
     reset();
     setIsOpen(!isOpeen)
-    await sendFunds({projectId: projectId})
+    await sendFunds({projectId: projectId, phaseNumber: data.phaseNumber, milestoneId: data.milestoneId})
     
   };
 

@@ -3,9 +3,11 @@ import toast from "react-hot-toast";
 
 interface Props {
   projectId?: string;
+  phaseNumber?: number;
+  milestoneId?: string;
 }
 
-export const sendFunds = async ({ projectId }: Props) => {
+export const sendFunds = async ({ projectId, phaseNumber, milestoneId }: Props) => {
   const token = localStorage.getItem("publico_auth_token");
   const privateKey = localStorage.getItem("publico_user_data");
 
@@ -29,7 +31,8 @@ export const sendFunds = async ({ projectId }: Props) => {
         },
         body:JSON.stringify({
             privateKey:json.user.privateKey,
-            projectId:projectId
+            projectId:projectId,
+            phaseNumber: 1
         })
       }
     );
