@@ -40,9 +40,21 @@ export default function Documents() {
           />
           <select className="px-2 text-sm border rounded h-9 border-slate-300">
             <option>All Categories</option>
+            <option>Executive & Administrative Services</option>
+            <option>Public Safety & Disaster Management</option>
+            <option>Health & Social Services</option>
+            <option>Infrastructure & Development</option>
+            <option>Economic Services & Business Development</option>
+            <option>Financial Management & Revenue</option>
+            <option>General Services & Support</option>
           </select>
           <select className="px-2 text-sm border rounded h-9 border-slate-300">
             <option>All Departments</option>
+            <option>City Mayor's Office</option>
+            <option>City Engineering Office</option>
+            <option>City Health Office</option>
+            <option>City Planning & Development Office</option>
+            <option>City Tourism Office</option>
           </select>
           <button className="px-3 text-sm border rounded h-9 border-slate-300">
             ▦

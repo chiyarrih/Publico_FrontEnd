@@ -186,25 +186,26 @@ function toArray(response: AnyList): any[] {
 
 /**
  * Mock project data for when endpoints are not available
+ * Updated with Dagupan City LGU departments
  */
 const MOCK_PROJECTS = [
   {
     _id: "demo-1",
-    projectName: "Default project",
-    description: "Sample project for demonstration",
+    projectName: "City Infrastructure Enhancement",
+    description: "Comprehensive infrastructure improvement project",
     budget: 50000,
     status: "Active",
-    department: "Public Works",
+    department: "City Engineering Office",
     startDate: "2024-01-01",
     endDate: "2024-12-31"
   },
   {
     _id: "demo-2", 
-    projectName: "dawd",
-    description: "Sample project for testing",
+    projectName: "Tourism Development Program",
+    description: "Tourism infrastructure and promotion project",
     budget: 25000,
     status: "Planning",
-    department: "Infrastructure",
+    department: "City Tourism Office",
     startDate: "2024-02-01",
     endDate: "2024-11-30"
   }
@@ -212,12 +213,13 @@ const MOCK_PROJECTS = [
 
 /**
  * Mock transaction data for when endpoints are not available
+ * Updated with Dagupan City LGU departments
  */
 const MOCK_TRANSACTIONS = [
   {
     _id: "txn-1",
     date: "2024-01-15",
-    dept: "Department of Public Works and Highways",
+    dept: "City Engineering Office",
     project: "Bridge Construction Project",
     amount: 50000000,
     status: "Verified",
@@ -226,7 +228,7 @@ const MOCK_TRANSACTIONS = [
   {
     _id: "txn-2",
     date: "2024-02-01",
-    dept: "Department of Education",
+    dept: "City Planning & Development Office",
     project: "School Building Renovation",
     amount: 25000000,
     status: "Verified",
@@ -235,7 +237,7 @@ const MOCK_TRANSACTIONS = [
   {
     _id: "txn-3",
     date: "2024-02-15",
-    dept: "Department of Health",
+    dept: "City Health Office",
     project: "Hospital Equipment Upgrade",
     amount: 15000000,
     status: "Verified",
@@ -244,7 +246,7 @@ const MOCK_TRANSACTIONS = [
   {
     _id: "txn-4",
     date: "2024-03-01",
-    dept: "Department of Public Works and Highways",
+    dept: "City Engineering Office",
     project: "Road Maintenance",
     amount: 30000000,
     status: "Verified",
@@ -253,8 +255,8 @@ const MOCK_TRANSACTIONS = [
   {
     _id: "txn-5",
     date: "2024-03-15",
-    dept: "Department of Education",
-    project: "Computer Lab Setup",
+    dept: "City Tourism Office",
+    project: "Tourism Infrastructure Development",
     amount: 12000000,
     status: "Verified",
     signature: "0x9abc...5678"
@@ -286,11 +288,14 @@ const MOCK_MONTHLY_SPENDING: MonthlyPoint[] = [
 
 /**
  * Mock category data for when endpoints are not available
+ * Updated with Dagupan City LGU categories
  */
 const MOCK_CATEGORIES: CategorySlice[] = [
-  { label: "Infrastructure", value: 150000 },
-  { label: "Public Works", value: 75000 },
-  { label: "Other", value: 25000 }
+  { label: "Infrastructure & Development", value: 150000 },
+  { label: "Health & Social Services", value: 75000 },
+  { label: "Economic Services & Business Development", value: 50000 },
+  { label: "Public Safety & Disaster Management", value: 45000 },
+  { label: "Executive & Administrative Services", value: 30000 }
 ];
 
 // ============================================================================

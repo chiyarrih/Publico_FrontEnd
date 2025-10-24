@@ -5,6 +5,7 @@ import TransactionDetailsModal from "../modals/TransactionDetailsModal";
 import type { BudgetProposal } from "../../model/types/admin";
 import useLedger from "@agency/controller/hooks/useLedger";
 import { useExportLedger } from "../../controller/hooks/useExportLedger";
+import { SimpleDepartmentSelect } from "@/shared/components/DepartmentSelect";
 
 export default function Transactions(){
   const { ledgers,
@@ -127,12 +128,6 @@ export default function Transactions(){
     return "gray";
   };
 
-  const departments = [
-    "Department of Health",
-    "Department of Education", 
-    "Department of Public Works and Highways"
-  ];
-
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -158,12 +153,13 @@ export default function Transactions(){
             className="w-full sm:w-96"
           />
           <div className="ml-auto flex items-center gap-2">
-            <Select value={typeFilter} onChange={e => handleTypeChange(e.target.value)}>
-              <option value="All">All Departments</option>
-              {departments.map(dept => (
-                <option key={dept} value={dept}>{dept}</option>
-              ))}
-            </Select>
+            <SimpleDepartmentSelect
+              value={typeFilter}
+              onChange={handleTypeChange}
+              className="px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              includeAll={true}
+              allLabel="All Departments"
+            />
             <Select value={statusFilter} onChange={e => handleStatusChange(e.target.value)}>
               <option value="All">All Statuses</option>
               <option value="pending">Pending</option>

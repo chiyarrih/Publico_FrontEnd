@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useProjectMilestones } from "../../controller/hooks/useProjectMilestones";
 import { Panel, Pill, IconButton } from "../ui/kit";
 import CreateMilestoneModal from "../modals/CreateMilestoneModal";
+import { ALL_DEPARTMENTS } from "@/shared/constants/departments";
 
 const Eye = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>;
 const Edit = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5Z"/></svg>;
@@ -18,12 +19,19 @@ export default function ProjectMilestones(){
   
   const { milestones, budgetProjects, loading, error, fetchMilestones } = useProjectMilestones('all');
 
-  // Store all milestones for dropdown options (never filtered)
+  // Store all milestones for status dropdown (never filtered)
   useEffect(() => {
     if (milestones.length > 0 && allMilestones.length === 0) {
       setAllMilestones(milestones);
     }
   }, [milestones, allMilestones.length]);
+
+  // Get unique departments from data, fallback to constants if no data
+  const availableDepartments = useMemo(() => {
+    // ALWAYS use the new Dagupan City LGU departments from constants
+    // This ensures the dropdown shows the correct, updated department list
+    return ALL_DEPARTMENTS.map(d => d.value);
+  }, []);
 
   const filtered = useMemo(()=>milestones.filter(p =>
     (dept==="All"||p.department===dept) &&
@@ -73,8 +81,8 @@ export default function ProjectMilestones(){
             value={dept} 
             onChange={e=>{setDept(e.target.value); handleFilterChange();}}
           >
-            <option>All</option>
-            {Array.from(new Set(allMilestones.map(m => m.department))).map(dept => (
+            <option value="All">All Departments</option>
+            {availableDepartments.map(dept => (
               <option key={dept} value={dept}>{dept}</option>
             ))}
           </select>
@@ -83,8 +91,8 @@ export default function ProjectMilestones(){
             value={state} 
             onChange={e=>{setState(e.target.value); handleFilterChange();}}
           >
-            <option>All</option>
-            {Array.from(new Set(allMilestones.map(m => m.overallStatus))).map(status => (
+            <option value="All">All Statuses</option>
+            {Array.from(new Set(allMilestones.map(m => m.overallStatus).filter(Boolean))).map(status => (
               <option key={status} value={status}>{status}</option>
             ))}
           </select>

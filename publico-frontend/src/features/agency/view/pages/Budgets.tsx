@@ -1,5 +1,6 @@
 import ProposalForm from "@agency/controller/components/forms/ProposalForm";
 import React from "react";
+import { SimpleDepartmentSelect } from "@/shared/components/DepartmentSelect";
 
 type Status = "Approved" | "In Review" | "Pending" | "Rejected";
 
@@ -66,12 +67,13 @@ export default function Budgets() {
             <select value={status} onChange={e=>setStatus(e.target.value as any)} className="px-2 text-sm border rounded h-9 border-slate-300">
               <option>All</option><option>Approved</option><option>In Review</option><option>Pending</option><option>Rejected</option>
             </select>
-            <select value={dept} onChange={e=>setDept(e.target.value)} className="px-2 text-sm border rounded h-9 border-slate-300">
-              <option>All Departments</option>
-              <option>Department of Health</option>
-              <option>Department of Education</option>
-              <option>Department of Public Works and Highways</option>
-            </select>
+            <SimpleDepartmentSelect
+              value={dept}
+              onChange={setDept}
+              className="px-2 text-sm border rounded h-9 border-slate-300"
+              includeAll={true}
+              allLabel="All Departments"
+            />
           </div>
         )}
       </div>

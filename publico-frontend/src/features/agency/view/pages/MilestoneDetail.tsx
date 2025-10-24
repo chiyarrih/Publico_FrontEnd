@@ -11,17 +11,17 @@ const CheckCircle = ({ className = "" }: { className?: string }) => <svg width="
 const Clock = ({ className = "" }: { className?: string }) => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" className={className}><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>;
 const Upload = ({ className = "" }: { className?: string }) => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" className={className}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>;
 
-// Mock data - matching the mockup
+// Mock data - matching the mockup with updated Dagupan City LGU departments
 const mockMilestone = {
   _id: "PRJ-2023-0125",
   projectName: "Road Rehabilitation - Perez Blvd",
-  department: "Public Works",
+  department: "City Engineering Office",
   totalBudget: 2500000,
   startDate: "2023-06-01",
   endDate: "2023-08-30",
   overallStatus: "In Progress",
   overallProgress: 25,
-  proposedBy: "Department of Public Works",
+  proposedBy: "City Engineering Office",
   approvedBy: { name: "City Administrator" },
   phases: [
     {

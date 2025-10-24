@@ -6,6 +6,7 @@ import ProposalCard from "../../controller/components/cards/ProposalCard"
 import ProposalForm from "../../controller/components/forms/ProposalForm"
 import useBudget from "../../controller/hooks/useBudget"
 import { Status } from "@/utils/helpers"
+import { SimpleDepartmentSelect } from "@/shared/components/DepartmentSelect"
 
 export const BudgetsInner: React.FC = () => {
   const { fetchedData, hasMore, loadMore } = useBudget()
@@ -102,12 +103,12 @@ export const BudgetsInner: React.FC = () => {
               onChange={(e) => setDept(e.target.value)}
               className="px-4 py-3 text-sm border rounded-xl h-12 border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white min-w-[160px] transition-all"
             >
-              <option>All Departments</option>
-              <option>Transportation</option>
-              <option>Parks & Recreation</option>
-              <option>Education</option>
-              <option>Finance</option>
-              <option>IT</option>
+              <option value="All">All Departments</option>
+              <option>City Mayor's Office</option>
+              <option>City Engineering Office</option>
+              <option>City Health Office</option>
+              <option>City Planning & Development Office</option>
+              <option>City Tourism Office</option>
             </select>
           </div>
         )}

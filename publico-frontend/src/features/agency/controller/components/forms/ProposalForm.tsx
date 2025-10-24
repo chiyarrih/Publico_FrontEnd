@@ -74,16 +74,71 @@ const today = new Date().toISOString().split("T")[0]
             {/* Department */}
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-2">
-                Department <span className="text-red-500">*</span>
+                Department / Office <span className="text-red-500">*</span>
               </label>
               <select
                 {...register("department", { required: "Department is required" })}
                 className="w-full px-4 py-3 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-slate-50/50 hover:bg-white"
               >
-                <option value="">Select Department</option>
-                <option value="Department of Health">Department of Health</option>
-                <option value="Department of Education">Department of Education</option>
-                <option value="Department of Public Works and Highways">Department of Public Works and Highways</option>
+                <option value="">Select Department/Office</option>
+                
+                <optgroup label="Executive & Administrative Services">
+                  <option value="City Mayor's Office">City Mayor's Office</option>
+                  <option value="City Administrator's Office">City Administrator's Office</option>
+                  <option value="Office of the Vice Mayor">Office of the Vice Mayor</option>
+                  <option value="Office of the SP Secretary">Office of the SP Secretary</option>
+                  <option value="City Legal Office">City Legal Office</option>
+                  <option value="Management Information System Office">Management Information System Office</option>
+                  <option value="Human Resources Office">Human Resources Office</option>
+                  <option value="City Budget Office">City Budget Office</option>
+                  <option value="City Information Office">City Information Office</option>
+                </optgroup>
+                
+                <optgroup label="Public Safety & Disaster Management">
+                  <option value="City Disaster Risk Reduction & Management Office">City Disaster Risk Reduction & Management Office</option>
+                  <option value="Public Order & Safety Office">Public Order & Safety Office</option>
+                  <option value="Public Alert Response & Management Center">Public Alert Response & Management Center</option>
+                  <option value="PNP">PNP (Philippine National Police)</option>
+                  <option value="BFP">BFP (Bureau of Fire Protection)</option>
+                  <option value="Red Cross">Red Cross</option>
+                  <option value="PANDA Volunteers">PANDA Volunteers</option>
+                  <option value="DECORP">DECORP</option>
+                </optgroup>
+                
+                <optgroup label="Health & Social Services">
+                  <option value="City Health Office">City Health Office</option>
+                  <option value="City Social Welfare & Development Office">City Social Welfare & Development Office</option>
+                  <option value="Office for Senior Citizen's Affairs">Office for Senior Citizen's Affairs</option>
+                  <option value="City Nutrition Office">City Nutrition Office</option>
+                  <option value="City Population Office">City Population Office</option>
+                </optgroup>
+                
+                <optgroup label="Infrastructure & Development">
+                  <option value="City Engineering Office">City Engineering Office</option>
+                  <option value="City Planning & Development Office">City Planning & Development Office</option>
+                  <option value="Waste Management Division">Waste Management Division</option>
+                </optgroup>
+                
+                <optgroup label="Economic Services & Business Development">
+                  <option value="City Tourism Office">City Tourism Office</option>
+                  <option value="City Agriculture Office">City Agriculture Office</option>
+                  <option value="City Veterinary Office">City Veterinary Office</option>
+                  <option value="City Market Division">City Market Division</option>
+                  <option value="One Stop Business Center">One Stop Business Center</option>
+                  <option value="Public Employment Office">Public Employment Office</option>
+                  <option value="PAMANA">PAMANA</option>
+                </optgroup>
+                
+                <optgroup label="Financial Management & Revenue">
+                  <option value="City Accounting Office">City Accounting Office</option>
+                  <option value="City Treasury Office">City Treasury Office</option>
+                  <option value="City Assessor's Office">City Assessor's Office</option>
+                </optgroup>
+                
+                <optgroup label="General Services & Support">
+                  <option value="City General Services Office">City General Services Office</option>
+                  <option value="City Civil Registry Office">City Civil Registry Office</option>
+                </optgroup>
               </select>
               {errors.department && <p className="mt-1.5 text-xs text-red-600">{errors.department.message}</p>}
             </div>
@@ -98,9 +153,13 @@ const today = new Date().toISOString().split("T")[0]
                 className="w-full px-3 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-white"
               >
                 <option value="">Select Category</option>
-                <option value="Infrastructure">Infrastructure</option>
-                <option value="Education">Education</option>
-                <option value="Health">Health</option>
+                <option value="Executive & Administrative Services">Executive & Administrative Services</option>
+                <option value="Public Safety & Disaster Management">Public Safety & Disaster Management</option>
+                <option value="Health & Social Services">Health & Social Services</option>
+                <option value="Infrastructure & Development">Infrastructure & Development</option>
+                <option value="Economic Services & Business Development">Economic Services & Business Development</option>
+                <option value="Financial Management & Revenue">Financial Management & Revenue</option>
+                <option value="General Services & Support">General Services & Support</option>
               </select>
               {errors.category && <p className="mt-1.5 text-xs text-red-600">{errors.category.message}</p>}
             </div>

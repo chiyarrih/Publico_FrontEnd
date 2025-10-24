@@ -11,6 +11,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { logout } from "../../../../utils/auth";
+import { SimpleDepartmentSelect } from "@/shared/components/DepartmentSelect";
 
 // ============================================================================
 // CONSTANTS & CONFIGURATION
@@ -558,11 +559,12 @@ const PageHeader: React.FC<{
               className="select-field text-xs py-2"
               aria-label="Department"
             >
-              <option>All Departments</option>
-              <option>Transportation</option>
-              <option>Parks & Recreation</option>
-              <option>Education</option>
-              <option>Utilities</option>
+              <option value="All">All Departments</option>
+              <option>City Mayor's Office</option>
+              <option>City Engineering Office</option>
+              <option>City Health Office</option>
+              <option>City Social Welfare & Development Office</option>
+              <option>City Planning & Development Office</option>
             </select>
 
             <select

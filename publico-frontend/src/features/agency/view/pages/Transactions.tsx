@@ -1,5 +1,6 @@
 import useLedger from "@agency/controller/hooks/useLedger";
 import React, { useState, useEffect, useRef } from "react";
+import { SimpleDepartmentSelect } from "@/shared/components/DepartmentSelect";
 
 type Row = {
   date: string;
@@ -46,12 +47,6 @@ export default function Transactions() {
   const [endDate, setEndDate] = useState<string>('');
   const [dateError, setDateError] = useState<string>('');
   const datePickerRef = useRef<HTMLDivElement>(null);
-
-  const departments = [
-    "Department of Health",
-    "Department of Education",
-    "Department of Public Works and Highways"
-  ];
 
   const statuses = ["All", "Pending", "Approved", "Rejected"];
 
@@ -207,16 +202,13 @@ export default function Transactions() {
           </div>
 
           {/* Department Filter */}
-          <select 
-            value={typeFilter} 
-            onChange={(e) => handleTypeChange(e.target.value)}
+          <SimpleDepartmentSelect
+            value={typeFilter}
+            onChange={handleTypeChange}
             className="px-2 text-sm border rounded h-9 border-slate-300"
-          >
-            <option value="All">All Departments</option>
-            {departments.map((dept) => (
-              <option key={dept} value={dept}>{dept}</option>
-            ))}
-          </select>
+            includeAll={true}
+            allLabel="All Departments"
+          />
 
           {/* Status Filter */}
           <select 

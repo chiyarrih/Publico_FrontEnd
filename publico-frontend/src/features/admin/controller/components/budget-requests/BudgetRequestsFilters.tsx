@@ -1,6 +1,7 @@
 import React from "react";
 import { Input, Select, Button } from "@admin/view/ui/blocks";
 import { Search, Filter } from "lucide-react";
+import { SimpleDepartmentSelect } from "@/shared/components/DepartmentSelect";
 
 interface BudgetRequestsFiltersProps {
   searchQuery: string;
@@ -36,18 +37,13 @@ export default function BudgetRequestsFilters({
 
       {/* Filters */}
       <div className="flex items-center gap-2">
-        <Select
+        <SimpleDepartmentSelect
           value={selectedDepartment || "All"}
-          onChange={(e) => onDepartmentChange?.(e.target.value)}
-          className="min-w-[160px]"
-        >
-          <option value="All">All Departments</option>
-          <option value="Public Works">Public Works</option>
-          <option value="Health">Health</option>
-          <option value="Education">Education</option>
-          <option value="Agriculture">Agriculture</option>
-          <option value="Tourism">Tourism</option>
-        </Select>
+          onChange={(value) => onDepartmentChange?.(value)}
+          className="min-w-[160px] px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          includeAll={true}
+          allLabel="All Departments"
+        />
 
         <Select
           value={selectedStatus || "All"}
