@@ -158,17 +158,32 @@ const Profile: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Page Title */}
-      <div className="card">
-        {/* Tabs header */}
-        <ProfileTabs activeTab={tab} onTabChange={setTab} />
-
-        {/* Divider */}
-        <div className="h-px bg-slate-200 mt-2" />
-
-        {/* Tab panels */}
-        <div className="p-5">
-          {renderTabContent()}
+      <div className="card p-8">
+        <h1 className="text-2xl font-bold text-gray-900 mb-2">Profile Information</h1>
+        <p className="text-gray-600 mb-6">
+          This is the public citizen portal. Profile management is available for logged-in users.
+        </p>
+        
+        {/* Show login suggestion */}
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+          <h3 className="font-semibold text-blue-900 mb-2">Login Required</h3>
+          <p className="text-blue-800 text-sm mb-4">
+            To access your personal profile and preferences, please log in with your citizen account.
+          </p>
+          <div className="flex gap-3">
+            <a
+              href="/login"
+              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
+            >
+              Go to Login
+            </a>
+            <a
+              href="/signup"
+              className="px-4 py-2 text-sm font-medium text-blue-700 bg-white border border-blue-300 hover:bg-blue-50 rounded-lg transition-colors"
+            >
+              Create Account
+            </a>
+          </div>
         </div>
       </div>
 

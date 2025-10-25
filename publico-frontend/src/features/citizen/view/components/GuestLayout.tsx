@@ -393,8 +393,6 @@ const UserAvatar: React.FC<{
  * Guest header component (for non-authenticated users)
  */
 const GuestHeader: React.FC = () => {
-  const navigate = useNavigate();
-
   return (
     <header className="sticky top-0 z-10 h-16 w-full border-b border-gray-200/60 bg-white/80 backdrop-blur-md shadow-sm">
       <div className="flex h-full items-center justify-between px-6">
@@ -408,22 +406,7 @@ const GuestHeader: React.FC = () => {
           <span className="hidden sm:inline-block text-xs text-gray-500 ml-2 px-2 py-1 bg-green-100 text-green-700 rounded-full">
             Public Access
           </span>
-        </div>
-        
-        <div className="flex items-center gap-3">
-          <button 
-            onClick={() => navigate('/login')}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-          >
-            {Icon.login("h-4 w-4")}
-            <span className="hidden sm:inline">Login</span>
-          </button>
-          <button 
-            onClick={() => navigate('/signup')}
-            className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 rounded-lg shadow-sm transition-all"
-          >
-            Sign Up
-          </button>
+          <span className="text-sm text-gray-600">- Government Transparency Portal</span>
         </div>
       </div>
     </header>
@@ -529,22 +512,13 @@ const SidebarProfile: React.FC<{
   firstName: string;
   isLoggedIn: boolean;
 }> = ({ avatarUrl, firstName, isLoggedIn }) => {
-  const navigate = useNavigate();
-
   if (!isLoggedIn) {
     return (
       <div className="mb-8 p-4 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100/50">
-        <div className="text-sm font-semibold text-gray-900 mb-2">Guest Access</div>
-        <p className="text-xs text-gray-600 mb-3">
-          Viewing public transparency data
+        <div className="text-sm font-semibold text-gray-900 mb-2">Public Access</div>
+        <p className="text-xs text-gray-600">
+          Browse government transparency data without creating an account. All information is publicly accessible.
         </p>
-        <button
-          onClick={() => navigate('/login')}
-          className="w-full px-3 py-2 text-xs font-medium text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 rounded-lg shadow-sm transition-all flex items-center justify-center gap-2"
-        >
-          {Icon.login("h-3 w-3")}
-          Login to Save Preferences
-        </button>
       </div>
     );
   }

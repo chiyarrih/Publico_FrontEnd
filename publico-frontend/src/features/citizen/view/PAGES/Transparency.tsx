@@ -33,7 +33,17 @@ export default function Transparency() {
 
         // pie
         const cats = await getBudgetByCategory(); // [{label, value}]
-        const colored = (cats ?? []).map((c, i) => ({ ...c, color: palette[i % palette.length] }));
+        // Calculate percentages if raw values are provided
+        const total = cats.reduce((sum, c) => sum + (Number(c.value) || 0), 0);
+        const colored = (cats ?? []).map((c, i) => {
+          const rawValue = Number(c.value) || 0;
+          const percentage = total > 0 ? Math.round((rawValue / total) * 100) : 0;
+          return { 
+            label: c.label, 
+            value: percentage, // Convert to percentage
+            color: palette[i % palette.length] 
+          };
+        });
         if (!ignore) setSlices(colored);
 
         // key projects (convert to rows with pct if available, else fake % by budget rank)

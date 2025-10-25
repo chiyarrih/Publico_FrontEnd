@@ -15,6 +15,7 @@ import {
   ResponsiveContainer, PieChart, Pie, Cell
 } from "recharts";
 import { useCitizenDashboard } from "../../controller/hooks/useCitizenDashboard";
+import { fetchLedger } from "../../controller/data/dashboardService";
 import BudgetBarChart from "../components/BudgetBarChart";
 import BudgetTrendChart from "../components/BudgetTrendChart";
 // Simplified loading components
@@ -59,6 +60,7 @@ interface UiLedgerTransaction {
   date: string;
   status: "Verified" | "Pending" | "Flagged";
   sig: string;
+  purpose?: string; // Phase/Purpose information
 }
 
 /**
@@ -335,7 +337,7 @@ const transformProjects = (projects: any[]): UiProject[] =>
 const transformLedgerData = (ledger: any): UiLedgerTransaction[] =>
   (ledger?.items ?? ledger ?? []).map((transaction: any, index: number) => ({
     key: transaction.id ?? index,
-    tx: transaction.title ?? transaction.tx ?? "Transaction",
+    tx: transaction.title ?? transaction.tx ?? transaction.purpose ?? "Transaction",
     amount: typeof transaction.amount === "number"
       ? formatCurrency(transaction.amount)
       : transaction.amount ?? "—",
@@ -344,6 +346,7 @@ const transformLedgerData = (ledger: any): UiLedgerTransaction[] =>
       : transaction.createdAt?.slice(0, 10) ?? "—",
     status: (transaction.status ?? "Verified") as "Verified" | "Pending" | "Flagged",
     sig: transaction.signature ?? transaction.hash ?? transaction.sig ?? "—",
+    purpose: transaction.purpose ?? "—", // Include phase/purpose information
   }));
 
 // ============================================================================
@@ -422,6 +425,8 @@ export default function Dashboard() {
   const [openProjects, setOpenProjects] = useState(false);
   const [openLedger, setOpenLedger] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [allLedgerData, setAllLedgerData] = useState<any[]>([]);
+  const [loadingLedger, setLoadingLedger] = useState(false);
 
   // ============================================================================
   // DATA TRANSFORMATION
@@ -450,6 +455,22 @@ export default function Dashboard() {
   
   const handleRetry = () => {
     window.location.reload();
+  };
+
+  const handleOpenLedger = async () => {
+    setOpenLedger(true);
+    if (allLedgerData.length === 0) {
+      setLoadingLedger(true);
+      try {
+        // Fetch all transactions (with a high limit)
+        const allLedger = await fetchLedger(1, 200);
+        setAllLedgerData(allLedger.items || []);
+      } catch (error) {
+        console.error("Error loading all ledger data:", error);
+      } finally {
+        setLoadingLedger(false);
+      }
+    }
   };
 
 
@@ -546,17 +567,26 @@ export default function Dashboard() {
         {/* Monthly Spending Trend - Area Chart */}
         <DashboardCard title="Monthly Budget Trends">
           <BudgetTrendChart 
-            data={monthly.map(m => ({
-              month: m.month,
-              allocated: m.allocated || 0,
-              spent: m.spent || 0
-            }))} 
+            data={(() => {
+              const monthlyData = Array.isArray(monthly) 
+                ? monthly 
+                : (monthly as any)?.value || [];
+              return monthlyData.map((m: any) => ({
+                month: m.month,
+                allocated: m.allocated || 0,
+                spent: m.spent || 0
+              }));
+            })()} 
           />
         </DashboardCard>
 
         {/* Budget Allocation by Department - Horizontal Bar Chart */}
         <DashboardCard title="Budget Allocation by Department">
-          <BudgetBarChart data={categories} />
+          <BudgetBarChart 
+            data={Array.isArray(categories) 
+              ? categories 
+              : (categories as any)?.value || categories || []} 
+          />
         </DashboardCard>
       </div>
 
@@ -590,7 +620,7 @@ export default function Dashboard() {
         right={
           <button 
             className="text-sm text-blue-600 hover:underline" 
-            onClick={() => setOpenLedger(true)}
+            onClick={handleOpenLedger}
           >
             View Complete Ledger
           </button>
@@ -601,10 +631,10 @@ export default function Dashboard() {
             <thead>
               <tr className="text-left text-slate-600">
                 <th className="px-4 py-2 font-medium">Transaction</th>
+                <th className="px-4 py-2 font-medium">Phase/Purpose</th>
                 <th className="px-4 py-2 font-medium">Amount</th>
                 <th className="px-4 py-2 font-medium">Date</th>
                 <th className="px-4 py-2 font-medium">Status</th>
-                <th className="px-4 py-2 font-medium">Signature</th>
               </tr>
             </thead>
             <tbody>
@@ -618,12 +648,16 @@ export default function Dashboard() {
               {uiLedger.map((transaction) => (
                 <tr key={transaction.key} className="border-t">
                   <td className="px-4 py-2">{transaction.tx}</td>
+                  <td className="px-4 py-2">
+                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                      {transaction.purpose || "—"}
+                    </span>
+                  </td>
                   <td className="px-4 py-2">{transaction.amount}</td>
                   <td className="px-4 py-2">{transaction.date}</td>
                   <td className="px-4 py-2">
                     <StatusPill status={transaction.status} />
                   </td>
-                  <td className="px-4 py-2 text-slate-500">{transaction.sig}</td>
                 </tr>
               ))}
             </tbody>
@@ -663,39 +697,53 @@ export default function Dashboard() {
 
       {openLedger && (
         <Modal title="Complete Ledger" onClose={() => setOpenLedger(false)}>
-          <div className="overflow-x-auto">
-            <table className="min-w-full text-sm">
-              <thead>
-                <tr className="text-left text-slate-600">
-                  <th className="px-4 py-2 font-medium">Transaction</th>
-                  <th className="px-4 py-2 font-medium">Amount</th>
-                  <th className="px-4 py-2 font-medium">Date</th>
-                  <th className="px-4 py-2 font-medium">Status</th>
-                  <th className="px-4 py-2 font-medium">Signature</th>
-                </tr>
-              </thead>
-              <tbody>
-                {uiLedger.map((transaction) => (
-                  <tr key={transaction.key} className="border-t">
-                    <td className="px-4 py-2">{transaction.tx}</td>
-                    <td className="px-4 py-2">{transaction.amount}</td>
-                    <td className="px-4 py-2">{transaction.date}</td>
-                    <td className="px-4 py-2">
-                      <StatusPill status={transaction.status} />
-                    </td>
-                    <td className="px-4 py-2 text-slate-500">{transaction.sig}</td>
+          {loadingLedger ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+              <span className="ml-3 text-gray-600">Loading transactions...</span>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <div className="mb-4 text-sm text-gray-600">
+                Showing {allLedgerData.length} of {ledger.total} transactions
+              </div>
+              <table className="min-w-full text-sm">
+                <thead>
+                  <tr className="text-left text-slate-600">
+                    <th className="px-4 py-2 font-medium">Transaction</th>
+                    <th className="px-4 py-2 font-medium">Phase/Purpose</th>
+                    <th className="px-4 py-2 font-medium">Amount</th>
+                    <th className="px-4 py-2 font-medium">Date</th>
+                    <th className="px-4 py-2 font-medium">Status</th>
                   </tr>
-                ))}
-                {uiLedger.length === 0 && (
-                  <tr>
-                    <td className="px-4 py-6 text-center text-slate-500" colSpan={5}>
-                      No transactions.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {allLedgerData.map((transaction: any, index: number) => (
+                    <tr key={transaction.key || index} className="border-t">
+                      <td className="px-4 py-2">{transaction.tx || transaction.purpose || "Transaction"}</td>
+                      <td className="px-4 py-2">
+                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                          {transaction.purpose || "—"}
+                        </span>
+                      </td>
+                      <td className="px-4 py-2">{transaction.amount}</td>
+                      <td className="px-4 py-2">{transaction.date}</td>
+                      <td className="px-4 py-2">
+                        <StatusPill status={transaction.status} />
+                      </td>
+                    </tr>
+                  ))}
+                  {allLedgerData.length === 0 && (
+                    <tr>
+                      <td className="px-4 py-6 text-center text-slate-500" colSpan={5}>
+                        No transactions found.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
         </Modal>
       )}
     </div>

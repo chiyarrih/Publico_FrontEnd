@@ -286,11 +286,19 @@ const MOCK_MONTHLY_SPENDING: MonthlyPoint[] = [
 
 /**
  * Mock category data for when endpoints are not available
+ * These categories match the actual departments in the database
  */
 const MOCK_CATEGORIES: CategorySlice[] = [
-  { label: "Infrastructure", value: 150000 },
-  { label: "Public Works", value: 75000 },
-  { label: "Other", value: 25000 }
+  { label: "Department of Education", value: 3500000 },
+  { label: "Department of Public Works and Highways", value: 4200000 },
+  { label: "Department of Health", value: 3200000 },
+  { label: "Department of Agriculture", value: 2000000 },
+  { label: "Department of Social Welfare and Development", value: 1800000 },
+  { label: "Department of Transportation", value: 1600000 },
+  { label: "Department of the Interior and Local Government", value: 1200000 },
+  { label: "Department of Science and Technology", value: 1000000 },
+  { label: "Department of Environment and Natural Resources", value: 800000 },
+  { label: "Department of Tourism", value: 600000 }
 ];
 
 // ============================================================================
@@ -343,29 +351,22 @@ export async function getKeyProjects(limit = 5) {
   const portal = getPortal();
   
   if (portal === "citizen") {
-    // For citizens, try to fetch public milestone data (no auth required for guests)
-    try {
-      // Try public milestones endpoint (no authentication required)
-      const response = await fetch(`http://localhost:5000/citizen/milestones/public?page=1&limit=${limit}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+    // For citizens, fetch real data from public milestones endpoint
+    const response = await fetch(`http://localhost:5000/citizen/milestones/public?page=1&limit=${limit}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
 
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-
-      const json = await response.json();
-      // Extract data array from response
-      const milestones = json.data || json;
-      return Array.isArray(milestones) ? milestones : [];
-    } catch (error) {
-      console.warn("Public milestones endpoint not available, using mock data:", error);
-      // Return mock data for demonstration
-      return MOCK_PROJECTS.slice(0, limit);
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
     }
+
+    const json = await response.json();
+    // Extract data array from response
+    const milestones = json.data || json;
+    return Array.isArray(milestones) ? milestones : [];
   } else {
     // For agencies/admins, fetch their specific projects
     const agencyId = getAgencyId();
@@ -389,39 +390,23 @@ export async function fetchProjectsProposed(page = 1, limit = 10) {
   const portal = getPortal();
   
   if (portal === "citizen") {
-    // For citizens, try to fetch public milestone data (no auth required for guests)
-    try {
-      // Try public milestones endpoint (no authentication required)
-      const response = await fetch(`http://localhost:5000/citizen/milestones/public?page=${page}&limit=${limit}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+    // For citizens, fetch real data from public milestones endpoint
+    const response = await fetch(`http://localhost:5000/citizen/milestones/public?page=${page}&limit=${limit}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
 
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-
-      const json = await response.json();
-      const items = json.data || json;
-      const total = json.totalItems || (Array.isArray(items) ? items.length : 0);
-      
-      return { items: Array.isArray(items) ? items : [], total, page, limit };
-    } catch (error) {
-      console.warn("Public milestones endpoint not available, using mock data:", error);
-      // Return mock data with pagination
-      const startIndex = (page - 1) * limit;
-      const endIndex = startIndex + limit;
-      const paginatedItems = MOCK_PROJECTS.slice(startIndex, endIndex);
-      
-      return { 
-        items: paginatedItems, 
-        total: MOCK_PROJECTS.length, 
-        page, 
-        limit 
-      };
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
     }
+
+    const json = await response.json();
+    const items = json.data || json;
+    const total = json.totalItems || (Array.isArray(items) ? items.length : 0);
+    
+    return { items: Array.isArray(items) ? items : [], total, page, limit };
   } else {
     // For agencies/admins, fetch their specific projects
     const agencyId = getAgencyId();
@@ -489,51 +474,35 @@ export async function fetchLedger(page = 1, limit = 10) {
   const portal = getPortal();
   
   if (portal === "citizen") {
-    // For citizens, try to fetch public ledger data (no auth required for guests)
-    try {
-      // Try public ledger endpoint (no authentication required)
-      const response = await fetch(`http://localhost:5000/citizen/ledger/public?page=${page}&limit=${limit}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+    // For citizens, fetch real data from public ledger endpoint
+    const response = await fetch(`http://localhost:5000/citizen/ledger/public?page=${page}&limit=${limit}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
 
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-
-      const json = await response.json();
-      
-      // Transform the data to match frontend expectations
-      const items = json.data?.map((item: any) => ({
-        _id: item._id,
-        date: item.date ? new Date(item.date).toLocaleDateString() : undefined,
-        dept: item.department,
-        project: item.projectName,
-        amount: item.amount,
-        status: item.status === 'Verified' ? 'Verified' : item.status === 'completed' ? 'Verified' : 'Pending',
-        signature: item.signature || item.blockchainTxHash,
-        purpose: item.purpose
-      })) || [];
-      
-      const total = json.pagination?.totalItems || items.length;
-      
-      return { items, total, page, limit };
-    } catch (error) {
-      console.warn("Public ledger endpoint not available, using mock data:", error);
-      // Return mock data with pagination
-      const startIndex = (page - 1) * limit;
-      const endIndex = startIndex + limit;
-      const paginatedItems = MOCK_TRANSACTIONS.slice(startIndex, endIndex);
-      
-      return { 
-        items: paginatedItems, 
-        total: MOCK_TRANSACTIONS.length, 
-        page, 
-        limit 
-      };
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
     }
+
+    const json = await response.json();
+    
+    // Transform the data to match frontend expectations
+    const items = json.data?.map((item: any) => ({
+      _id: item._id,
+      date: item.date ? new Date(item.date).toLocaleDateString() : undefined,
+      dept: item.department,
+      project: item.projectName,
+      amount: item.amount,
+      status: item.status === 'Verified' ? 'Verified' : item.status === 'completed' ? 'Verified' : 'Pending',
+      signature: item.signature || item.blockchainTxHash,
+      purpose: item.purpose
+    })) || [];
+    
+    const total = json.pagination?.totalItems || items.length;
+    
+    return { items, total, page, limit };
   } else {
     // For agencies/admins, fetch their specific ledger
     const { user } = getUserData();
@@ -571,27 +540,21 @@ export async function getDashboardAlerts(): Promise<DashboardAlert[]> {
   const portal = getPortal();
   
   if (portal === "citizen") {
-    // For citizens, try to fetch public alert data (no auth required for guests)
-    try {
-      // Try public alerts endpoint (no authentication required)
-      const response = await fetch(`http://localhost:5000/citizen/alerts/public`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+    // For citizens, fetch real data from public alerts endpoint
+    const response = await fetch(`http://localhost:5000/citizen/alerts/public`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
 
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-
-      const json = await response.json();
-      return json;
-    } catch (error) {
-      console.warn("Public alerts endpoint not available, using mock data:", error);
-      // Return mock alert data
-      return MOCK_ALERTS;
+    if (!response.ok) {
+      // If no alerts endpoint, return empty array
+      return [];
     }
+
+    const json = await response.json();
+    return json;
   } else {
     // For agencies/admins, fetch their specific alerts
     return apiClient.get("/citizen/alerts");
@@ -607,27 +570,20 @@ export async function getMonthlySpending(): Promise<MonthlyPoint[]> {
   const portal = getPortal();
   
   if (portal === "citizen") {
-    // For citizens, try to fetch public analytics data (no auth required for guests)
-    try {
-      // Try public monthly analytics endpoint (no authentication required)
-      const response = await fetch(`http://localhost:5000/citizen/analytics/monthly/public`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+    // For citizens, fetch real data from public analytics endpoint
+    const response = await fetch(`http://localhost:5000/citizen/analytics/monthly/public`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
 
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-
-      const json = await response.json();
-      return json;
-    } catch (error) {
-      console.warn("Public monthly analytics endpoint not available, using mock data:", error);
-      // Return mock monthly spending data
-      return MOCK_MONTHLY_SPENDING;
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
     }
+
+    const json = await response.json();
+    return json;
   } else {
     // For agencies/admins, fetch their specific analytics
     return apiClient.get("/citizen/analytics/monthly");
@@ -643,27 +599,20 @@ export async function getBudgetByCategory(): Promise<CategorySlice[]> {
   const portal = getPortal();
   
   if (portal === "citizen") {
-    // For citizens, try to fetch public analytics data (no auth required for guests)
-    try {
-      // Try public category analytics endpoint (no authentication required)
-      const response = await fetch(`http://localhost:5000/citizen/analytics/categories/public`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+    // For citizens, fetch real data from public analytics endpoint
+    const response = await fetch(`http://localhost:5000/citizen/analytics/categories/public`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
 
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-
-      const json = await response.json();
-      return json;
-    } catch (error) {
-      console.warn("Public category analytics endpoint not available, using mock data:", error);
-      // Return mock category data
-      return MOCK_CATEGORIES;
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
     }
+
+    const json = await response.json();
+    return json;
   } else {
     // For agencies/admins, fetch their specific analytics
     return apiClient.get("/citizen/analytics/categories");

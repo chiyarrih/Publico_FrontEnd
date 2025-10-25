@@ -7,6 +7,7 @@ type Tx = {
   date?: string;
   dept?: string;
   project?: string;
+  purpose?: string; // Phase/Purpose information
   amount?: number;
   status?: "Verified" | "Pending" | "Flagged" | string;
   signature?: string;
@@ -38,7 +39,8 @@ export default function Ledger() {
     (async () => {
       try {
         setLoading(true); setErr(null);
-        const res = await fetchLedger(page, pageSize); // {items,total}
+        // Fetch all transactions to enable proper pagination
+        const res = await fetchLedger(page, 200); // Fetch up to 200 items
         if (ignore) return;
         setRows(Array.isArray(res?.items) ? res.items : []);
         setTotal(typeof res?.total === "number" ? res.total : (res?.items?.length ?? 0));
@@ -49,7 +51,7 @@ export default function Ledger() {
       }
     })();
     return () => { ignore = true; };
-  }, [page]);
+  }, []);
 
   // Client-side filtering for better UX (combine with server pagination for production)
   const filtered = useMemo(() => {
@@ -78,8 +80,8 @@ export default function Ledger() {
   const pageRows = filtered.slice((page - 1) * pageSize, page * pageSize);
 
   const exportCSV = () => {
-    const header = ["Date","Department","Project","Amount","Status","Signature"];
-    const lines  = filtered.map(r => [r.date ?? "", r.dept ?? "", r.project ?? "", money(r.amount), r.status ?? "", r.signature ?? ""]);
+    const header = ["Date","Department","Project","Phase/Purpose","Amount","Status","Signature"];
+    const lines  = filtered.map(r => [r.date ?? "", r.dept ?? "", r.project ?? "", r.purpose ?? "", money(r.amount), r.status ?? "", r.signature ?? ""]);
     const csv    = [header, ...lines].map(row => row.map(v => `"${String(v).replace(/"/g,'""')}"`).join(",")).join("\n");
     const url    = URL.createObjectURL(new Blob([csv], {type:"text/csv;charset=utf-8"}));
     const a = document.createElement("a"); a.href = url; a.download = "transaction_ledger.csv"; a.click(); URL.revokeObjectURL(url);
@@ -110,6 +112,7 @@ export default function Ledger() {
                 <th className="px-4 py-3 font-medium">Date</th>
                 <th className="px-4 py-3 font-medium">Department</th>
                 <th className="px-4 py-3 font-medium">Project</th>
+                <th className="px-4 py-3 font-medium">Phase/Purpose</th>
                 <th className="px-4 py-3 font-medium">Amount</th>
                 <th className="px-4 py-3 font-medium">Status</th>
                 <th className="px-4 py-3 font-medium">Signature</th>
@@ -122,6 +125,11 @@ export default function Ledger() {
                   <td className="px-4 py-3">{r.date ?? "-"}</td>
                   <td className="px-4 py-3">{r.dept ?? "-"}</td>
                   <td className="px-4 py-3">{r.project ?? "-"}</td>
+                  <td className="px-4 py-3">
+                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                      {r.purpose || "—"}
+                    </span>
+                  </td>
                   <td className="px-4 py-3 font-medium text-slate-900">{money(r.amount)}</td>
                   <td className="px-4 py-3">{statusToPill((r.status as any) ?? "Verified")}</td>
                   <td className="px-4 py-3 text-slate-500 truncate max-w-[16rem]">{r.signature ?? "-"}</td>
@@ -129,7 +137,7 @@ export default function Ledger() {
                 </tr>
               ))}
               {!loading && pageRows.length === 0 && (
-                <tr><td colSpan={7} className="py-8 text-center text-slate-500">No results.</td></tr>
+                <tr><td colSpan={8} className="py-8 text-center text-slate-500">No results.</td></tr>
               )}
             </tbody>
           </table>
@@ -143,9 +151,19 @@ export default function Ledger() {
           </div>
           <div className="flex items-center gap-1">
             <button onClick={()=>setSafePage(page-1)} disabled={page===1} className="rounded border border-slate-300 px-2 py-1 text-sm disabled:opacity-50">‹</button>
-            {Array.from({length: Math.min(6, totalPages)}, (_,i)=> {
-              const p = Math.min(Math.max(1, page-3)+i, totalPages);
-              return <button key={p} onClick={()=>setSafePage(p)} className={`rounded border px-2 py-1 text-sm ${p===page ? "border-blue-500 bg-blue-600 text-white" : "border-slate-300 hover:bg-slate-50"}`}>{p}</button>;
+            {Array.from({length: Math.min(7, totalPages)}, (_,i)=> {
+              let p = 1;
+              if (totalPages <= 7) {
+                p = i + 1;
+              } else if (page <= 4) {
+                p = i + 1;
+              } else if (page >= totalPages - 3) {
+                p = totalPages - 6 + i;
+              } else {
+                p = page - 3 + i;
+              }
+              if (p > totalPages) return null;
+              return <button key={`page-${i}-${p}`} onClick={()=>setSafePage(p)} className={`rounded border px-2 py-1 text-sm ${p===page ? "border-blue-500 bg-blue-600 text-white" : "border-slate-300 hover:bg-slate-50"}`}>{p}</button>;
             })}
             <button onClick={()=>setSafePage(page+1)} disabled={page===totalPages} className="rounded border border-slate-300 px-2 py-1 text-sm disabled:opacity-50">›</button>
           </div>

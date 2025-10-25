@@ -138,7 +138,7 @@ export function useCitizenDashboard(): UseCitizenDashboardReturn {
         getMonthlySpending(),         // Monthly spending analytics
         getBudgetByCategory(),        // Budget allocation by category
         getKeyProjects(5),            // Key projects (limited to 5)
-        fetchLedger(1, 5),            // Recent transactions (limited to 5)
+        fetchLedger(1, 10),           // Recent transactions (limited to 10)
       ]);
 
       // Update state with fetched data
