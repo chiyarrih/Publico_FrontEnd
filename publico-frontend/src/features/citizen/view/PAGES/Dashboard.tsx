@@ -15,6 +15,8 @@ import {
   ResponsiveContainer, PieChart, Pie, Cell
 } from "recharts";
 import { useCitizenDashboard } from "../../controller/hooks/useCitizenDashboard";
+import BudgetBarChart from "../components/BudgetBarChart";
+import BudgetTrendChart from "../components/BudgetTrendChart";
 // Simplified loading components
 
 // ============================================================================
@@ -540,52 +542,21 @@ export default function Dashboard() {
       </DashboardCard>
 
       {/* Charts Section */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <DashboardCard title="Monthly Spending vs Allocation">
-          <ResponsiveContainer width="100%" height={280}>
-            <LineChart data={uiSpending} margin={{ left: -10, right: 10 }}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="m" />
-              <YAxis />
-              <Tooltip />
-              <Line 
-                type="monotone" 
-                dataKey="actual" 
-                name="Actual Spending" 
-                stroke="#2563eb" 
-                strokeWidth={2} 
-                dot={false} 
-              />
-              <Line 
-                type="monotone" 
-                dataKey="budget" 
-                name="Allocated Budget" 
-                stroke="#94a3b8" 
-                strokeWidth={2} 
-                dot={false} 
-              />
-            </LineChart>
-          </ResponsiveContainer>
+      <div className="grid grid-cols-1 gap-6">
+        {/* Monthly Spending Trend - Area Chart */}
+        <DashboardCard title="Monthly Budget Trends">
+          <BudgetTrendChart 
+            data={monthly.map(m => ({
+              month: m.month,
+              allocated: m.allocated || 0,
+              spent: m.spent || 0
+            }))} 
+          />
         </DashboardCard>
 
-        <DashboardCard title="Budget Allocation by Category">
-          <ResponsiveContainer width="100%" height={280}>
-            <PieChart>
-              <Pie 
-                data={uiAllocation} 
-                dataKey="value" 
-                cx="50%" 
-                cy="50%" 
-                outerRadius={100} 
-                label
-              >
-                {uiAllocation.map((category, index) => (
-                  <Cell key={index} fill={category.color} />
-                ))}
-              </Pie>
-              <Tooltip />
-            </PieChart>
-          </ResponsiveContainer>
+        {/* Budget Allocation by Department - Horizontal Bar Chart */}
+        <DashboardCard title="Budget Allocation by Department">
+          <BudgetBarChart data={categories} />
         </DashboardCard>
       </div>
 

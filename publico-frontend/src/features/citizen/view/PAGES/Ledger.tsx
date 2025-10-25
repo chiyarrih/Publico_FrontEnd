@@ -16,13 +16,13 @@ const money = (n?: number) =>
   typeof n === "number" ? n.toLocaleString("en-PH", { style: "currency", currency: "PHP", maximumFractionDigits: 0 }) : "-";
 
 const DEPTS    = ["All Departments","Health","Education","Infrastructure","Utilities","Administration"] as const;
-const PERIODS  = ["This Month","Last 30 Days","This Quarter","This Year"] as const;
+const PERIODS  = ["All Time","This Month","Last 30 Days","This Quarter","This Year"] as const;
 const STATUSES = ["Verified","Pending","Flagged","All"] as const;
 
 export default function Ledger() {
   const [query, setQuery]     = useState("");
   const debouncedQuery        = useDebounce(query, 300); // Debounce search input
-  const [period, setPeriod]   = useState<typeof PERIODS[number]>("This Month");
+  const [period, setPeriod]   = useState<typeof PERIODS[number]>("All Time");
   const [dept, setDept]       = useState<typeof DEPTS[number]>("All Departments");
   const [status, setStatus]   = useState<typeof STATUSES[number]>("Verified");
   const [page, setPage]       = useState(1);
@@ -57,8 +57,11 @@ export default function Ledger() {
     const startOfMonth   = new Date(now.getFullYear(), now.getMonth(), 1);
     const startOfQuarter = new Date(now.getFullYear(), Math.floor(now.getMonth()/3)*3, 1);
     const startOfYear    = new Date(now.getFullYear(), 0, 1);
-    const start = period === "This Month" ? startOfMonth : period === "Last 30 Days" ? new Date(now.getTime() - 30*24*3600*1000)
-                  : period === "This Quarter" ? startOfQuarter : startOfYear;
+    const start = period === "All Time" ? new Date(2000, 0, 1) // Show all historical data
+                  : period === "This Month" ? startOfMonth 
+                  : period === "Last 30 Days" ? new Date(now.getTime() - 30*24*3600*1000)
+                  : period === "This Quarter" ? startOfQuarter 
+                  : startOfYear;
     const q = debouncedQuery.trim().toLowerCase(); // Use debounced query
     return rows.filter(r => {
       const dOk  = r.date ? new Date(r.date) >= start : true;

@@ -40,6 +40,11 @@ export const CitizenRoute: React.FC<{ children: React.ReactNode }> = ({ children
   <ProtectedRoute allowedRoles={['Citizen']}>{children}</ProtectedRoute>
 );
 
+// Public route - no authentication required (for citizen portal guest access)
+export const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  return <>{children}</>;
+};
+
 export const AdminAgencyRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <ProtectedRoute allowedRoles={['Admin', 'Agency']}>{children}</ProtectedRoute>
 );

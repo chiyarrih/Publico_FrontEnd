@@ -42,7 +42,7 @@ const pill = (t:"blue"|"green"|"yellow"|"red"|"gray"|"purple"|"indigo"="gray")=>
   return `inline-flex items-center rounded-full px-3 py-1.5 text-xs font-semibold ring-1 shadow-sm ${m[t]}`;
 };
 
-const StatCard: React.FC<{ label: string; value: string; delta?: string; trend?: 'up' | 'down' | 'neutral'; icon?: React.ReactNode }> = 
+const StatCard: React.FC<{ label: string; value: string | number; delta?: string; trend?: 'up' | 'down' | 'neutral'; icon?: React.ReactNode }> = 
 ({ label, value, delta, trend = 'neutral', icon }) => (
   <div className="group rounded-2xl border border-slate-200/60 bg-gradient-to-br from-white to-slate-50 p-6 shadow-sm hover:shadow-lg hover:scale-[1.02] transition-all duration-300">
     <div className="flex items-center justify-between mb-3">
@@ -236,7 +236,7 @@ const AgencyDashboard: React.FC = () => {
                   nameKey="name" 
                   outerRadius={100} 
                   innerRadius={40}
-                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                  label={({ name, percent }: any) => `${name} ${(percent * 100).toFixed(0)}%`}
                   labelLine={false}
                 >
                   {statusPie.map((s,i)=><Cell key={i} fill={s.color}/>)}

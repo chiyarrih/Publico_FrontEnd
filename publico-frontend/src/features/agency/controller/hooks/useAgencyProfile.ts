@@ -65,6 +65,7 @@ export const useAgencyProfile = (): UseAgencyProfileReturn => {
         address: rawUserData.address,
         isPending: rawUserData.isPending || false,
         role: 'Agency' as const,
+        privateKey: rawUserData.privateKey || '', // Add missing privateKey field
         // BaseUser fields
         id: rawUserData._id,
         email: rawUserData.email,

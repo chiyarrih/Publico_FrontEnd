@@ -18,7 +18,7 @@ export async function getProjectMilestoneAsAgency(){
     } catch (error) {
         console.error('Error fetching milestones:', error);
         // Return empty array instead of throwing error for 404 cases
-        if (error.message?.includes('Project milestone not found')) {
+        if ((error as Error).message?.includes('Project milestone not found')) {
             return [];
         }
         throw error;

@@ -50,7 +50,7 @@ export default function BudgetRequests() {
   }, [currentPage, selectedStatus]);
   
   useEffect(() => {
-  const socket = io('http://localhost:3001', {
+  const socket = io('http://localhost:5000', {
     auth: { token },
   });
 

@@ -174,7 +174,7 @@ const onSubmit: SubmitHandler<BudgetFormProps> = async (data) => {
   }, [page]);
 
   useEffect(() => {
-    const socket = io('http://localhost:3001', {
+    const socket = io('http://localhost:5000', {
       auth: { token },
     });
 

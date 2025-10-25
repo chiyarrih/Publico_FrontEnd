@@ -343,14 +343,8 @@ export async function getKeyProjects(limit = 5) {
   const portal = getPortal();
   
   if (portal === "citizen") {
-    // For citizens, try to fetch public milestone data
+    // For citizens, try to fetch public milestone data (no auth required for guests)
     try {
-      const storage = localStorage.getItem('publico_user_data');
-      if (!storage) throw new Error("No user data found");
-      
-      const userData = JSON.parse(storage);
-      const token = localStorage.getItem('publico_auth_token');
-      
       // Try public milestones endpoint (no authentication required)
       const response = await fetch(`http://localhost:5000/citizen/milestones/public?page=1&limit=${limit}`, {
         method: "GET",
@@ -395,14 +389,8 @@ export async function fetchProjectsProposed(page = 1, limit = 10) {
   const portal = getPortal();
   
   if (portal === "citizen") {
-    // For citizens, try to fetch public milestone data
+    // For citizens, try to fetch public milestone data (no auth required for guests)
     try {
-      const storage = localStorage.getItem('publico_user_data');
-      if (!storage) throw new Error("No user data found");
-      
-      const userData = JSON.parse(storage);
-      const token = localStorage.getItem('publico_auth_token');
-      
       // Try public milestones endpoint (no authentication required)
       const response = await fetch(`http://localhost:5000/citizen/milestones/public?page=${page}&limit=${limit}`, {
         method: "GET",
@@ -462,14 +450,8 @@ export async function getMilestoneById(milestoneId: string) {
   const portal = getPortal();
   
   if (portal === "citizen") {
-    // For citizens, try to fetch public milestone data
+    // For citizens, try to fetch public milestone data (no auth required for guests)
     try {
-      const storage = localStorage.getItem('publico_user_data');
-      if (!storage) throw new Error("No user data found");
-      
-      const userData = JSON.parse(storage);
-      const token = localStorage.getItem('publico_auth_token');
-      
       // Try public milestone by ID endpoint (no authentication required)
       const response = await fetch(`http://localhost:5000/citizen/milestones/public/${milestoneId}`, {
         method: "GET",
@@ -507,19 +489,12 @@ export async function fetchLedger(page = 1, limit = 10) {
   const portal = getPortal();
   
   if (portal === "citizen") {
-    // For citizens, try to fetch public ledger data
+    // For citizens, try to fetch public ledger data (no auth required for guests)
     try {
-      const storage = localStorage.getItem('publico_user_data');
-      if (!storage) throw new Error("No user data found");
-      
-      const userData = JSON.parse(storage);
-      // const token = localStorage.getItem('publico_auth_token'); // Removed token for public endpoint
-      
       // Try public ledger endpoint (no authentication required)
       const response = await fetch(`http://localhost:5000/citizen/ledger/public?page=${page}&limit=${limit}`, {
         method: "GET",
         headers: {
-          // Authorization: `Bearer ${token}`, // Removed Authorization header
           "Content-Type": "application/json",
         },
       });
@@ -596,19 +571,12 @@ export async function getDashboardAlerts(): Promise<DashboardAlert[]> {
   const portal = getPortal();
   
   if (portal === "citizen") {
-    // For citizens, try to fetch public alert data
+    // For citizens, try to fetch public alert data (no auth required for guests)
     try {
-      const storage = localStorage.getItem('publico_user_data');
-      if (!storage) throw new Error("No user data found");
-      
-      const userData = JSON.parse(storage);
-      const token = localStorage.getItem('publico_auth_token');
-      
-      // Try public alerts endpoint
+      // Try public alerts endpoint (no authentication required)
       const response = await fetch(`http://localhost:5000/citizen/alerts/public`, {
         method: "GET",
         headers: {
-          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
       });
@@ -639,19 +607,12 @@ export async function getMonthlySpending(): Promise<MonthlyPoint[]> {
   const portal = getPortal();
   
   if (portal === "citizen") {
-    // For citizens, try to fetch public analytics data
+    // For citizens, try to fetch public analytics data (no auth required for guests)
     try {
-      const storage = localStorage.getItem('publico_user_data');
-      if (!storage) throw new Error("No user data found");
-      
-      const userData = JSON.parse(storage);
-      const token = localStorage.getItem('publico_auth_token');
-      
-      // Try public monthly analytics endpoint
+      // Try public monthly analytics endpoint (no authentication required)
       const response = await fetch(`http://localhost:5000/citizen/analytics/monthly/public`, {
         method: "GET",
         headers: {
-          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
       });
@@ -682,19 +643,12 @@ export async function getBudgetByCategory(): Promise<CategorySlice[]> {
   const portal = getPortal();
   
   if (portal === "citizen") {
-    // For citizens, try to fetch public analytics data
+    // For citizens, try to fetch public analytics data (no auth required for guests)
     try {
-      const storage = localStorage.getItem('publico_user_data');
-      if (!storage) throw new Error("No user data found");
-      
-      const userData = JSON.parse(storage);
-      const token = localStorage.getItem('publico_auth_token');
-      
-      // Try public category analytics endpoint
+      // Try public category analytics endpoint (no authentication required)
       const response = await fetch(`http://localhost:5000/citizen/analytics/categories/public`, {
         method: "GET",
         headers: {
-          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
       });

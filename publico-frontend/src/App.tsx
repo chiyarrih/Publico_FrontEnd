@@ -11,8 +11,9 @@ import ApplicationApprovedPage from "./features/auth/components/ApplicationAppro
 
 /* ---------- Layouts & guard ---------- */
 import GuestRoute from "./routes/GuestRoute";
-import { AdminRoute, AgencyRoute, CitizenRoute } from './routes/ProtectedRoute';
+import { AdminRoute, AgencyRoute, CitizenRoute, PublicRoute } from './routes/ProtectedRoute';
 import AppLayout from "./features/citizen/view/components/Layout";
+import GuestLayout from "./features/citizen/view/components/GuestLayout";
 import AgencyLayout from "./features/agency/view/layout/AgencyLayout";
 import AdminLayout from "./features/admin/view/layout/AdminLayout";
 
@@ -78,8 +79,8 @@ export default function App() {
     <ErrorBoundary>
       <Suspense fallback={<Loading label="Loading app..." />}>
         <Routes>
-          {/* Public */}
-          <Route path="/" element={<Navigate to="/login" replace />} />
+          {/* Public - Default to citizen portal for transparency */}
+          <Route path="/" element={<Navigate to="/citizen/dashboard" replace />} />
           <Route path="/login" element={<GuestRoute><LoginPage /></GuestRoute>} />
           <Route path="/signup" element={<GuestRoute><SignupPage /></GuestRoute>} />
           <Route path="/verify-otp" element={<GuestRoute><OTPVerificationPage /></GuestRoute>} />
@@ -89,8 +90,8 @@ export default function App() {
           <Route path="/forgot-password" element={<GuestRoute><ForgotPasswordPage /></GuestRoute>} />
           <Route path="/reset-password" element={<GuestRoute><ResetPasswordPage /></GuestRoute>} />
 
-          {/* Citizen */}
-          <Route path="/citizen" element={<CitizenRoute><AppLayout /></CitizenRoute>}>
+          {/* Citizen - Public Access (No Login Required) */}
+          <Route path="/citizen" element={<PublicRoute><GuestLayout /></PublicRoute>}>
             <Route index element={<Navigate to="dashboard" replace />} />
             <Route path="dashboard" element={<Safe><CitizenDashboard /></Safe>} />
             <Route path="alerts" element={<Safe><Alerts /></Safe>} />

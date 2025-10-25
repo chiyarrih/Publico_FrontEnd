@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 import { useProfile } from "../../controller/hooks/useProfile";
 import ChangePasswordModal from "../components/ChangePasswordModal";
 import ProfileTabs, { TabKey } from "../components/ProfileTabs";
@@ -8,11 +9,46 @@ import SecurityTab from "../components/SecurityTab";
 import NotificationsTab from "../components/NotificationsTab";
 import ErrorDisplay from "../components/ErrorDisplay";
 import { Citizen } from "../../../../shared/types/auth";
+import { isAuthenticated } from "../../../../utils/auth";
 
 const Profile: React.FC = () => {
+  const navigate = useNavigate();
   const [tab, setTab] = useState<TabKey>("profile");
   const { user, isLoading, error, updateProfile, clearError } = useProfile();
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
+
+  // Check if user is authenticated (guest users)
+  if (!isAuthenticated() || !user) {
+    return (
+      <div className="space-y-6">
+        <div className="card p-8 text-center">
+          <div className="mx-auto w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center mb-4">
+            <svg className="h-8 w-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Profile Settings</h1>
+          <p className="text-gray-600 mb-6">
+            You need to be logged in to manage your profile settings and preferences.
+          </p>
+          <div className="flex gap-3 justify-center">
+            <button
+              onClick={() => navigate('/login')}
+              className="px-6 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 rounded-lg shadow-sm transition-all"
+            >
+              Login to Your Account
+            </button>
+            <button
+              onClick={() => navigate('/signup')}
+              className="px-6 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors"
+            >
+              Create Account
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Role-based access control - only allow Citizens
   if (user && user.role !== 'Citizen') {
