@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { Card, Progress } from "../../../../shared/ui";
 import { getBudgetByCategory, getKeyProjects } from "../../controller/data/dashboardService";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
@@ -21,9 +21,13 @@ const ProjectRow: React.FC<ProjectRowProps> = ({ name, dept, pct, color }) => (
 
 export default function Transparency() {
   const [slices, setSlices] = useState<Slice[]>([]);
+  const [allSlices, setAllSlices] = useState<Slice[]>([]); // Store all slices for filtering
   const [projects, setProjects] = useState<{ name: string; dept: string; pct: number; color: string }[]>([]);
+  const [allProjects, setAllProjects] = useState<{ name: string; dept: string; pct: number; color: string }[]>([]); // Store all projects for filtering
   const [err, setErr] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [department, setDepartment] = useState("All Departments");
+  const [view, setView] = useState("Monthly View");
 
   useEffect(() => {
     let ignore = false;
@@ -44,7 +48,10 @@ export default function Transparency() {
             color: palette[i % palette.length] 
           };
         });
-        if (!ignore) setSlices(colored);
+        if (!ignore) {
+          setAllSlices(colored);
+          setSlices(colored);
+        }
 
         // key projects (convert to rows with pct if available, else fake % by budget rank)
         const list = await getKeyProjects(6);
@@ -54,7 +61,10 @@ export default function Transparency() {
           pct: typeof p.progress === "number" ? Math.max(0, Math.min(100, p.progress)) : 100 - i * 12, // simple fallback
           color: ["blue","green","amber","slate","green","blue"][i % 6],
         }));
-        if (!ignore) setProjects(rows);
+        if (!ignore) {
+          setAllProjects(rows);
+          setProjects(rows);
+        }
       } catch (e: any) {
         if (!ignore) setErr(e?.message || "Failed to load transparency data");
       } finally {
@@ -63,6 +73,30 @@ export default function Transparency() {
     })();
     return () => { ignore = true; };
   }, []);
+
+  // Filter data based on selected department
+  useEffect(() => {
+    if (department === "All Departments") {
+      setSlices(allSlices);
+      setProjects(allProjects);
+    } else {
+      // Filter slices by department
+      const filteredSlices = allSlices.filter(slice => {
+        const deptName = slice.label.toLowerCase();
+        const filterDept = department.toLowerCase();
+        return deptName.includes(filterDept);
+      });
+      setSlices(filteredSlices.length > 0 ? filteredSlices : allSlices);
+
+      // Filter projects by department
+      const filteredProjects = allProjects.filter(project => {
+        const deptName = project.dept.toLowerCase();
+        const filterDept = department.toLowerCase();
+        return deptName.includes(filterDept);
+      });
+      setProjects(filteredProjects.length > 0 ? filteredProjects : allProjects);
+    }
+  }, [department, allSlices, allProjects]);
 
   return (
     <div className="space-y-8">

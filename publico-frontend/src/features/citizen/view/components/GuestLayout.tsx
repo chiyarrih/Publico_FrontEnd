@@ -9,9 +9,24 @@
 // - Responsive design for mobile and desktop
 // ============================================================================
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useState, createContext, useContext, useEffect, useRef } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { logout, isAuthenticated, getUserData } from "../../../../utils/auth";
+
+// Create context for filter state
+const FilterContext = createContext<{
+  department: string;
+  view: string;
+  setDepartment: (value: string) => void;
+  setView: (value: string) => void;
+}>({
+  department: "All Departments",
+  view: "Monthly View",
+  setDepartment: () => {},
+  setView: () => {},
+});
+
+export const useFilters = () => useContext(FilterContext);
 
 // ============================================================================
 // CONSTANTS & CONFIGURATION
