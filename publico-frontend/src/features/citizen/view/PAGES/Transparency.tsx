@@ -2,6 +2,7 @@ import React, { useEffect, useState, useMemo } from "react";
 import { Card, Progress } from "../../../../shared/ui";
 import { getBudgetByCategory, getKeyProjects } from "../../controller/data/dashboardService";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
+import { useFilters } from "../components/GuestLayout";
 
 type Slice = { label: string; value: number; color?: string };
 type ProjectRowProps = { name: string; dept: string; pct: number; color: string };
@@ -20,14 +21,13 @@ const ProjectRow: React.FC<ProjectRowProps> = ({ name, dept, pct, color }) => (
 );
 
 export default function Transparency() {
+  const { department, view } = useFilters(); // Get filter values from context
   const [slices, setSlices] = useState<Slice[]>([]);
   const [allSlices, setAllSlices] = useState<Slice[]>([]); // Store all slices for filtering
   const [projects, setProjects] = useState<{ name: string; dept: string; pct: number; color: string }[]>([]);
   const [allProjects, setAllProjects] = useState<{ name: string; dept: string; pct: number; color: string }[]>([]); // Store all projects for filtering
   const [err, setErr] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [department, setDepartment] = useState("All Departments");
-  const [view, setView] = useState("Monthly View");
 
   useEffect(() => {
     let ignore = false;

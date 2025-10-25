@@ -579,8 +579,7 @@ const PageHeader: React.FC<{
   title: string; 
   isTransparency: boolean; 
 }> = ({ title, isTransparency }) => {
-  const [department, setDepartment] = useState("All Departments");
-  const [view, setView] = useState("Monthly View");
+  const { department, view, setDepartment, setView } = useFilters();
 
   return (
     <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
@@ -660,6 +659,20 @@ const MainContent: React.FC<{
  * - Main content area with page-specific headers
  * - Proper routing and outlet rendering
  */
+/**
+ * Filter provider component to manage filter state
+ */
+const FilterProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [department, setDepartment] = useState("All Departments");
+  const [view, setView] = useState("Monthly View");
+
+  return (
+    <FilterContext.Provider value={{ department, view, setDepartment, setView }}>
+      {children}
+    </FilterContext.Provider>
+  );
+};
+
 export default function GuestLayout() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
@@ -674,27 +687,29 @@ export default function GuestLayout() {
   };
 
   return (
-    <div className="min-h-screen w-full bg-gray-50">
-      {/* Header - Different for guest vs authenticated */}
-      {isLoggedIn ? (
-        <AuthenticatedHeader 
-          avatarUrl={avatarUrl} 
-          firstName={firstName} 
-          onLogout={handleLogout} 
-        />
-      ) : (
-        <GuestHeader />
-      )}
+    <FilterProvider>
+      <div className="min-h-screen w-full bg-gray-50">
+        {/* Header - Different for guest vs authenticated */}
+        {isLoggedIn ? (
+          <AuthenticatedHeader 
+            avatarUrl={avatarUrl} 
+            firstName={firstName} 
+            onLogout={handleLogout} 
+          />
+        ) : (
+          <GuestHeader />
+        )}
 
-      {/* Main Layout Grid */}
-      <div className="grid w-full grid-cols-1 lg:grid-cols-[280px,1fr] min-h-[calc(100vh-4rem)]">
-        {/* Sidebar */}
-        <Sidebar avatarUrl={avatarUrl} firstName={firstName} isLoggedIn={isLoggedIn} />
+        {/* Main Layout Grid */}
+        <div className="grid w-full grid-cols-1 lg:grid-cols-[280px,1fr] min-h-[calc(100vh-4rem)]">
+          {/* Sidebar */}
+          <Sidebar avatarUrl={avatarUrl} firstName={firstName} isLoggedIn={isLoggedIn} />
 
-        {/* Main Content */}
-        <MainContent title={title} isTransparency={isTransparency} />
+          {/* Main Content */}
+          <MainContent title={title} isTransparency={isTransparency} />
+        </div>
       </div>
-    </div>
+    </FilterProvider>
   );
 }
 
