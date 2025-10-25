@@ -2,15 +2,14 @@
 // CITIZEN LAYOUT COMPONENT
 // ============================================================================
 // This component provides the main layout for the citizen portal, including:
-// - Header with user profile and notifications
+// - Header with public access badge
 // - Sidebar navigation
 // - Main content area
 // - Responsive design for mobile and desktop
 // ============================================================================
 
-import React, { useEffect, useRef, useState } from "react";
-import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
-import { logout } from "../../../../utils/auth";
+import React, { useState } from "react";
+import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { SimpleDepartmentSelect } from "@/shared/components/DepartmentSelect";
 
 // ============================================================================
@@ -18,20 +17,11 @@ import { SimpleDepartmentSelect } from "@/shared/components/DepartmentSelect";
 // ============================================================================
 
 /**
- * LocalStorage keys for user data
- */
-const STORAGE_KEYS = {
-  AVATAR: "profile.avatarDataUrl",
-  USER_DATA: "publico_user_data",
-} as const;
-
-/**
  * Default fallback values
  */
 const DEFAULTS = {
   FALLBACK_EMOJI: "👤",
   FALLBACK_AVATAR: "https://images.unsplash.com/photo-1603415526960-f7e0328d13a7?q=80&w=300&auto=format&fit=crop",
-  DEFAULT_NAME: "Citizen",
 } as const;
 
 // ============================================================================
@@ -63,32 +53,9 @@ const Icon = {
       <path d="M14 2v6h6M8 13h8M8 17h8M8 9h4" />
     </svg>
   ),
-  alerts: (className = "h-5 w-5") => (
-    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="1.5">
-      <path d="M12 22a2 2 0 0 0 2-2H10a2 2 0 0 0 2 2zM19 17H5l1.5-2V10a5.5 5.5 0 0 1 11 0v5L19 17z" />
-    </svg>
-  ),
-  user: (className = "h-5 w-5") => (
-    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="1.5">
-      <path d="M20 21a8 8 0 1 0-16 0" />
-      <circle cx="12" cy="7" r="4" />
-    </svg>
-  ),
-  faq: (className = "h-5 w-5") => (
-    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="1.5">
-      <path d="M8 9a4 4 0 1 1 8 0c0 2-2 3-2 3" />
-      <path d="M12 17h.01" />
-      <rect x="3" y="3" width="18" height="18" rx="2" />
-    </svg>
-  ),
   support: (className = "h-5 w-5") => (
     <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="1.5">
       <path d="M18 15v3a3 3 0 0 1-3 3H9l-4 4v-4a3 3 0 0 1-3-3V9a7 7 0 0 1 7-7h6a7 7 0 0 1 7 7v3" />
-    </svg>
-  ),
-  bell: (className = "h-5 w-5") => (
-    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="1.5">
-      <path d="M15 17H9l-1-1v-4a4 4 0 1 1 8 0v4l-1 1z" />
     </svg>
   ),
   chevronDown: (className = "h-4 w-4") => (
@@ -114,59 +81,6 @@ function safeJSONParse(value: string | null): any | null {
   }
 }
 
-/**
- * Extract first name from user data with fallbacks
- */
-function extractFirstName(userData: any): string {
-  if (!userData || typeof userData !== "object") {
-    return DEFAULTS.DEFAULT_NAME;
-  }
-  
-  // Try direct user object
-  const user = userData.user || userData;
-  
-  // Priority order for first name fields
-  const firstNameFields = [
-    'first_name',
-    'firstName', 
-    'firstname',
-    'given_name',
-    'givenName'
-  ];
-  
-  for (const field of firstNameFields) {
-    const value = user[field];
-    if (value && typeof value === "string" && value.trim()) {
-      return value.trim();
-    }
-  }
-  
-  // Try full name fields
-  const fullNameFields = [
-    'fullName',
-    'full_name', 
-    'name',
-    'displayName'
-  ];
-  
-  for (const field of fullNameFields) {
-    const value = user[field];
-    if (value && typeof value === "string" && value.trim()) {
-      return value.trim().split(/\s+/)[0];
-    }
-  }
-  
-  // Try email (before @)
-  const email = user.email || userData.email;
-  if (email && typeof email === "string") {
-    const emailName = email.split("@")[0];
-    if (emailName) {
-      return emailName.charAt(0).toUpperCase() + emailName.slice(1);
-    }
-  }
-  
-  return DEFAULTS.DEFAULT_NAME;
-}
 
 /**
  * Generate page title based on current route
@@ -181,12 +95,6 @@ function getPageTitle(pathname: string): string {
     '/citizen/transparency': 'Transparency Portal',
     '/app/ledger': 'Transaction Ledger',
     '/citizen/ledger': 'Transaction Ledger',
-    '/app/alerts': 'Smart Contract Alerts',
-    '/citizen/alerts': 'Smart Contract Alerts',
-    '/app/profile': 'User Profile',
-    '/citizen/profile': 'User Profile',
-    '/app/faq': 'FAQs',
-    '/citizen/faq': 'FAQs',
     '/app/support': 'Contact Support',
     '/citizen/support': 'Contact Support',
   };
@@ -221,75 +129,6 @@ function getNavLinkClasses(isActive: boolean): string {
 // CUSTOM HOOKS
 // ============================================================================
 
-/**
- * Custom hook for managing local profile data
- * Optimized for performance with minimal localStorage access
- */
-function useLocalProfile() {
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
-  const [firstName, setFirstName] = useState<string>(DEFAULTS.DEFAULT_NAME);
-
-  useEffect(() => {
-    /**
-     * Load profile data from localStorage
-     */
-    const loadProfileData = () => {
-      try {
-        // Load avatar URL
-        const avatar = localStorage.getItem(STORAGE_KEYS.AVATAR);
-        setAvatarUrl(avatar || null);
-        
-        // Load user data from primary key
-        const userDataRaw = localStorage.getItem(STORAGE_KEYS.USER_DATA);
-        if (userDataRaw) {
-          const userData = safeJSONParse(userDataRaw);
-          if (userData) {
-            setFirstName(extractFirstName(userData));
-            return;
-          }
-        }
-        
-        // Fallback to default
-        setFirstName(DEFAULTS.DEFAULT_NAME);
-      } catch (error) {
-        console.warn("Error loading profile from localStorage:", error);
-        setAvatarUrl(null);
-        setFirstName(DEFAULTS.DEFAULT_NAME);
-      }
-    };
-
-    // Initial load
-    loadProfileData();
-
-    /**
-     * Handle storage events (for cross-tab synchronization)
-     */
-    const handleStorageChange = (event: StorageEvent) => {
-      if (!event.key || 
-          event.key === STORAGE_KEYS.AVATAR || 
-          event.key === STORAGE_KEYS.USER_DATA) {
-        loadProfileData();
-      }
-    };
-    
-    /**
-     * Handle custom profile update events
-     */
-    const handleProfileUpdate = () => loadProfileData();
-
-    // Add event listeners
-    window.addEventListener("storage", handleStorageChange);
-    window.addEventListener("profile:updated", handleProfileUpdate as EventListener);
-    
-    // Cleanup event listeners
-    return () => {
-      window.removeEventListener("storage", handleStorageChange);
-      window.removeEventListener("profile:updated", handleProfileUpdate as EventListener);
-    };
-  }, []);
-
-  return { avatarUrl, firstName };
-}
 
 /**
  * Custom hook for getting page title based on current route
@@ -329,24 +168,6 @@ const NAVIGATION_ITEMS = [
     path: "/citizen/ledger",
     icon: Icon.ledger,
     label: "Transaction Ledger",
-    exact: false,
-  },
-  {
-    path: "/citizen/alerts",
-    icon: Icon.alerts,
-    label: "Smart Contract Alerts",
-    exact: false,
-  },
-  {
-    path: "/citizen/profile",
-    icon: Icon.user,
-    label: "User Profile",
-    exact: false,
-  },
-  {
-    path: "/citizen/faq",
-    icon: Icon.faq,
-    label: "FAQs",
     exact: false,
   },
   {
@@ -411,28 +232,9 @@ const UserAvatar: React.FC<{
 };
 
 /**
- * Header component with user profile and notifications
+ * Header component with public access badge
  */
-const Header: React.FC<{ 
-  avatarUrl: string | null; 
-  firstName: string; 
-  onLogout: () => void; 
-}> = ({ avatarUrl, firstName, onLogout }) => {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
-
-  // Close menu when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setMenuOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
+const Header: React.FC = () => {
   return (
     <header className="sticky top-0 z-10 h-16 w-full border-b border-gray-200/60 bg-white/80 backdrop-blur-md shadow-sm">
       <div className="flex h-full items-center justify-between px-6">
@@ -445,43 +247,12 @@ const Header: React.FC<{
           </div>
         </div>
         
-        <div className="relative flex items-center gap-3" ref={menuRef}>
-          {/* Notifications */}
-          <button className="relative rounded-xl p-2.5 hover:bg-gray-100 transition-colors group">
-            {Icon.bell("h-5 w-5 text-gray-600 group-hover:text-gray-900")}
-            <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-rose-500 ring-2 ring-white animate-pulse" />
-          </button>
-          
-          {/* User Menu */}
-          <button 
-            onClick={() => setMenuOpen(!menuOpen)} 
-            className="flex items-center gap-2.5 rounded-xl px-3 py-2 hover:bg-gray-100 transition-colors"
-          >
-            <UserAvatar avatarUrl={avatarUrl} size="sm" className="ring-2 ring-gray-200" />
-            <span className="hidden sm:block text-sm font-medium text-gray-700">{firstName}</span>
-            {Icon.chevronDown("h-4 w-4 text-gray-500")}
-          </button>
-          
-          {/* Dropdown Menu */}
-          {menuOpen && (
-            <div className="absolute right-0 top-14 w-48 rounded-xl border border-gray-200 bg-white shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
-              <div className="px-4 py-3 border-b border-gray-100">
-                <div className="text-sm font-semibold text-gray-900">{firstName}</div>
-                <div className="text-xs text-gray-500 mt-0.5">Citizen Account</div>
-              </div>
-              <button
-                onClick={onLogout}
-                className="block w-full px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-red-50 hover:text-red-700 transition-colors"
-              >
-                <span className="flex items-center gap-2">
-                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                  </svg>
-                  Logout
-                </span>
-              </button>
+        <div className="flex items-center gap-3">
+          {/* Public Access Badge */}
+          <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-50 border border-blue-200">
+            <div className="w-2 h-2 rounded-full bg-green-500"></div>
+            <span className="text-sm font-medium text-blue-700">Public Access</span>
             </div>
-          )}
         </div>
       </div>
     </header>
@@ -493,20 +264,27 @@ const Header: React.FC<{
 // ============================================================================
 
 /**
- * User profile section for sidebar
+ * Public access info section for sidebar
  */
-const SidebarProfile: React.FC<{ 
-  avatarUrl: string | null; 
-  firstName: string; 
-}> = ({ avatarUrl, firstName }) => (
-  <div className="mb-8 flex items-center gap-3 p-4 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100/50">
-    <UserAvatar avatarUrl={avatarUrl} size="md" className="ring-2 ring-white shadow-md" />
+const PublicAccessInfo: React.FC = () => (
+  <div className="mb-8 p-4 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100/50">
+    <div className="flex items-center gap-3 mb-3">
+      <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+        <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+        </svg>
+      </div>
     <div>
-      <div className="text-sm font-semibold text-gray-900">{firstName}</div>
+        <div className="text-sm font-semibold text-gray-900">Public Portal</div>
       <div className="text-xs text-gray-600 flex items-center gap-1 mt-0.5">
         <span className="inline-block w-1.5 h-1.5 rounded-full bg-green-500"></span>
-        Citizen Portal
+          Open Access
+        </div>
       </div>
+    </div>
+    <div className="text-xs text-blue-600 bg-blue-100/50 px-2 py-1 rounded">
+      Browse government transparency data
     </div>
   </div>
 );
@@ -514,13 +292,10 @@ const SidebarProfile: React.FC<{
 /**
  * Sidebar component
  */
-const Sidebar: React.FC<{ 
-  avatarUrl: string | null; 
-  firstName: string; 
-}> = ({ avatarUrl, firstName }) => (
+const Sidebar: React.FC = () => (
   <aside className="hidden lg:block border-r border-gray-200/60 bg-white/50 backdrop-blur-sm">
     <div className="sticky top-16 h-[calc(100vh-4rem)] overflow-auto p-6">
-      <SidebarProfile avatarUrl={avatarUrl} firstName={firstName} />
+      <PublicAccessInfo />
       <Navigation />
     </div>
   </aside>
@@ -615,7 +390,7 @@ const MainContent: React.FC<{
  * Main layout component for the citizen portal
  * 
  * This component provides:
- * - Responsive header with user profile and notifications
+ * - Responsive header with public access badge
  * - Sidebar navigation (hidden on mobile)
  * - Main content area with page-specific headers
  * - Proper routing and outlet rendering
@@ -626,8 +401,6 @@ export default function AppLayout() {
   // ============================================================================
   
   const { pathname } = useLocation();
-  const navigate = useNavigate();
-  const { avatarUrl, firstName } = useLocalProfile();
   const title = usePageTitle();
 
   // ============================================================================
@@ -637,30 +410,18 @@ export default function AppLayout() {
   const isTransparency = pathname.startsWith("/citizen/transparency");
 
   // ============================================================================
-  // EVENT HANDLERS
-  // ============================================================================
-  
-  const handleLogout = () => {
-    logout();
-  };
-
-  // ============================================================================
   // RENDER
   // ============================================================================
   
   return (
     <div className="min-h-screen w-full bg-gray-50">
       {/* Header */}
-      <Header 
-        avatarUrl={avatarUrl} 
-        firstName={firstName} 
-        onLogout={handleLogout} 
-      />
+      <Header />
 
       {/* Main Layout Grid */}
       <div className="grid w-full grid-cols-1 lg:grid-cols-[280px,1fr] min-h-[calc(100vh-4rem)]">
         {/* Sidebar */}
-        <Sidebar avatarUrl={avatarUrl} firstName={firstName} />
+        <Sidebar />
 
         {/* Main Content */}
         <MainContent title={title} isTransparency={isTransparency} />

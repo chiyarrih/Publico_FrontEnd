@@ -6,19 +6,20 @@ export async function getProjectMilestoneAsAgency(){
     if (!user) throw new Error("User not found");
     const toJson = await JSON.parse(user)
     try {
-        // Use _id instead of user_id as per the backend User model
-        const userId = toJson.user._id || toJson.user.user_id;
-        console.log('Fetching milestones for user ID:', userId);
+        // Use agencyId from user data - this should match the backend expectation
+        const agencyId = toJson.user._id; // The user's _id is used as agencyId in the backend
+        console.log('Fetching milestones for agency ID:', agencyId);
         
-        const json = await apiClient.get(`/milestone/agency/projects/${userId}`);
+        const json = await apiClient.get(`/milestone/agency/projects/${agencyId}`);
         console.log('Milestone API response:', json);
         
         // Return empty array if no milestones found
         return Array.isArray(json) ? json : [];
     } catch (error) {
         console.error('Error fetching milestones:', error);
-        // Return empty array instead of throwing error for 404 cases
-        if (error.message?.includes('Project milestone not found')) {
+        // Only return empty array for 404 cases, throw other errors
+        if ((error as any)?.response?.status === 404 || (error as any)?.message?.includes('Project milestone not found')) {
+            console.log('No milestones found for this agency');
             return [];
         }
         throw error;

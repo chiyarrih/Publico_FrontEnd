@@ -79,7 +79,7 @@ export default function App() {
       <Suspense fallback={<Loading label="Loading app..." />}>
         <Routes>
           {/* Public */}
-          <Route path="/" element={<Navigate to="/login" replace />} />
+          <Route path="/" element={<Navigate to="/citizen" replace />} />
           <Route path="/login" element={<GuestRoute><LoginPage /></GuestRoute>} />
           <Route path="/signup" element={<GuestRoute><SignupPage /></GuestRoute>} />
           <Route path="/verify-otp" element={<GuestRoute><OTPVerificationPage /></GuestRoute>} />

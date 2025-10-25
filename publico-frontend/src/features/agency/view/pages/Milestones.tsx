@@ -7,49 +7,13 @@ import useMilestone from "@agency/controller/hooks/useMilestone";
 const Eye = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>;
 const Upload = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>;
 
-// Mock data for agency milestones - matching the mockup
-const mockMilestones = [
-  {
-    _id: "PRJ-2023-0125",
-    projectName: "Road Rehabilitation - Perez Blvd",
-    department: "Public Works",
-    totalBudget: 2500000,
-    startDate: "2023-06-01",
-    endDate: "2023-08-30",
-    overallStatus: "In Progress",
-    overallProgress: 25,
-    phases: []
-  },
-  {
-    _id: "PRJ-2023-0126",
-    projectName: "Public School Renovation - Central Elementary",
-    department: "Education",
-    totalBudget: 1800000,
-    startDate: "2023-05-15",
-    endDate: "2023-07-30",
-    overallStatus: "In Progress",
-    overallProgress: 35,
-    phases: []
-  },
-  {
-    _id: "PRJ-2023-0127",
-    projectName: "Medical Equipment Procurement - City Hospital",
-    department: "Health",
-    totalBudget: 3200000,
-    startDate: "2023-06-10",
-    endDate: "2023-09-10",
-    overallStatus: "In Progress",
-    overallProgress: 15,
-    phases: []
-  }
-];
 
 export default function Milestones() {
   const [search, setSearch] = useState("");
   const [dept, setDept] = useState("All");
   const [state, setState] = useState("All");
-  const {milestone, loading, error} = useMilestone()
-  const milestones = milestone || []; // In real app, this would come from API
+  const {milestone, loading, error, refetch} = useMilestone()
+  const milestones = milestone || []; // Use real API data
 
   const filtered = useMemo(() => milestones?.filter(p =>
     (dept === "All" || p.department === dept) &&
@@ -88,7 +52,13 @@ export default function Milestones() {
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <div className="text-red-600 mb-2">Error loading milestones</div>
-          <div className="text-gray-600 text-sm">{error}</div>
+          <div className="text-gray-600 text-sm mb-4">{error}</div>
+          <button 
+            onClick={refetch} 
+            className="px-4 py-2 text-white bg-blue-600 rounded hover:bg-blue-700"
+          >
+            Retry
+          </button>
         </div>
       </div>
     );

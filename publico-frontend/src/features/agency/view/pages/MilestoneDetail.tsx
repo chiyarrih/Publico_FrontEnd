@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, Pill } from '../../../../shared/ui';
 import {useMilestoneId} from '@agency/controller/hooks/useMilestoneId';
+import { apiClient } from '../../../../config/api';
+import toast from 'react-hot-toast';
 
 
 
@@ -203,10 +205,41 @@ export default function MilestoneDetail() {
     setShowUploadModal(true);
   };
 
-  const handleFileUpload = (file: File, description: string) => {
-    // In real app, this would upload to backend
-    console.log('Uploading file:', file.name, 'Description:', description);
-    alert(`Proof of work uploaded for ${selectedPhase?.phaseName}: ${description}`);
+  const handleFileUpload = async (file: File, description: string) => {
+    if (!milestone || !selectedPhase) {
+      toast.error('Missing milestone or phase information');
+      return;
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('milestoneId', milestone._id);
+      formData.append('phaseNumber', selectedPhase.phaseNumber.toString());
+      formData.append('documentType', 'proof_of_work');
+      formData.append('description', description);
+      formData.append('index', '0'); // Default index for now
+      
+      console.log('Uploading file:', file.name, 'Description:', description);
+      
+      await apiClient.post('/milestone/upload-proof', formData, {
+        headers: { 
+          'Content-Type': 'multipart/form-data',
+          'Authorization': `Bearer ${localStorage.getItem('publico_auth_token')}`
+        }
+      });
+      
+      toast.success('Proof of work uploaded successfully');
+      
+      // Refresh milestone data
+      if (milestoneId && typeof milestoneId === 'object' && 'refetch' in milestoneId) {
+        milestoneId.refetch();
+      }
+      
+    } catch (error) {
+      console.error('Error uploading proof of work:', error);
+      toast.error('Failed to upload proof of work. Please try again.');
+    }
   };
 
   if (loading) {

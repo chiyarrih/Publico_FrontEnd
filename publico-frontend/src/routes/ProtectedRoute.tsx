@@ -20,6 +20,11 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
+  // If authentication is not required, allow access regardless of role
+  if (!requireAuth) {
+    return <>{children}</>;
+  }
+
   if (allowedRoles.length > 0 && !hasRole(allowedRoles)) {
     return <Navigate to="/unauthorized" replace />;
   }
@@ -37,7 +42,7 @@ export const AgencyRoute: React.FC<{ children: React.ReactNode }> = ({ children 
 );
 
 export const CitizenRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <ProtectedRoute allowedRoles={['Citizen']}>{children}</ProtectedRoute>
+  <ProtectedRoute allowedRoles={['Citizen']} requireAuth={false}>{children}</ProtectedRoute>
 );
 
 export const AdminAgencyRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => (
