@@ -14,7 +14,7 @@ export class AuthService {
     console.log('🔧 AuthService.register called with:', data);
     console.log('🌐 API Base URL:', import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000');
     try {
-      const response = await apiClient.post<AuthResponse>('/auth/user/register', data as any);
+      const response = await apiClient.post<AuthResponse>('/auth/user/register', data);
       console.log('✅ API Response:', response);
       return response;
     } catch (error) {
@@ -25,7 +25,7 @@ export class AuthService {
 
   // Login
   static async login(data: LoginRequest): Promise<AuthResponse> {
-    return apiClient.post<AuthResponse>('/auth/login', data as any);
+    return apiClient.post<AuthResponse>('/auth/login', data);
   }
 
   // Email Verification
@@ -35,7 +35,7 @@ export class AuthService {
 
   // Forgot Password
   static async forgotPassword(data: ForgotPasswordRequest): Promise<{ message: string; user: User }> {
-    return apiClient.post<{ message: string; user: User }>('/auth/sendResetPassword', data as any);
+    return apiClient.post<{ message: string; user: User }>('/auth/sendResetPassword', data);
   }
 
   // Verify Reset Code
@@ -55,7 +55,7 @@ export class AuthService {
 
   // Reset Password
   static async resetPassword(data: ResetPasswordRequest): Promise<{ message: string }> {
-    return apiClient.post<{ message: string }>('/auth/changePassword', data as any);
+    return apiClient.post<{ message: string }>('/auth/changePassword', data);
   }
 
   // Get All Citizens (Admin only)

@@ -84,6 +84,7 @@ export default function Profile() {
           <BlockchainWalletCard role="Admin" />
           <SecurityCard
             onChangePassword={handleOpenChangePasswordModal}
+            onEnable2FA={handleEnable2FA}
           />
         </div>
       </div>

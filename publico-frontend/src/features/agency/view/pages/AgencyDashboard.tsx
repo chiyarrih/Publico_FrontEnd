@@ -145,7 +145,7 @@ const AgencyDashboard: React.FC = () => {
             <StatCard 
               key={i}
               label={k.label}
-              value={String(k.value)}
+              value={k.value}
               delta={k.delta}
               trend={k.up ? 'up' : k.delta ? 'down' : 'neutral'}
               icon={icons[i]}
@@ -236,7 +236,7 @@ const AgencyDashboard: React.FC = () => {
                   nameKey="name" 
                   outerRadius={100} 
                   innerRadius={40}
-                  label={({ name, percent }: any) => `${name} ${(percent * 100).toFixed(0)}%`}
+                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                   labelLine={false}
                 >
                   {statusPie.map((s,i)=><Cell key={i} fill={s.color}/>)}

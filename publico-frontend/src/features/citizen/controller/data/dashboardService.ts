@@ -192,193 +192,23 @@ function toArray(response: AnyList): any[] {
 const MOCK_PROJECTS = [
   {
     _id: "demo-1",
-    code: "INFRA-001",
     projectName: "City Infrastructure Enhancement",
     description: "Comprehensive infrastructure improvement project",
     budget: 50000,
-    totalBudget: 50000,
     status: "Active",
-    overallStatus: "In Progress",
     department: "City Engineering Office",
-    category: "Infrastructure & Development",
     startDate: "2024-01-01",
-    endDate: "2024-12-31",
-    progress: 75,
-    agencyId: {
-      agency_name: "City Engineering Office",
-      email: "engineering@dagupan.gov.ph"
-    }
+    endDate: "2024-12-31"
   },
   {
     _id: "demo-2", 
-    code: "TOURISM-001",
     projectName: "Tourism Development Program",
     description: "Tourism infrastructure and promotion project",
     budget: 25000,
-    totalBudget: 25000,
     status: "Planning",
-    overallStatus: "Planning",
     department: "City Tourism Office",
-    category: "Economic Services & Business Development",
     startDate: "2024-02-01",
-    endDate: "2024-11-30",
-    progress: 25,
-    agencyId: {
-      agency_name: "City Tourism Office",
-      email: "tourism@dagupan.gov.ph"
-    }
-  },
-  {
-    _id: "demo-3",
-    code: "INFRA-002",
-    projectName: "Bridge Construction Project",
-    description: "Construct new bridges and rehabilitate existing ones",
-    budget: 75000,
-    totalBudget: 75000,
-    status: "Active",
-    overallStatus: "In Progress",
-    department: "City Engineering Office",
-    category: "Infrastructure & Development",
-    startDate: "2024-01-15",
-    endDate: "2024-12-31",
-    progress: 60,
-    agencyId: {
-      agency_name: "City Engineering Office",
-      email: "engineering@dagupan.gov.ph"
-    }
-  },
-  {
-    _id: "demo-4",
-    code: "EDUCATION-001",
-    projectName: "School Building Renovation",
-    description: "Renovate and upgrade school facilities",
-    budget: 40000,
-    totalBudget: 40000,
-    status: "Active",
-    overallStatus: "In Progress",
-    department: "City Planning & Development Office",
-    category: "Infrastructure & Development",
-    startDate: "2024-02-01",
-    endDate: "2024-10-31",
-    progress: 80,
-    agencyId: {
-      agency_name: "City Planning & Development Office",
-      email: "planning@dagupan.gov.ph"
-    }
-  },
-  {
-    _id: "demo-5",
-    code: "HEALTH-001",
-    projectName: "Hospital Equipment Upgrade",
-    description: "Upgrade medical equipment and facilities",
-    budget: 60000,
-    totalBudget: 60000,
-    status: "Active",
-    overallStatus: "In Progress",
-    department: "City Health Office",
-    category: "Health & Social Services",
-    startDate: "2024-01-01",
-    endDate: "2024-11-30",
-    progress: 70,
-    agencyId: {
-      agency_name: "City Health Office",
-      email: "health@dagupan.gov.ph"
-    }
-  },
-  {
-    _id: "demo-6",
-    code: "INFRA-003",
-    projectName: "Road Maintenance",
-    description: "Comprehensive road maintenance and repair program",
-    budget: 35000,
-    totalBudget: 35000,
-    status: "Active",
-    overallStatus: "In Progress",
-    department: "City Engineering Office",
-    category: "Infrastructure & Development",
-    startDate: "2024-03-01",
-    endDate: "2024-12-31",
-    progress: 45,
-    agencyId: {
-      agency_name: "City Engineering Office",
-      email: "engineering@dagupan.gov.ph"
-    }
-  },
-  {
-    _id: "demo-7",
-    code: "TOURISM-002",
-    projectName: "Tourism Infrastructure Development",
-    description: "Develop tourism infrastructure and attractions",
-    budget: 55000,
-    totalBudget: 55000,
-    status: "Active",
-    overallStatus: "In Progress",
-    department: "City Tourism Office",
-    category: "Economic Services & Business Development",
-    startDate: "2024-01-01",
-    endDate: "2024-12-31",
-    progress: 60,
-    agencyId: {
-      agency_name: "City Tourism Office",
-      email: "tourism@dagupan.gov.ph"
-    }
-  },
-  {
-    _id: "demo-8",
-    code: "ADMIN-001",
-    projectName: "Digital Government Services",
-    description: "Implement digital government services platform",
-    budget: 30000,
-    totalBudget: 30000,
-    status: "Planning",
-    overallStatus: "Planning",
-    department: "City Mayor's Office",
-    category: "Executive & Administrative Services",
-    startDate: "2024-04-01",
-    endDate: "2024-12-31",
-    progress: 20,
-    agencyId: {
-      agency_name: "City Mayor's Office",
-      email: "mayor@dagupan.gov.ph"
-    }
-  },
-  {
-    _id: "demo-9",
-    code: "SAFETY-001",
-    projectName: "Emergency Response Enhancement",
-    description: "Enhance emergency response capabilities",
-    budget: 45000,
-    totalBudget: 45000,
-    status: "Active",
-    overallStatus: "In Progress",
-    department: "City Disaster Risk Reduction & Management Office",
-    category: "Public Safety & Disaster Management",
-    startDate: "2024-01-01",
-    endDate: "2024-11-30",
-    progress: 65,
-    agencyId: {
-      agency_name: "City Disaster Risk Reduction & Management Office",
-      email: "drrm@dagupan.gov.ph"
-    }
-  },
-  {
-    _id: "demo-10",
-    code: "SOCIAL-001",
-    projectName: "Community Development Program",
-    description: "Comprehensive community development initiatives",
-    budget: 20000,
-    totalBudget: 20000,
-    status: "Active",
-    overallStatus: "In Progress",
-    department: "City Social Welfare & Development Office",
-    category: "Health & Social Services",
-    startDate: "2024-02-15",
-    endDate: "2024-10-31",
-    progress: 55,
-    agencyId: {
-      agency_name: "City Social Welfare & Development Office",
-      email: "social@dagupan.gov.ph"
-    }
+    endDate: "2024-11-30"
   }
 ];
 
@@ -391,196 +221,82 @@ const MOCK_TRANSACTIONS = [
     _id: "txn-1",
     date: "2024-01-15",
     dept: "City Engineering Office",
-    project: "City Infrastructure Enhancement",
-    amount: 15000,
+    project: "Bridge Construction Project",
+    amount: 50000000,
     status: "Verified",
     signature: "0x1234...5678"
   },
   {
     _id: "txn-2",
     date: "2024-02-01",
-    dept: "City Tourism Office",
-    project: "Tourism Development Program",
-    amount: 8000,
+    dept: "City Planning & Development Office",
+    project: "School Building Renovation",
+    amount: 25000000,
     status: "Verified",
     signature: "0x9abc...def0"
   },
   {
     _id: "txn-3",
     date: "2024-02-15",
-    dept: "City Engineering Office",
-    project: "Bridge Construction Project",
-    amount: 25000,
+    dept: "City Health Office",
+    project: "Hospital Equipment Upgrade",
+    amount: 15000000,
     status: "Verified",
     signature: "0x5678...9abc"
   },
   {
     _id: "txn-4",
     date: "2024-03-01",
-    dept: "City Planning & Development Office",
-    project: "School Building Renovation",
-    amount: 12000,
+    dept: "City Engineering Office",
+    project: "Road Maintenance",
+    amount: 30000000,
     status: "Verified",
     signature: "0xdef0...1234"
   },
   {
     _id: "txn-5",
     date: "2024-03-15",
-    dept: "City Health Office",
-    project: "Hospital Equipment Upgrade",
-    amount: 18000,
-    status: "Verified",
-    signature: "0x9abc...5678"
-  },
-  {
-    _id: "txn-6",
-    date: "2024-03-20",
-    dept: "City Engineering Office",
-    project: "Road Maintenance",
-    amount: 10000,
-    status: "Verified",
-    signature: "0x1234...9abc"
-  },
-  {
-    _id: "txn-7",
-    date: "2024-04-01",
     dept: "City Tourism Office",
     project: "Tourism Infrastructure Development",
-    amount: 16000,
+    amount: 12000000,
     status: "Verified",
-    signature: "0x5678...def0"
-  },
-  {
-    _id: "txn-8",
-    date: "2024-04-15",
-    dept: "City Mayor's Office",
-    project: "Digital Government Services",
-    amount: 5000,
-    status: "Verified",
-    signature: "0xdef0...5678"
-  },
-  {
-    _id: "txn-9",
-    date: "2024-05-01",
-    dept: "City Disaster Risk Reduction & Management Office",
-    project: "Emergency Response Enhancement",
-    amount: 14000,
-    status: "Verified",
-    signature: "0x9abc...1234"
-  },
-  {
-    _id: "txn-10",
-    date: "2024-05-15",
-    dept: "City Social Welfare & Development Office",
-    project: "Community Development Program",
-    amount: 6000,
-    status: "Verified",
-    signature: "0x1234...def0"
+    signature: "0x9abc...5678"
   }
 ];
 
 /**
  * Mock alert data for when endpoints are not available
- * Updated with comprehensive project alerts across all departments
  */
 const MOCK_ALERTS: DashboardAlert[] = [
   {
     id: "alert-1",
-    title: "City Infrastructure Enhancement Project Ahead of Schedule",
-    type: "success",
-    date: "2024-03-15",
-    description: "The City Engineering Office reports that the City Infrastructure Enhancement Project is 15% ahead of schedule with excellent progress."
-  },
-  {
-    id: "alert-2",
-    title: "Tourism Development Program Budget Adjustment",
+    title: "Bridge Repair is 8% over budget",
     type: "warning",
-    date: "2024-03-10",
-    description: "The City Tourism Office requests additional budget allocation for the Tourism Development Program due to increased scope."
-  },
-  {
-    id: "alert-3",
-    title: "Bridge Construction Project Milestone Achieved",
-    type: "success",
-    date: "2024-03-05",
-    description: "The City Engineering Office successfully completed Phase 1 of the Bridge Construction Project."
-  },
-  {
-    id: "alert-4",
-    title: "Hospital Equipment Upgrade Equipment Delivered",
-    type: "info",
-    date: "2024-02-28",
-    description: "New medical equipment for the Hospital Equipment Upgrade project has been delivered and is being installed."
-  },
-  {
-    id: "alert-5",
-    title: "Tourism Infrastructure Development Progress Update",
-    type: "info",
-    date: "2024-02-25",
-    description: "The City Tourism Office reports 60% completion of the Tourism Infrastructure Development project."
-  },
-  {
-    id: "alert-6",
-    title: "School Building Renovation Phase 2 Complete",
-    type: "success",
-    date: "2024-02-20",
-    description: "Phase 2 of the School Building Renovation project has been completed successfully by the City Planning & Development Office."
-  },
-  {
-    id: "alert-7",
-    title: "Road Maintenance Project Delayed",
-    type: "warning",
-    date: "2024-02-15",
-    description: "The City Engineering Office reports a 2-week delay in the Road Maintenance project due to equipment delivery issues."
-  },
-  {
-    id: "alert-8",
-    title: "City Infrastructure Enhancement Testing Phase",
-    type: "info",
-    date: "2024-02-10",
-    description: "The City Engineering Office has begun testing the new infrastructure systems as part of the enhancement project."
-  },
-  {
-    id: "alert-9",
-    title: "Tourism Development Program Community Feedback",
-    type: "info",
-    date: "2024-02-05",
-    description: "The City Tourism Office has received positive community feedback on the Tourism Development Program implementation."
-  },
-  {
-    id: "alert-10",
-    title: "Budget Allocation Review Complete",
-    type: "success",
-    date: "2024-01-30",
-    description: "The City Budget Office has completed the quarterly budget allocation review for all ongoing projects."
+    date: "2024-01-15",
+    description: "The bridge repair project has exceeded its budget by 8%"
   }
 ];
 
 /**
  * Mock monthly spending data for when endpoints are not available
- * Updated with realistic government spending amounts
  */
 const MOCK_MONTHLY_SPENDING: MonthlyPoint[] = [
-  { month: "January", spent: 45000, allocated: 50000 },
-  { month: "February", spent: 42000, allocated: 50000 },
-  { month: "March", spent: 48000, allocated: 50000 },
-  { month: "April", spent: 46000, allocated: 50000 },
-  { month: "May", spent: 44000, allocated: 50000 },
-  { month: "June", spent: 47000, allocated: 50000 }
+  { month: "January", spent: 1200, allocated: 1250 },
+  { month: "February", spent: 1100, allocated: 1250 },
+  { month: "March", spent: 1150, allocated: 1250 },
+  { month: "April", spent: 1300, allocated: 1250 }
 ];
 
 /**
  * Mock category data for when endpoints are not available
- * Updated with Dagupan City LGU categories and correct budget totals
+ * Updated with Dagupan City LGU categories
  */
 const MOCK_CATEGORIES: CategorySlice[] = [
-  { label: "Infrastructure & Development", value: 160000 }, // INFRA-001(50k) + INFRA-002(75k) + INFRA-003(35k) = 160k
-  { label: "Health & Social Services", value: 80000 }, // HEALTH-001(60k) + SOCIAL-001(20k) = 80k
-  { label: "Economic Services & Business Development", value: 80000 }, // TOURISM-001(25k) + TOURISM-002(55k) = 80k
-  { label: "Public Safety & Disaster Management", value: 45000 }, // SAFETY-001(45k) = 45k
-  { label: "Executive & Administrative Services", value: 30000 }, // ADMIN-001(30k) = 30k
-  { label: "Financial Management & Revenue", value: 0 }, // No projects yet
-  { label: "General Services & Support", value: 0 } // No projects yet
+  { label: "Infrastructure & Development", value: 150000 },
+  { label: "Health & Social Services", value: 75000 },
+  { label: "Economic Services & Business Development", value: 50000 },
+  { label: "Public Safety & Disaster Management", value: 45000 },
+  { label: "Executive & Administrative Services", value: 30000 }
 ];
 
 // ============================================================================
@@ -892,13 +608,7 @@ export async function getDashboardAlerts(): Promise<DashboardAlert[]> {
     }
   } else {
     // For agencies/admins, fetch their specific alerts
-    try {
-      const response = await apiClient.get("/citizen/alerts");
-      return response as DashboardAlert[];
-    } catch (error) {
-      console.warn("Agency/admin alerts endpoint not available, using mock data:", error);
-      return MOCK_ALERTS;
-    }
+    return apiClient.get("/citizen/alerts");
   }
 }
 

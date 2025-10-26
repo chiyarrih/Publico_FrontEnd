@@ -292,7 +292,7 @@ export function useScreenReader() {
         navigator.userAgent.includes('NVDA') ||
         navigator.userAgent.includes('JAWS') ||
         navigator.userAgent.includes('VoiceOver') ||
-        (typeof window !== 'undefined' && (window as any).matchMedia && (window as any).matchMedia('(prefers-reduced-motion: reduce)').matches)
+        (typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)
       );
 
       setIsScreenReaderActive(!!hasScreenReader);
