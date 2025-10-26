@@ -2,7 +2,6 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getKeyProjects } from "../../controller/data/dashboardService";
 import { useDebounce } from "../../controller/hooks/useDebounce";
-import { SimpleDepartmentSelect } from "@/shared/components/DepartmentSelect";
 
 type ProjectRow = {
   _id?: string;
@@ -102,13 +101,10 @@ const Milestones: React.FC = () => {
             <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search projects..." className="w-full rounded-lg border border-slate-200 px-10 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-100" />
             <svg viewBox="0 0 24 24" className="pointer-events-none absolute left-3 top-2.5 h-5 w-5 text-slate-400" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" /></svg>
           </div>
-          <SimpleDepartmentSelect
-            value={dept}
-            onChange={setDept}
-            className="rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700"
-            includeAll={true}
-            allLabel="All Departments"
-          />
+          <select value={dept} onChange={(e) => setDept(e.target.value)} className="rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700">
+            <option>All Departments</option>
+            <option>Public Works</option><option>Education</option><option>Health</option>
+          </select>
           <select value={status} onChange={(e) => setStatus(e.target.value)} className="rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700">
             <option>All Statuses</option><option>In Progress</option><option>Completed</option><option>Pending</option>
           </select>

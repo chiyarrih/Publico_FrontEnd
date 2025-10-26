@@ -22,6 +22,7 @@ import ErrorBoundary from "./shared/components/layout/ErrorBoundary";
 
 /* ---------- Lazy citizen pages ---------- */
 const CitizenDashboard = lazy(() => import("./features/citizen/view/PAGES/Dashboard"));
+const CitizenAlerts    = lazy(() => import("./features/citizen/view/PAGES/Alerts"));
 
 const Ledger         = lazy(() => import("./features/citizen/view/PAGES/Ledger"));
 const Transparency   = lazy(() => import("./features/citizen/view/PAGES/Transparency"));
@@ -91,6 +92,7 @@ export default function App() {
           <Route path="/citizen" element={<CitizenRoute><AppLayout /></CitizenRoute>}>
             <Route index element={<Navigate to="dashboard" replace />} />
             <Route path="dashboard" element={<Safe><CitizenDashboard /></Safe>} />
+            <Route path="alerts" element={<Safe><CitizenAlerts /></Safe>} />
             <Route path="ledger" element={<Safe><Ledger /></Safe>} />
             <Route path="transparency" element={<Safe><Transparency /></Safe>} />
             <Route path="support" element={<Safe><Support /></Safe>} />

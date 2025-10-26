@@ -10,9 +10,10 @@
 // ============================================================================
 
 import React, { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
-  ResponsiveContainer, PieChart, Pie, Cell
+  ResponsiveContainer, PieChart, Pie, Cell, Legend
 } from "recharts";
 import { useCitizenDashboard } from "../../controller/hooks/useCitizenDashboard";
 // Simplified loading components
@@ -297,12 +298,25 @@ const transformSpendingData = (monthly: any[]): UiSpendingData[] =>
 /**
  * Transform category data to UI format
  */
-const transformCategoryData = (categories: any[]): UiCategoryData[] =>
-  (categories ?? []).map((category: any) => ({
+const transformCategoryData = (categories: any[]): UiCategoryData[] => {
+  // Match the line chart color scheme
+  const colors = [
+    '#2563eb', // Blue - matches line chart primary
+    '#059669', // Green - Healthcare
+    '#dc2626', // Red - Education
+    '#7c3aed', // Purple - Social Services
+    '#ea580c', // Orange - Public Safety
+    '#0891b2', // Cyan - Environment
+    '#ca8a04', // Amber - Transportation
+    '#be185d'  // Pink - Administration
+  ];
+
+  return (categories ?? []).map((category: any, index: number) => ({
     name: category.label ?? category.name ?? "—",
     value: Number(category.value ?? 0),
-    color: category.color ?? "#3b82f6",
+    color: colors[index % colors.length],
   }));
+};
 
 /**
  * Transform project data to UI format
@@ -416,10 +430,39 @@ export default function Dashboard() {
   // ============================================================================
 
   const { loading, error, alerts, monthly, categories, projects, ledger, reload } = useCitizenDashboard();
+  const navigate = useNavigate();
   
   const [openProjects, setOpenProjects] = useState(false);
   const [openLedger, setOpenLedger] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+
+  // ============================================================================
+  // EVENT HANDLERS
+  // ============================================================================
+
+  /**
+   * Handle alert click - navigate to relevant page based on alert type
+   */
+  const handleAlertClick = (alert: UiAlert) => {
+    // Determine navigation based on alert content
+    const title = alert.title.toLowerCase();
+    
+    let targetRoute = '/citizen/milestones'; // default
+    
+    if (title.includes('project') || title.includes('milestone') || title.includes('construction') || title.includes('renovation')) {
+      targetRoute = '/citizen/milestones';
+    } else if (title.includes('transaction') || title.includes('payment')) {
+      targetRoute = '/citizen/ledger';
+    } else if (title.includes('budget') && (title.includes('allocation') || title.includes('review') || title.includes('transparency'))) {
+      targetRoute = '/citizen/transparency';
+    } else if (title.includes('budget') && (title.includes('adjustment') || title.includes('request'))) {
+      targetRoute = '/citizen/ledger';
+    } else if (title.includes('transparency') || title.includes('allocation') || title.includes('review')) {
+      targetRoute = '/citizen/transparency';
+    }
+    
+    navigate(targetRoute);
+  };
 
   // ============================================================================
   // DATA TRANSFORMATION
@@ -521,7 +564,20 @@ export default function Dashboard() {
             </div>
           )}
           {uiAlerts.map((alert) => (
-            <div key={alert.key} className={`alert ${alert.color === 'bg-amber-50' ? 'alert-warning' : alert.color === 'bg-emerald-50' ? 'alert-success' : alert.color === 'bg-rose-50' ? 'alert-error' : 'alert-info'}`}>
+            <div 
+              key={alert.key} 
+              className={`alert ${alert.color === 'bg-amber-50' ? 'alert-warning' : alert.color === 'bg-emerald-50' ? 'alert-success' : alert.color === 'bg-rose-50' ? 'alert-error' : 'alert-info'} cursor-pointer hover:shadow-md transition-shadow duration-200`}
+              onClick={() => handleAlertClick(alert)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  handleAlertClick(alert);
+                }
+              }}
+              aria-label={`Click to view details for ${alert.title}`}
+            >
               <div className="flex items-start gap-3 w-full">
                 <span className="text-2xl flex-shrink-0">{alert.icon}</span>
                 <div className="flex-1">
@@ -532,6 +588,9 @@ export default function Dashboard() {
                   {alert.desc && (
                     <div className="text-sm opacity-90">{alert.desc}</div>
                   )}
+                </div>
+                <div className="flex-shrink-0 text-xs opacity-60">
+                  Click to view →
                 </div>
               </div>
             </div>
