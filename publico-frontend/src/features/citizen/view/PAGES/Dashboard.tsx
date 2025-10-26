@@ -273,22 +273,24 @@ const transformAlerts = (alerts: any[]): UiAlert[] =>
   alerts?.map((alert: any, index: number) => {
     const type = alert.type ?? "info";
     const colorMap = {
-      warning: "bg-amber-50",
-      success: "bg-emerald-50", 
+      warning: "bg-yellow-50",
+      success: "bg-green-50", 
       danger: "bg-rose-50",
-      info: "bg-blue-50"
+      info: "bg-blue-50",
+      progress: "bg-sky-50"
     };
     const iconMap = {
       warning: "⚠️",
       success: "✅",
       danger: "⛔",
-      info: "📄"
+      info: "ℹ️",
+      progress: "🏗️"
     };
     
     return {
       key: alert.id ?? index,
       color: colorMap[type as keyof typeof colorMap] ?? "bg-blue-50",
-      icon: iconMap[type as keyof typeof iconMap] ?? "📄",
+      icon: alert.icon || iconMap[type as keyof typeof iconMap] || "📄",
       title: alert.title ?? alert.message ?? "Alert",
       date: alert.date ? String(alert.date) : "",
       desc: alert.description ?? "",
@@ -541,16 +543,20 @@ export default function Dashboard() {
             </div>
           )}
           {uiAlerts.map((alert) => (
-            <div key={alert.key} className={`alert ${alert.color === 'bg-amber-50' ? 'alert-warning' : alert.color === 'bg-emerald-50' ? 'alert-success' : alert.color === 'bg-rose-50' ? 'alert-error' : 'alert-info'}`}>
+            <div key={alert.key} className={`rounded-lg border border-gray-200 ${alert.color} p-4`}>
               <div className="flex items-start gap-3 w-full">
-                <span className="text-2xl flex-shrink-0">{alert.icon}</span>
+                <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-lg ${alert.color}`}>
+                  {alert.icon}
+                </div>
                 <div className="flex-1">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="font-semibold text-sm">{alert.title}</span>
-                    <span className="text-xs opacity-70">{alert.date}</span>
+                  <div className="mb-1">
+                    <span className="font-semibold text-sm text-gray-900">{alert.title}</span>
                   </div>
                   {alert.desc && (
-                    <div className="text-sm opacity-90">{alert.desc}</div>
+                    <div className="text-sm text-gray-600">{alert.desc}</div>
+                  )}
+                  {alert.date && (
+                    <div className="text-xs text-gray-500 mt-1">{alert.date}</div>
                   )}
                 </div>
               </div>

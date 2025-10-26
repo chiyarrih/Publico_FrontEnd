@@ -17,7 +17,7 @@ export default function ProjectMilestones(){
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [allMilestones, setAllMilestones] = useState<any[]>([]);
   
-  const { milestones, budgetProjects, loading, error, fetchMilestones } = useProjectMilestones('all');
+  const { milestones, budgetProjects, loading, error, fetchMilestones, pagination } = useProjectMilestones('all');
 
   // Store all milestones for status dropdown (never filtered)
   useEffect(() => {
@@ -100,7 +100,7 @@ export default function ProjectMilestones(){
       </Panel>
 
       <Panel>
-        <div className="px-4 py-3 text-[13px] text-slate-500 border-b">Approved Projects</div>
+        <div className="px-4 py-3 text-[13px] text-slate-500 border-b">All Project Milestones {filtered.length > 0 && `(${filtered.length} shown)`}</div>
         <div className="grid grid-cols-[140px_1fr_160px_140px_180px_130px] gap-x-4 px-4 py-2 text-xs text-slate-500">
           <div>Project ID</div><div>Project Title</div><div>Department</div><div>Total Budget</div><div>Timeline</div><div className="text-right">Actions</div>
         </div>
@@ -132,6 +132,14 @@ export default function ProjectMilestones(){
           ))
         )}
       </Panel>
+      
+      {/* Pagination Info */}
+      {pagination && (
+        <div className="mt-4 text-sm text-slate-600 text-center">
+          Showing {filtered.length} of {pagination.totalItems} milestones
+          {pagination.totalPages > 1 && ` (Page ${pagination.currentPage} of ${pagination.totalPages})`}
+        </div>
+      )}
 
       <CreateMilestoneModal
         isOpen={showCreateModal}

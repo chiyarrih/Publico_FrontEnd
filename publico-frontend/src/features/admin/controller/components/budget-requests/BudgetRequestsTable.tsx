@@ -27,6 +27,7 @@ export default function BudgetRequestsTable({
             <th className="px-4 py-3 text-left font-medium text-slate-600">Department</th>
             <th className="px-4 py-3 text-left font-medium text-slate-600">Project Name</th>
             <th className="px-4 py-3 text-left font-medium text-slate-600">Amount</th>
+            <th className="px-4 py-3 text-left font-medium text-slate-600">Current Spending</th>
             <th className="px-4 py-3 text-left font-medium text-slate-600">Status</th>
             <th className="px-4 py-3 text-left font-medium text-slate-600">Actions</th>
           </tr>
@@ -49,6 +50,9 @@ export default function BudgetRequestsTable({
               <td className="px-4 py-3 text-slate-700">{request.projectName}</td>
               <td className="px-4 py-3 text-slate-900 font-medium">
                 ₱{request.amountRequested.toLocaleString()}
+              </td>
+              <td className="px-4 py-3 text-blue-600 font-medium">
+                ₱{(request.currentSpending || 0).toLocaleString()}
               </td>
               <td className="px-4 py-3">
                 <Badge tone={tone(request.status)}>{request.status}</Badge>

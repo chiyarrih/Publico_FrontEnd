@@ -128,20 +128,21 @@ export default function Ledger() {
   const [dept, setDept]       = useState<typeof DEPTS[number]>("All Departments");
   const [status, setStatus]   = useState<typeof STATUSES[number]>("All");
   const [page, setPage]       = useState(1);
-  const pageSize              = 10;
+  const pageSize              = 15; // Show 15 transactions per page for clean display
 
-  const [rows, setRows]       = useState<Tx[]>([]);
-  const [total, setTotal]     = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [err, setErr]         = useState<string | null>(null);
+  const [allRows, setAllRows]     = useState<Tx[]>([]); // Store ALL rows from all pages
+  const [total, setTotal]         = useState(0);
+  const [loading, setLoading]     = useState(true);
+  const [err, setErr]             = useState<string | null>(null);
   const [selectedTransaction, setSelectedTransaction] = useState<Tx | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const loadData = async () => {
     try {
       setLoading(true); setErr(null);
-      const res = await fetchLedger(page, pageSize); // {items,total}
-      setRows(Array.isArray(res?.items) ? res.items : []);
+      // Fetch all data at once (all 127 items) for client-side pagination
+      const res = await fetchLedger(1, 127); // Fetch all items at once
+      setAllRows(Array.isArray(res?.items) ? res.items : []);
       setTotal(typeof res?.total === "number" ? res.total : (res?.items?.length ?? 0));
     } catch (e: any) {
       setErr(e?.message || "Failed to load ledger");
@@ -156,7 +157,7 @@ export default function Ledger() {
       await loadData();
     })();
     return () => { ignore = true; };
-  }, [page]);
+  }, []); // Load once on mount
 
   const refreshData = () => {
     toast.success("Refreshing ledger data...");
@@ -172,7 +173,7 @@ export default function Ledger() {
     const start = period === "This Month" ? startOfMonth : period === "Last 30 Days" ? new Date(now.getTime() - 30*24*3600*1000)
                   : period === "This Quarter" ? startOfQuarter : startOfYear;
     const q = debouncedQuery.trim().toLowerCase(); // Use debounced query
-    const result = rows.filter(r => {
+    const result = allRows.filter(r => {
       const dOk  = period === "All Time" ? true : (r.date ? new Date(r.date) >= start : true);
       const dep  = dept === "All Departments" || 
                    r.dept?.toLowerCase().includes(dept.toLowerCase()) || 
@@ -182,28 +183,14 @@ export default function Ledger() {
       return dOk && dep && st && text;
     });
     return result;
-  }, [rows, debouncedQuery, period, dept, status]);
+  }, [allRows, debouncedQuery, period, dept, status]);
 
   // Note: For production, move filtering to backend and use server-side pagination
-  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize)); // Use filtered length for client-side pagination
   const setSafePage = (p:number) => setPage(Math.min(Math.max(1,p), totalPages));
   const pageRows = filtered.slice((page - 1) * pageSize, page * pageSize);
 
-  const exportCSV = () => {
-    const header = ["Date","Department","Project","Amount","Status","Signature"];
-    const lines  = filtered.map(r => [r.date ?? "", r.dept ?? r.department ?? "", r.project ?? r.projectName ?? "", money(r.amount), r.status ?? "", r.signature ?? r.hash ?? r.sig ?? ""]);
-    const csv    = [header, ...lines].map(row => row.map(v => `"${String(v).replace(/"/g,'""')}"`).join(",")).join("\n");
-    const url    = URL.createObjectURL(new Blob([csv], {type:"text/csv;charset=utf-8"}));
-    const a = document.createElement("a"); a.href = url; a.download = `transaction_ledger_${new Date().toISOString().slice(0,10)}.csv`; a.click(); URL.revokeObjectURL(url);
-    toast.success("CSV exported successfully!");
-  };
 
-  const exportJSON = () => {
-    const json = JSON.stringify(filtered, null, 2);
-    const url = URL.createObjectURL(new Blob([json], {type:"application/json"}));
-    const a = document.createElement("a"); a.href = url; a.download = `transaction_ledger_${new Date().toISOString().slice(0,10)}.json`; a.click(); URL.revokeObjectURL(url);
-    toast.success("JSON exported successfully!");
-  };
 
   const openTransactionDetails = (transaction: Tx) => {
     setSelectedTransaction(transaction);
@@ -241,10 +228,6 @@ export default function Ledger() {
             <Select value={period} onChange={(e)=>{ setPeriod(e.target.value as any); setSafePage(1); }}>{PERIODS.map(p => <option key={p}>{p}</option>)}</Select>
             <Select value={dept} onChange={(e)=>{ setDept(e.target.value as any); setSafePage(1); }}>{DEPTS.map(d => <option key={d}>{d}</option>)}</Select>
             <Select value={status} onChange={(e)=>{ setStatus(e.target.value as any); setSafePage(1); }}>{STATUSES.map(s => <option key={s}>{s}</option>)}</Select>
-            <div className="flex gap-2">
-              <OutlineBtn onClick={exportCSV} disabled={!filtered.length}>Export CSV</OutlineBtn>
-              <OutlineBtn onClick={exportJSON} disabled={!filtered.length}>Export JSON</OutlineBtn>
-            </div>
           </div>
         </div>
 
@@ -300,17 +283,38 @@ export default function Ledger() {
 
         <div className="flex flex-col gap-3 border-t px-4 py-3 md:flex-row md:items-center md:justify-between">
           <div className="text-xs text-slate-500">
-            Showing <span className="font-medium">{filtered.length ? (page-1)*pageSize+1 : 0}</span> to{" "}
-            <span className="font-medium">{Math.min(page*pageSize, filtered.length)}</span> of{" "}
+            Showing <span className="font-medium">{pageRows.length ? (page-1)*pageSize+1 : 0}</span> to{" "}
+            <span className="font-medium">{Math.min(page*pageSize, (page-1)*pageSize + pageRows.length)}</span> of{" "}
             <span className="font-medium">{filtered.length}</span> results
           </div>
           <div className="flex items-center gap-1">
-            <button onClick={()=>setSafePage(page-1)} disabled={page===1} className="rounded border border-slate-300 px-2 py-1 text-sm disabled:opacity-50">‹</button>
-            {Array.from({length: Math.min(6, totalPages)}, (_,i)=> {
-              const p = Math.min(Math.max(1, page-3)+i, totalPages);
-              return <button key={p} onClick={()=>setSafePage(p)} className={`rounded border px-2 py-1 text-sm ${p===page ? "border-blue-500 bg-blue-600 text-white" : "border-slate-300 hover:bg-slate-50"}`}>{p}</button>;
-            })}
-            <button onClick={()=>setSafePage(page+1)} disabled={page===totalPages} className="rounded border border-slate-300 px-2 py-1 text-sm disabled:opacity-50">›</button>
+            <button onClick={()=>setSafePage(page-1)} disabled={page===1} className="rounded border border-slate-300 px-2 py-1 text-sm disabled:opacity-50 hover:enabled:bg-slate-50 transition-colors">‹ Prev</button>
+            
+            {/* Show first page if not near it */}
+            {page > 4 && (
+              <>
+                <button onClick={()=>setSafePage(1)} className="rounded border border-slate-300 px-2 py-1 text-sm hover:bg-slate-50 transition-colors">1</button>
+                {page > 5 && <span className="px-1 text-slate-400">...</span>}
+              </>
+            )}
+            
+            {/* Show page numbers around current page */}
+            {Array.from({length: Math.min(5, totalPages)}, (_,i)=> {
+              const offset = Math.max(0, Math.min(page - 3, totalPages - 5));
+              const p = offset + i + 1;
+              if (p > totalPages) return null;
+              return <button key={p} onClick={()=>setSafePage(p)} className={`rounded border px-2 py-1 text-sm transition-colors ${p===page ? "border-blue-500 bg-blue-600 text-white" : "border-slate-300 hover:bg-slate-50"}`}>{p}</button>;
+            }).filter(Boolean)}
+            
+            {/* Show last page if not near it */}
+            {page < totalPages - 3 && totalPages > 7 && (
+              <>
+                {page < totalPages - 4 && <span className="px-1 text-slate-400">...</span>}
+                <button onClick={()=>setSafePage(totalPages)} className="rounded border border-slate-300 px-2 py-1 text-sm hover:bg-slate-50 transition-colors">{totalPages}</button>
+              </>
+            )}
+            
+            <button onClick={()=>setSafePage(page+1)} disabled={page===totalPages} className="rounded border border-slate-300 px-2 py-1 text-sm disabled:opacity-50 hover:enabled:bg-slate-50 transition-colors">Next ›</button>
           </div>
         </div>
       </Card>

@@ -18,6 +18,7 @@ export interface BudgetProposal {
   category: string;
   department: string;
   amountRequested: number;
+  currentSpending?: number; // Current spending column
   timeline: string;
   fileUrl: string | string[]; // Support both single file and multiple files
   status: "Pending" | "Approved" | "Rejected";

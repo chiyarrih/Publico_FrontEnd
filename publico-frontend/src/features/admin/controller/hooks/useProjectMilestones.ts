@@ -32,7 +32,8 @@ export const useProjectMilestones = (agencyId: string = 'all') => {
     try {
       setLoading(true);
       setError(null);
-      const response = await milestoneService.getMilestones(agencyId, params);
+      // Default to fetching all milestones with high limit
+      const response = await milestoneService.getMilestones(agencyId, { limit: 1000, ...params });
       setMilestones(response.data);
       setPagination({
         currentPage: response.currentPage,

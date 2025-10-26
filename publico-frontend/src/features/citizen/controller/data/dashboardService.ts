@@ -281,10 +281,12 @@ const MOCK_ALERTS: DashboardAlert[] = [
  * Mock monthly spending data for when endpoints are not available
  */
 const MOCK_MONTHLY_SPENDING: MonthlyPoint[] = [
-  { month: "January", spent: 1200, allocated: 1250 },
-  { month: "February", spent: 1100, allocated: 1250 },
-  { month: "March", spent: 1150, allocated: 1250 },
-  { month: "April", spent: 1300, allocated: 1250 }
+  { month: "Jul", allocated: 5000000, spent: 4200000 },
+  { month: "Aug", allocated: 6200000, spent: 5800000 },
+  { month: "Sep", allocated: 7500000, spent: 6500000 },
+  { month: "Oct", allocated: 8100000, spent: 7200000 },
+  { month: "Nov", allocated: 6800000, spent: 5900000 },
+  { month: "Dec", allocated: 5400000, spent: 4800000 }
 ];
 
 /**
@@ -636,9 +638,11 @@ export async function getMonthlySpending(): Promise<MonthlyPoint[]> {
       }
 
       const json = await response.json();
+      console.log("✅ Monthly spending data:", json);
       return json;
     } catch (error) {
       console.warn("Public monthly analytics endpoint not available, using mock data:", error);
+      console.log("📊 Using mock monthly data:", MOCK_MONTHLY_SPENDING);
       // Return mock monthly spending data
       return MOCK_MONTHLY_SPENDING;
     }

@@ -33,8 +33,18 @@ export default function Transparency() {
 
         // pie
         const cats = await getBudgetByCategory(); // [{label, value}]
-        const colored = (cats ?? []).map((c, i) => ({ ...c, color: palette[i % palette.length] }));
-        if (!ignore) setSlices(colored);
+        
+        // Calculate total to get percentages
+        const total = cats?.reduce((sum, cat) => sum + (cat.value || 0), 0) || 1;
+        
+        // Convert values to percentages
+        const percentages = (cats ?? []).map((c, i) => ({ 
+          ...c, 
+          color: palette[i % palette.length],
+          value: total > 0 ? Math.round((c.value / total) * 100) : 0
+        }));
+        
+        if (!ignore) setSlices(percentages);
 
         // key projects (convert to rows with pct if available, else fake % by budget rank)
         const list = await getKeyProjects(6);
@@ -77,13 +87,16 @@ export default function Transparency() {
               </div>
 
               <ul className="flex flex-col justify-center space-y-2.5 text-[13px] pr-2">
-                {(slices.length ? slices : [{label:"No data", value:100, color:"#e5e7eb"}]).map((s) => (
-                  <li key={s.label} className="grid grid-cols-[auto,1fr,2.25rem] items-center gap-2">
-                    <span className="h-3 w-3 rounded-full" style={{ backgroundColor: s.color || "#e5e7eb" }} />
-                    <span className="min-w-0 truncate text-slate-700">{s.label}</span>
-                    <span className="justify-self-end font-medium tabular-nums text-slate-900">{s.value}%</span>
-                  </li>
-                ))}
+                {(slices.length ? slices : [{label:"No data", value:100, color:"#e5e7eb"}]).map((s) => {
+                  const percentage = Math.min(100, Math.max(0, Math.round(s.value)));
+                  return (
+                    <li key={s.label} className="grid grid-cols-[auto,1fr,2.25rem] items-center gap-2">
+                      <span className="h-3 w-3 rounded-full" style={{ backgroundColor: s.color || "#e5e7eb" }} />
+                      <span className="min-w-0 truncate text-slate-700">{s.label}</span>
+                      <span className="justify-self-end font-medium tabular-nums text-slate-900">{percentage}%</span>
+                    </li>
+                  );
+                })}
               </ul>
             </div>
           </section>

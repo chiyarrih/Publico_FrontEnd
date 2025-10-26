@@ -71,7 +71,7 @@ const Milestones: React.FC = () => {
     (async () => {
       try {
         setLoading(true); setErr(null);
-        const arr = await getKeyProjects(100); // normalized -> always array
+        const arr = await getKeyProjects(1000); // Fetch all milestones
         console.log('Loaded projects:', arr);
         if (!ignore) {
           setRows(arr);
