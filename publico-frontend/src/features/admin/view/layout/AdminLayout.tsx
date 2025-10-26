@@ -205,16 +205,6 @@ export default function AdminLayout() {
 
         {/* Main */}
         <main>
-          <header className="sticky top-0 z-10 border-b border-slate-200 bg-white/95 backdrop-blur">
-            <div className="mx-auto flex max-w-6xl items-center gap-3 p-3">
-              <button className="rounded p-2 text-slate-600 hover:bg-slate-100 lg:hidden" aria-label="Open menu" onClick={() => setMobileOpen(true)}>☰</button>
-              <Input placeholder="Search…" />
-              <div className="ml-auto flex items-center gap-2">
-                <Ghost title="Notifications">🔔</Ghost>
-              </div>
-            </div>
-          </header>
-
           <div className="mx-auto max-w-6xl p-4 lg:p-6">
             <Outlet />
           </div>

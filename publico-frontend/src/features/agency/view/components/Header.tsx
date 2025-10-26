@@ -41,33 +41,6 @@ export default function Header({notificationsEnabled, setSidebarOpen, menuOpen, 
                       </div>
             
                       <div className="flex items-center gap-3">
-                        <div className="flex items-center gap-2">
-                          <button
-                            className="relative p-2 rounded-lg hover:bg-slate-100 transition-colors"
-                            aria-label="Notifications"
-                            title="Notifications"
-                          >
-                            <I.bell />
-                            {notificationsEnabled && (
-                              <span className="absolute w-2 h-2 rounded-full right-1 top-1 bg-red-500 animate-pulse" />
-                            )}
-                          </button>
-            
-                          <button
-                            onClick={() => setNotificationsEnabled(!notificationsEnabled)}
-                            className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors ${
-                              notificationsEnabled ? "bg-blue-600" : "bg-slate-300"
-                            }`}
-                            aria-label={`Notifications ${notificationsEnabled ? "on" : "off"}`}
-                            title={`Turn notifications ${notificationsEnabled ? "off" : "on"}`}
-                          >
-                            <span
-                              className={`inline-block h-6 w-6 transform rounded-full bg-white shadow-lg transition-transform ${
-                                notificationsEnabled ? "translate-x-7" : "translate-x-1"
-                              }`}
-                            />
-                          </button>
-                        </div>
             
                         <div className="relative" ref={menuRef}>
                           <button
