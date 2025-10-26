@@ -566,7 +566,7 @@ export default function Dashboard() {
           {uiAlerts.map((alert) => (
             <div 
               key={alert.key} 
-              className={`alert ${alert.color === 'bg-amber-50' ? 'alert-warning' : alert.color === 'bg-emerald-50' ? 'alert-success' : alert.color === 'bg-rose-50' ? 'alert-error' : 'alert-info'} cursor-pointer hover:shadow-md transition-shadow duration-200`}
+              className={`alert ${alert.color === 'bg-amber-50' ? 'alert-warning' : alert.color === 'bg-emerald-50' ? 'alert-success' : alert.color === 'bg-rose-50' ? 'alert-error' : 'alert-info'} cursor-pointer hover:shadow-md transition-all duration-200 p-4 rounded-lg border`}
               onClick={() => handleAlertClick(alert)}
               role="button"
               tabIndex={0}
@@ -579,18 +579,21 @@ export default function Dashboard() {
               aria-label={`Click to view details for ${alert.title}`}
             >
               <div className="flex items-start gap-3 w-full">
-                <span className="text-2xl flex-shrink-0">{alert.icon}</span>
-                <div className="flex-1">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="font-semibold text-sm">{alert.title}</span>
-                    <span className="text-xs opacity-70">{alert.date}</span>
+                <span className="text-xl sm:text-2xl flex-shrink-0">{alert.icon}</span>
+                <div className="flex-1 min-w-0">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-2 mb-2">
+                    <span className="font-semibold text-sm sm:text-base text-gray-900 leading-tight">{alert.title}</span>
+                    <span className="text-xs text-gray-500 flex-shrink-0">{alert.date}</span>
                   </div>
                   {alert.desc && (
-                    <div className="text-sm opacity-90">{alert.desc}</div>
+                    <div className="text-sm text-gray-700 leading-relaxed mb-2">{alert.desc}</div>
                   )}
-                </div>
-                <div className="flex-shrink-0 text-xs opacity-60">
-                  Click to view →
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-blue-600 font-medium">Tap to view details</span>
+                    <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                    </svg>
+                  </div>
                 </div>
               </div>
             </div>
@@ -598,53 +601,103 @@ export default function Dashboard() {
         </div>
       </DashboardCard>
 
-      {/* Charts Section */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+      {/* Enhanced Charts Section */}
+      <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-2">
         <DashboardCard title="Monthly Spending vs Allocation">
-          <ResponsiveContainer width="100%" height={280}>
-            <LineChart data={uiSpending} margin={{ left: -10, right: 10 }}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="m" />
-              <YAxis />
-              <Tooltip />
-              <Line 
-                type="monotone" 
-                dataKey="actual" 
-                name="Actual Spending" 
-                stroke="#2563eb" 
-                strokeWidth={2} 
-                dot={false} 
-              />
-              <Line 
-                type="monotone" 
-                dataKey="budget" 
-                name="Allocated Budget" 
-                stroke="#94a3b8" 
-                strokeWidth={2} 
-                dot={false} 
-              />
-            </LineChart>
-          </ResponsiveContainer>
+          <div className="h-64 sm:h-72 lg:h-80">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={uiSpending} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                <XAxis 
+                  dataKey="m" 
+                  tick={{ fontSize: 12 }}
+                  tickLine={{ stroke: '#6b7280' }}
+                />
+                <YAxis 
+                  tick={{ fontSize: 12 }}
+                  tickLine={{ stroke: '#6b7280' }}
+                  tickFormatter={(value) => `₱${(value / 1000).toFixed(0)}k`}
+                />
+                <Tooltip 
+                  contentStyle={{
+                    backgroundColor: 'white',
+                    border: '1px solid #e5e7eb',
+                    borderRadius: '8px',
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                  }}
+                  formatter={(value: any, name: string) => [
+                    `₱${value.toLocaleString()}`, 
+                    name
+                  ]}
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="actual" 
+                  name="Actual Spending" 
+                  stroke="#2563eb" 
+                  strokeWidth={3} 
+                  dot={{ fill: '#2563eb', strokeWidth: 2, r: 4 }}
+                  activeDot={{ r: 6, stroke: '#2563eb', strokeWidth: 2 }}
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="budget" 
+                  name="Allocated Budget" 
+                  stroke="#10b981" 
+                  strokeWidth={3} 
+                  dot={{ fill: '#10b981', strokeWidth: 2, r: 4 }}
+                  activeDot={{ r: 6, stroke: '#10b981', strokeWidth: 2 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
         </DashboardCard>
 
         <DashboardCard title="Budget Allocation by Category">
-          <ResponsiveContainer width="100%" height={280}>
-            <PieChart>
-              <Pie 
-                data={uiAllocation} 
-                dataKey="value" 
-                cx="50%" 
-                cy="50%" 
-                outerRadius={100} 
-                label
-              >
-                {uiAllocation.map((category, index) => (
-                  <Cell key={index} fill={category.color} />
-                ))}
-              </Pie>
-              <Tooltip />
-            </PieChart>
-          </ResponsiveContainer>
+          <div className="h-64 sm:h-72 lg:h-80">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie 
+                  data={uiAllocation} 
+                  dataKey="value" 
+                  cx="50%" 
+                  cy="50%" 
+                  outerRadius={80}
+                  innerRadius={30}
+                  paddingAngle={3}
+                  label={({ name, percent }: any) => `${name} ${(percent * 100).toFixed(0)}%`}
+                  labelLine={false}
+                >
+                  {uiAllocation.map((category, index) => (
+                    <Cell 
+                      key={index} 
+                      fill={category.color}
+                      stroke="#ffffff"
+                      strokeWidth={3}
+                    />
+                  ))}
+                </Pie>
+                <Tooltip 
+                  contentStyle={{
+                    backgroundColor: 'white',
+                    border: '1px solid #e5e7eb',
+                    borderRadius: '8px',
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                  }}
+                  formatter={(value: any, name: string) => [
+                    `₱${value.toLocaleString()}`, 
+                    name
+                  ]}
+                />
+                <Legend 
+                  wrapperStyle={{ 
+                    paddingTop: '20px',
+                    fontSize: '12px'
+                  }}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
         </DashboardCard>
       </div>
 

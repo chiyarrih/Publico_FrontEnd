@@ -304,15 +304,65 @@ const PublicAccessInfo: React.FC = () => (
 );
 
 /**
- * Sidebar component
+ * Mobile Navigation Component
+ */
+const MobileNavigation: React.FC = () => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <>
+      {/* Mobile Menu Button */}
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="lg:hidden fixed bottom-6 right-6 z-50 w-14 h-14 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition-colors flex items-center justify-center"
+        aria-label="Toggle navigation menu"
+      >
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+      </button>
+
+      {/* Mobile Menu Overlay */}
+      {isOpen && (
+        <div className="lg:hidden fixed inset-0 z-40 bg-black bg-opacity-50" onClick={() => setIsOpen(false)}>
+          <div className="fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl shadow-2xl p-6 max-h-[80vh] overflow-auto">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-lg font-semibold text-gray-900">Navigation</h2>
+              <button
+                onClick={() => setIsOpen(false)}
+                className="p-2 text-gray-400 hover:text-gray-600"
+                aria-label="Close menu"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <PublicAccessInfo />
+            <Navigation />
+          </div>
+        </div>
+      )}
+    </>
+  );
+};
+
+/**
+ * Enhanced Sidebar component with mobile support
  */
 const Sidebar: React.FC = () => (
-  <aside className="hidden lg:block border-r border-gray-200/60 bg-white/50 backdrop-blur-sm">
-    <div className="sticky top-16 h-[calc(100vh-4rem)] overflow-auto p-6">
-      <PublicAccessInfo />
-      <Navigation />
-    </div>
-  </aside>
+  <>
+    {/* Desktop Sidebar */}
+    <aside className="hidden lg:block border-r border-gray-200/60 bg-white/50 backdrop-blur-sm">
+      <div className="sticky top-16 h-[calc(100vh-4rem)] overflow-auto p-6">
+        <PublicAccessInfo />
+        <Navigation />
+      </div>
+    </aside>
+    
+    {/* Mobile Navigation */}
+    <MobileNavigation />
+  </>
 );
 
 // ============================================================================
@@ -320,7 +370,7 @@ const Sidebar: React.FC = () => (
 // ============================================================================
 
 /**
- * Page header with title and filters
+ * Enhanced page header with mobile-first design
  */
 const PageHeader: React.FC<{ 
   title: string; 
@@ -330,22 +380,24 @@ const PageHeader: React.FC<{
   const [view, setView] = useState("Monthly View");
 
   return (
-    <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
-      <div>
-        <h1 className="page-title">{title}</h1>
-        <p className="text-sm text-gray-500 mt-1">
+    <div className="mb-6 lg:mb-8">
+      {/* Title Section */}
+      <div className="mb-4">
+        <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-2">{title}</h1>
+        <p className="text-sm lg:text-base text-gray-600">
           Real-time transparency into public spending
         </p>
       </div>
 
-      <div className="flex items-center gap-2 sm:gap-3">
-        {/* Transparency Portal Filters */}
+      {/* Filters and Info Section */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        {/* Filters */}
         {isTransparency && (
-          <>
+          <div className="flex flex-wrap gap-2 sm:gap-3">
             <select
               value={department}
               onChange={(e) => setDepartment(e.target.value)}
-              className="select-field text-xs py-2"
+              className="flex-1 sm:flex-none min-w-0 px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               aria-label="Department"
             >
               <option value="All">All Departments</option>
@@ -359,22 +411,22 @@ const PageHeader: React.FC<{
             <select
               value={view}
               onChange={(e) => setView(e.target.value)}
-              className="select-field text-xs py-2"
+              className="flex-1 sm:flex-none min-w-0 px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               aria-label="Time View"
             >
               <option>Monthly View</option>
               <option>Quarterly View</option>
               <option>Yearly View</option>
             </select>
-          </>
+          </div>
         )}
 
-        {/* Last Updated */}
-        <div className="hidden sm:flex items-center gap-2 text-xs text-gray-500 bg-gray-100 rounded-lg px-3 py-2">
-          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        {/* Last Updated - Always visible on mobile */}
+        <div className="flex items-center gap-2 text-xs text-gray-500 bg-gray-100 rounded-lg px-3 py-2 self-start sm:self-auto">
+          <svg className="h-4 w-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
-          <span>{new Date().toLocaleDateString()}</span>
+          <span className="whitespace-nowrap">Updated {new Date().toLocaleDateString()}</span>
         </div>
       </div>
     </div>
@@ -382,13 +434,13 @@ const PageHeader: React.FC<{
 };
 
 /**
- * Main content area
+ * Enhanced main content area with mobile-first design
  */
 const MainContent: React.FC<{ 
   title: string; 
   isTransparency: boolean; 
 }> = ({ title, isTransparency }) => (
-  <main className="flex min-h-[calc(100vh-4rem)] flex-col px-8 py-8">
+  <main className="flex min-h-[calc(100vh-4rem)] flex-col px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
     <PageHeader title={title} isTransparency={isTransparency} />
     <div className="flex-1 min-h-0">
       <Outlet />
