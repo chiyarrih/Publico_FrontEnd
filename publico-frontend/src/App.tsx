@@ -22,10 +22,8 @@ import ErrorBoundary from "./shared/components/layout/ErrorBoundary";
 
 /* ---------- Lazy citizen pages ---------- */
 const CitizenDashboard = lazy(() => import("./features/citizen/view/PAGES/Dashboard"));
-const Alerts         = lazy(() => import("./features/citizen/view/PAGES/Alerts"));
-const FAQ            = lazy(() => import("./features/citizen/view/PAGES/FAQ"));
+
 const Ledger         = lazy(() => import("./features/citizen/view/PAGES/Ledger"));
-const Profile        = lazy(() => import("./features/citizen/view/PAGES/Profile"));
 const Transparency   = lazy(() => import("./features/citizen/view/PAGES/Transparency"));
 const Support        = lazy(() => import("./features/citizen/view/PAGES/Support"));
 
@@ -93,10 +91,7 @@ export default function App() {
           <Route path="/citizen" element={<CitizenRoute><AppLayout /></CitizenRoute>}>
             <Route index element={<Navigate to="dashboard" replace />} />
             <Route path="dashboard" element={<Safe><CitizenDashboard /></Safe>} />
-            <Route path="alerts" element={<Safe><Alerts /></Safe>} />
-            <Route path="faq" element={<Safe><FAQ /></Safe>} />
             <Route path="ledger" element={<Safe><Ledger /></Safe>} />
-            <Route path="profile" element={<Safe><Profile /></Safe>} />
             <Route path="transparency" element={<Safe><Transparency /></Safe>} />
             <Route path="support" element={<Safe><Support /></Safe>} />
             <Route path="milestones" element={<Safe><CitizenMilestones /></Safe>} />

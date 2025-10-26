@@ -55,17 +55,6 @@ export default function ProfileComponent() {
               Change Password
             </Button>
           </div>
-
-          <div className="flex items-center justify-between p-4 border rounded-lg">
-            <div className="flex items-center gap-3">
-              <Shield className="w-5 h-5 text-muted-foreground" />
-              <div>
-                <h3 className="font-medium">Two-Factor Authentication</h3>
-                <p className="text-sm text-muted-foreground">Currently disabled</p>
-              </div>
-            </div>
-            <Button variant="outline">Enable 2FA</Button>
-          </div>
         </CardContent>
       </Card>
 

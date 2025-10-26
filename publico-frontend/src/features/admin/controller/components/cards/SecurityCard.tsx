@@ -14,10 +14,9 @@ const ShieldIcon = () => (
 
 interface SecurityCardProps {
   onChangePassword: () => void;
-  onEnable2FA: () => void;
 }
 
-export default function SecurityCard({ onChangePassword, onEnable2FA }: SecurityCardProps) {
+export default function SecurityCard({ onChangePassword }: SecurityCardProps) {
   return (
     <Card>
       <h3 className="mb-4 text-base font-semibold text-slate-800">Security</h3>
@@ -33,20 +32,6 @@ export default function SecurityCard({ onChangePassword, onEnable2FA }: Security
             <div className="mt-1 text-xs text-slate-500">Last changed 30 days ago</div>
             <Button onClick={onChangePassword} className="mt-3 w-full">
               Change Password
-            </Button>
-          </div>
-        </div>
-
-        {/* Two-Factor Authentication Section */}
-        <div className="flex items-start gap-3 border-t pt-4">
-          <div className="flex-shrink-0">
-            <ShieldIcon />
-          </div>
-          <div className="flex-1">
-            <div className="font-medium text-slate-800">Two-Factor Authentication</div>
-            <div className="mt-1 text-xs text-slate-500">Currently disabled</div>
-            <Button onClick={onEnable2FA} className="mt-3 w-full">
-              Enable 2FA
             </Button>
           </div>
         </div>

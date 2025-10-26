@@ -42,27 +42,12 @@ const Profile: React.FC = () => {
         <div className="text-lg font-semibold">User Profile</div>
         <div className="mt-3 flex items-center gap-6 text-sm">
           <button onClick={()=>setTab("info")} className={`pb-2 border-b-2 ${tab==="info"?"border-blue-600 text-blue-700":"border-transparent text-slate-500"}`}>Profile Information</button>
-          <button onClick={()=>setTab("notify")} className={`pb-2 border-b-2 ${tab==="notify"?"border-blue-600 text-blue-700":"border-transparent text-slate-500"}`}>Notifications</button>
         </div>
       </div>
 
       {tab==="info" && (
         <div className="bg-white border border-slate-200 rounded-lg p-4">
           <ProfileComponent/>
-        </div>
-      )}
-
-
-      {tab==="notify" && (
-        <div className="bg-white border border-slate-200 rounded-lg p-4">
-          <div className="text-sm font-medium mb-3">Notification Preferences</div>
-          <label className="flex items-center justify-between py-2 border-b"><span className="text-sm">Email updates</span>
-            <input type="checkbox" className="accent-blue-600" checked={prefs.email} onChange={(e)=>setPrefs(s=>({...s,email:e.target.checked}))}/></label>
-          <label className="flex items-center justify-between py-2 border-b"><span className="text-sm">SMS notifications</span>
-            <input type="checkbox" className="accent-blue-600" checked={prefs.sms} onChange={(e)=>setPrefs(s=>({...s,sms:e.target.checked}))}/></label>
-          <label className="flex items-center justify-between py-2"><span className="text-sm">Weekly activity digest</span>
-            <input type="checkbox" className="accent-blue-600" checked={prefs.weekly} onChange={(e)=>setPrefs(s=>({...s,weekly:e.target.checked}))}/></label>
-          <button className="mt-3 h-9 px-4 rounded border border-slate-300 text-sm hover:bg-slate-50">Save Preferences</button>
         </div>
       )}
 
