@@ -56,6 +56,7 @@ export type User = Citizen | Agency | Admin;
 export interface LoginRequest {
   email: string;
   password: string;
+  [key: string]: unknown;
 }
 
 export interface RegisterCitizenRequest {
@@ -66,6 +67,7 @@ export interface RegisterCitizenRequest {
   password: string;
   phone_number?: string;
   address?: string;
+  [key: string]: unknown;
 }
 
 export interface RegisterAgencyRequest {
@@ -87,6 +89,7 @@ export interface RegisterAgencyRequest {
     businessCertificate: File | null;
     proofOfInsurance: File | null;
   };
+  [key: string]: unknown;
 }
 
 export interface RegisterAdminRequest {
@@ -95,6 +98,7 @@ export interface RegisterAdminRequest {
   last_name: string;
   email: string;
   password: string;
+  [key: string]: unknown;
 }
 
 export type RegisterRequest = RegisterCitizenRequest | RegisterAgencyRequest | RegisterAdminRequest;
@@ -116,12 +120,14 @@ export interface AuthResponse {
 
 export interface ForgotPasswordRequest {
   email: string;
+  [key: string]: unknown;
 }
 
 export interface ResetPasswordRequest {
   email: string;
   code: string;
   newPassword: string;
+  [key: string]: unknown;
 }
 
 // JWT Payload

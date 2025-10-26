@@ -14,6 +14,7 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, PieChart, Pie, Cell
 } from "recharts";
+import { useNavigate } from "react-router-dom";
 import { useCitizenDashboard } from "../../controller/hooks/useCitizenDashboard";
 // Simplified loading components
 
@@ -156,13 +157,20 @@ const StatusPill: React.FC<{ status: string }> = ({ status }) => {
  */
 const ProjectRow: React.FC<{ 
   project: UiProject; 
-  compact?: boolean 
-}> = ({ project, compact = false }) => {
+  compact?: boolean;
+  onViewDetails?: (projectId: string) => void;
+}> = ({ project, compact = false, onViewDetails }) => {
   const formatCurrency = (amount?: number) => 
     amount?.toLocaleString?.("en-PH", { 
       style: "currency", 
       currency: "PHP" 
     }) ?? "—";
+
+  const handleViewDetails = () => {
+    if (onViewDetails) {
+      onViewDetails(project.id);
+    }
+  };
 
   return (
     <div className={`rounded-xl border border-gray-200/60 bg-white hover:shadow-md transition-shadow duration-200 ${compact ? "px-5 py-4" : "p-5"}`}>
@@ -188,7 +196,10 @@ const ProjectRow: React.FC<{
         <ProjectProgressBar percentage={project.pct} color={project.barColor} />
         <div className="flex items-center justify-between text-xs">
           <span className="font-semibold text-gray-700">{project.pct}% Complete</span>
-          <button className="font-semibold text-blue-600 hover:text-blue-700 transition-colors">
+          <button 
+            onClick={handleViewDetails}
+            className="font-semibold text-blue-600 hover:text-blue-700 transition-colors cursor-pointer hover:underline"
+          >
             View Details →
           </button>
         </div>
@@ -415,11 +426,20 @@ export default function Dashboard() {
   // HOOKS & STATE
   // ============================================================================
 
+  const navigate = useNavigate();
   const { loading, error, alerts, monthly, categories, projects, ledger, reload } = useCitizenDashboard();
   
   const [openProjects, setOpenProjects] = useState(false);
   const [openLedger, setOpenLedger] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+
+  // ============================================================================
+  // EVENT HANDLERS
+  // ============================================================================
+
+  const handleViewProjectDetails = (projectId: string) => {
+    navigate(`/citizen/milestones/${encodeURIComponent(projectId)}`);
+  };
 
   // ============================================================================
   // DATA TRANSFORMATION
@@ -608,7 +628,7 @@ export default function Dashboard() {
             </div>
           )}
           {uiProjects.slice(0, 4).map((project) => (
-            <ProjectRow key={project.id} project={project} />
+            <ProjectRow key={project.id} project={project} onViewDetails={handleViewProjectDetails} />
           ))}
         </div>
       </DashboardCard>
@@ -679,7 +699,7 @@ export default function Dashboard() {
           </div>
           <div className="space-y-3">
             {filteredProjects.map((project) => (
-              <ProjectRow key={project.id} project={project} compact />
+              <ProjectRow key={project.id} project={project} compact onViewDetails={handleViewProjectDetails} />
             ))}
             {filteredProjects.length === 0 && (
               <div className="rounded-md border border-slate-200 p-6 text-center text-sm text-slate-500">

@@ -72,9 +72,16 @@ const Milestones: React.FC = () => {
       try {
         setLoading(true); setErr(null);
         const arr = await getKeyProjects(100); // normalized -> always array
-        if (!ignore) setRows(arr);
+        console.log('Loaded projects:', arr);
+        if (!ignore) {
+          setRows(arr);
+          if (arr.length === 0) {
+            setErr("No projects available. Check back later or contact support.");
+          }
+        }
       } catch (e: any) {
-        if (!ignore) setErr(e?.message || "Failed to load projects");
+        console.error('Error loading projects:', e);
+        if (!ignore) setErr(e?.message || "Failed to load projects. Please try refreshing the page.");
       } finally {
         if (!ignore) setLoading(false);
       }
@@ -87,10 +94,27 @@ const Milestones: React.FC = () => {
       const name = (r.projectName ?? "").toLowerCase();
       const code = (r._id ?? r.code ?? "").toLowerCase();
       const searchQuery = debouncedQ.toLowerCase();
-      const mQ   = !debouncedQ || name.includes(searchQuery) || code.includes(searchQuery);
-      const mDept = dept === "All Departments" || r.department === dept;
-      const mStat = status === "All Statuses" || r.status === status;
-      return mQ && mDept && mStat;
+      
+      // Search filter
+      const mQ = !debouncedQ || name.includes(searchQuery) || code.includes(searchQuery);
+      
+      // Department filter - handle different ways department might be stored
+      const projectDept = (r.department ?? "").trim();
+      const selectedDept = dept.trim();
+      const mDept = selectedDept === "All Departments" || 
+                    projectDept === selectedDept || 
+                    projectDept.toLowerCase() === selectedDept.toLowerCase();
+      
+      // Status filter
+      const projectStatus = (r.status ?? r.overallStatus ?? "").trim();
+      const selectedStatus = status.trim();
+      const mStat = selectedStatus === "All Statuses" ||
+                    projectStatus === selectedStatus ||
+                    projectStatus.toLowerCase() === selectedStatus.toLowerCase();
+      
+      const passesFilter = mQ && mDept && mStat;
+      
+      return passesFilter;
     });
   }, [debouncedQ, dept, status, rows]);
 

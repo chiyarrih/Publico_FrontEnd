@@ -17,7 +17,6 @@ export default function Profile() {
     error,
     handleEditProfile,
     handleChangePassword,
-    handleEnable2FA,
   } = useAdminProfile();
 
   const handleOpenChangePasswordModal = () => {
@@ -84,7 +83,6 @@ export default function Profile() {
           <BlockchainWalletCard role="Admin" />
           <SecurityCard
             onChangePassword={handleOpenChangePasswordModal}
-            onEnable2FA={handleEnable2FA}
           />
         </div>
       </div>

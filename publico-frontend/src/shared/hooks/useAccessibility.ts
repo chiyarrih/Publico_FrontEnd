@@ -283,32 +283,51 @@ export function useScreenReader() {
   const [isScreenReaderActive, setIsScreenReaderActive] = useState(false);
 
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
     // Detect screen reader usage
     const detectScreenReader = () => {
-      // Check for common screen reader indicators
-      const hasScreenReader = (
-        window.speechSynthesis ||
-        'speechSynthesis' in window ||
-        navigator.userAgent.includes('NVDA') ||
-        navigator.userAgent.includes('JAWS') ||
-        navigator.userAgent.includes('VoiceOver') ||
-        (typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)
-      );
+      try {
+        // Check for common screen reader indicators
+        const hasSpeechSynthesis = 'speechSynthesis' in window;
+        const hasNvda = navigator.userAgent.includes('NVDA');
+        const hasJaws = navigator.userAgent.includes('JAWS');
+        const hasVoiceOver = navigator.userAgent.includes('VoiceOver');
+        
+        // Safely check for matchMedia
+        let hasReducedMotion = false;
+        if ('matchMedia' in window && typeof window.matchMedia === 'function') {
+          hasReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        }
+        
+        const hasScreenReader = !!(
+          hasSpeechSynthesis ||
+          hasNvda ||
+          hasJaws ||
+          hasVoiceOver ||
+          hasReducedMotion
+        );
 
-      setIsScreenReaderActive(!!hasScreenReader);
+        setIsScreenReaderActive(hasScreenReader);
+      } catch (error) {
+        console.error('Error detecting screen reader:', error);
+        setIsScreenReaderActive(false);
+      }
     };
 
     detectScreenReader();
 
     // Listen for changes in reduced motion preference
-    const mediaQuery = typeof window !== 'undefined' ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
     const handleChange = () => detectScreenReader();
     
-    mediaQuery?.addEventListener('change', handleChange);
-    
-    return () => {
-      mediaQuery?.removeEventListener('change', handleChange);
-    };
+    if ('matchMedia' in window && typeof window.matchMedia === 'function') {
+      const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+      mediaQuery.addEventListener('change', handleChange);
+      
+      return () => {
+        mediaQuery.removeEventListener('change', handleChange);
+      };
+    }
   }, []);
 
   return {

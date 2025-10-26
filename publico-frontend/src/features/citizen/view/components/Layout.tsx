@@ -374,9 +374,9 @@ const MainContent: React.FC<{
   title: string; 
   isTransparency: boolean; 
 }> = ({ title, isTransparency }) => (
-  <main className="flex min-h-[calc(100vh-4rem)] flex-col px-8 py-8">
+  <main className="flex h-[calc(100vh-4rem)] max-h-[calc(100vh-4rem)] flex-col overflow-hidden px-8 py-8">
     <PageHeader title={title} isTransparency={isTransparency} />
-    <div className="flex-1 min-h-0">
+    <div className="flex-1 overflow-y-auto pb-8">
       <Outlet />
     </div>
   </main>
