@@ -402,12 +402,34 @@ export default function AppLayout() {
   
   const { pathname } = useLocation();
   const title = usePageTitle();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // ============================================================================
   // COMPUTED VALUES
   // ============================================================================
   
   const isTransparency = pathname.startsWith("/citizen/transparency");
+
+  // Reusable sidebar content
+  const SidebarContent = ({ mobile = false }: { mobile?: boolean }) => (
+    <div className={mobile ? "p-6 h-full overflow-auto" : "sticky top-16 h-[calc(100vh-4rem)] overflow-auto p-6"}>
+      {mobile && (
+        <div className="flex justify-end mb-4">
+          <button
+            onClick={() => setSidebarOpen(false)}
+            className="p-2 rounded-lg hover:bg-gray-100"
+            aria-label="Close sidebar"
+          >
+            <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      )}
+      <PublicAccessInfo />
+      <Navigation />
+    </div>
+  );
 
   // ============================================================================
   // RENDER
@@ -416,12 +438,61 @@ export default function AppLayout() {
   return (
     <div className="min-h-screen w-full bg-gray-50">
       {/* Header */}
-      <Header />
+      <header className="sticky top-0 z-10 h-16 w-full border-b border-gray-200/60 bg-white/80 backdrop-blur-md shadow-sm">
+        <div className="flex h-full items-center justify-between px-6">
+          <div className="flex items-center gap-3">
+            {/* Hamburger menu for mobile */}
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="p-2 rounded-lg hover:bg-gray-100 lg:hidden"
+              aria-label="Open menu"
+            >
+              <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+            
+            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white font-bold text-sm shadow-lg">
+              P
+            </div>
+            <div className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+              Publico
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-3">
+            {/* Public Access Badge */}
+            <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-50 border border-blue-200">
+              <div className="w-2 h-2 rounded-full bg-green-500"></div>
+              <span className="text-sm font-medium text-blue-700">Public Access</span>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Mobile sidebar overlay */}
+      {sidebarOpen && (
+        <div className="fixed inset-0 z-50 lg:hidden">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/40"
+            onClick={() => setSidebarOpen(false)}
+            aria-hidden
+          />
+          
+          {/* Sidebar panel */}
+          <aside className="relative w-64 h-full bg-white shadow-xl">
+            <SidebarContent mobile />
+          </aside>
+        </div>
+      )}
 
       {/* Main Layout Grid */}
       <div className="grid w-full grid-cols-1 lg:grid-cols-[280px,1fr] min-h-[calc(100vh-4rem)]">
-        {/* Sidebar */}
-        <Sidebar />
+        {/* Sidebar - Desktop */}
+        <aside className="hidden lg:block border-r border-gray-200/60 bg-white/50 backdrop-blur-sm">
+          <SidebarContent />
+        </aside>
 
         {/* Main Content */}
         <MainContent title={title} isTransparency={isTransparency} />

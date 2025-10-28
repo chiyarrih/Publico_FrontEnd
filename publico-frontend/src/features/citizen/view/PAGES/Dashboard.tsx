@@ -544,10 +544,7 @@ export default function Dashboard() {
           )}
           {uiAlerts.map((alert) => (
             <div key={alert.key} className={`rounded-lg border border-gray-200 ${alert.color} p-4`}>
-              <div className="flex items-start gap-3 w-full">
-                <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-lg ${alert.color}`}>
-                  {alert.icon}
-                </div>
+              <div className="flex items-start gap-2 w-full">
                 <div className="flex-1">
                   <div className="mb-1">
                     <span className="font-semibold text-sm text-gray-900">{alert.title}</span>
