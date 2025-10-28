@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Card, Select, Input, OutlineBtn, statusToPill } from "../../../../shared/ui";
 import { fetchLedger } from "../../controller/data/dashboardService";
 import { useDebounce } from "../../controller/hooks/useDebounce";
+import { useDepartmentFilter } from "../context/DepartmentFilterContext";
 import toast from "react-hot-toast";
 
 type Tx = {
@@ -122,6 +123,7 @@ const TransactionModal: React.FC<{
 };
 
 export default function Ledger() {
+  const { selectedDepartment, selectedView, setAvailableDepartments } = useDepartmentFilter();
   const [query, setQuery]     = useState("");
   const debouncedQuery        = useDebounce(query, 300); // Debounce search input
   const [period, setPeriod]   = useState<typeof PERIODS[number]>("All Time");
@@ -152,6 +154,7 @@ export default function Ledger() {
         items.map(tx => tx.dept || tx.department).filter(d => d && d !== "Government Department" && d !== "-")
       ));
       setDeptOptions(uniqueDepts);
+      setAvailableDepartments(uniqueDepts); // Also update the shared context
       console.log('Found departments in transactions:', uniqueDepts);
     } catch (e: any) {
       setErr(e?.message || "Failed to load ledger");

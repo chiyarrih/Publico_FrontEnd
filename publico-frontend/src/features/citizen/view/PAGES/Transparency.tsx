@@ -36,7 +36,7 @@ const ProjectRow: React.FC<ProjectRowProps> = ({ name, dept, pct, color }) => (
 );
 
 export default function Transparency() {
-  const { selectedDepartment, setAvailableDepartments } = useDepartmentFilter();
+  const { selectedDepartment, selectedView, setAvailableDepartments } = useDepartmentFilter();
   const [allSlices, setAllSlices] = useState<Slice[]>([]);
   const [allProjects, setAllProjects] = useState<{ name: string; dept: string; pct: number; color: string }[]>([]);
   const [err, setErr] = useState<string | null>(null);
@@ -72,15 +72,27 @@ export default function Transparency() {
     return () => { ignore = true; };
   }, []);
 
-  // Filter projects AND recalculate slices based on selected department
+  // Filter projects AND recalculate slices based on selected department and view
   const { projects, slices } = useMemo(() => {
-    // Filter projects by department
-    const filteredProjects = selectedDepartment === "All" 
+    // First filter by department
+    let filteredProjects = selectedDepartment === "All" 
       ? allProjects 
       : allProjects.filter(p => {
           const matches = p.dept && p.dept.toLowerCase().includes(selectedDepartment.toLowerCase());
           return matches;
         });
+    
+    // Then filter by time view (monthly, quarterly, yearly)
+    if (selectedView === "Monthly View") {
+      // Show only recent projects (top 10)
+      filteredProjects = filteredProjects.slice(0, 10);
+    } else if (selectedView === "Quarterly View") {
+      // Show more projects (top 25)
+      filteredProjects = filteredProjects.slice(0, 25);
+    } else if (selectedView === "Yearly View") {
+      // Show all projects
+      filteredProjects = filteredProjects;
+    }
     
     // Recalculate category breakdown based on filtered projects
     const categoryCounts: Record<string, number> = {};
@@ -106,7 +118,7 @@ export default function Transparency() {
     }).filter(slice => slice.value > 0); // Only show categories with projects
     
     return { projects: filteredProjects, slices: calculatedSlices };
-  }, [selectedDepartment, allProjects]);
+  }, [selectedDepartment, selectedView, allProjects]);
 
   return (
     <div className="space-y-8">
