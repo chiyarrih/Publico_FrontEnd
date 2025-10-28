@@ -4,6 +4,7 @@ import { useAgencyVerification } from "../../controller/hooks/useAgencyVerificat
 import ApproveAgencyModal from "../modals/ApproveAgencyModal";
 import RejectAgencyModal from "../modals/RejectAgencyModal";
 import toast from "react-hot-toast";
+import { API_BASE_URL } from "@/config/api";
 
 interface AgencyVerificationReviewModalProps {
   isOpen: boolean;
@@ -221,6 +222,23 @@ export default function AgencyVerificationReviewModal({
                       const fileName = doc.name || `Document ${index + 1}`;
                       const fileExtension = fileName.split('.').pop()?.toLowerCase() || '';
                       
+                      // Construct full URL - handle both relative and absolute URLs
+                      const getFullUrl = (url: string) => {
+                        if (!url) return '';
+                        // If URL already starts with http/https, return as is
+                        if (url.startsWith('http://') || url.startsWith('https://')) {
+                          return url;
+                        }
+                        // If it starts with /, prepend the base URL
+                        if (url.startsWith('/')) {
+                          return `${API_BASE_URL}${url}`;
+                        }
+                        // Otherwise, add both / and base URL
+                        return `${API_BASE_URL}/${url}`;
+                      };
+                      
+                      const fullDocUrl = getFullUrl(doc.url);
+                      
                       const getFileIcon = () => {
                         if (doc.type?.includes('image') || ['jpg', 'jpeg', 'png', 'gif'].includes(fileExtension)) {
                           return (
@@ -258,9 +276,9 @@ export default function AgencyVerificationReviewModal({
                             </div>
                           </div>
                           <div className="flex items-center gap-2">
-                            {doc.url ? (
+                            {fullDocUrl ? (
                               <a
-                                href={doc.url}
+                                href={fullDocUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="px-3 py-1 text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors"
