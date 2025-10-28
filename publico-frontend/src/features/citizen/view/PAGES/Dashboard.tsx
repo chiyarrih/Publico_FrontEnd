@@ -323,10 +323,24 @@ const transformCategoryData = (categories: any[]): UiCategoryData[] =>
 const transformProjects = (projects: any[]): UiProject[] =>
   (projects ?? []).map((project: any) => {
     const spent = Number(project.spent ?? 0);
-    const budget = Number(project.budget ?? 0);
-    const percentage = budget > 0 
-      ? Math.min(100, Math.round((spent / budget) * 100)) 
-      : (project.progress ?? 0);
+    const budget = Number(project.budget ?? project.totalBudget ?? 0);
+    
+    // Check if milestone has overallProgress (from backend calculation)
+    let percentage = project.overallProgress ?? project.progress ?? 0;
+    
+    // If no progress field, calculate from phases
+    if (percentage === 0 && project.phases) {
+      const totalPhasesBudget = project.phases.reduce((sum: number, p: any) => sum + (p.budget || 0), 0);
+      const totalPhasesSpent = project.phases.reduce((sum: number, p: any) => sum + (p.spent || 0), 0);
+      if (totalPhasesBudget > 0) {
+        percentage = Math.min(100, Math.round((totalPhasesSpent / totalPhasesBudget) * 100));
+      }
+    }
+    
+    // Fallback: Calculate from spent/budget if available
+    if (percentage === 0 && budget > 0) {
+      percentage = Math.min(100, Math.round((spent / budget) * 100));
+    }
     
     return {
       id: String(project._id ?? project.id ?? Math.random()),
@@ -544,10 +558,7 @@ export default function Dashboard() {
           )}
           {uiAlerts.map((alert) => (
             <div key={alert.key} className={`rounded-lg border border-gray-200 ${alert.color} p-4`}>
-              <div className="flex items-start gap-3 w-full">
-                <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-lg ${alert.color}`}>
-                  {alert.icon}
-                </div>
+              <div className="flex items-start gap-2 w-full">
                 <div className="flex-1">
                   <div className="mb-1">
                     <span className="font-semibold text-sm text-gray-900">{alert.title}</span>

@@ -8,7 +8,6 @@ const Upload = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
 
 export default function Milestones() {
   const [search, setSearch] = useState("");
-  const [dept, setDept] = useState("All");
   const [state, setState] = useState("All");
   const {milestone, loading, error, refetch} = useMilestone()
   const milestones = milestone || []; // Use real API data
@@ -18,10 +17,9 @@ export default function Milestones() {
   const itemsPerPage = 10;
 
   const filtered = useMemo(() => milestones?.filter(p =>
-    (dept === "All" || p.department === dept) &&
     (state === "All" || p.overallStatus === state) &&
     (p.projectName.toLowerCase().includes(search.toLowerCase()) || p._id.includes(search))
-  ), [milestones, search, dept, state]);
+  ), [milestones, search, state]);
 
   // Calculate pagination
   const totalPages = Math.ceil((filtered?.length || 0) / itemsPerPage);
@@ -97,23 +95,14 @@ export default function Milestones() {
         </div>
         <select 
           className="px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
-          value={dept} 
-          onChange={e => setDept(e.target.value)}
-        >
-          <option>All Departments</option>
-          {Array.from(new Set(milestones?.map(m => m.department)))?.map(dept => (
-            <option key={dept} value={dept}>{dept}</option>
-          ))}
-        </select>
-        <select 
-          className="px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
           value={state} 
           onChange={e => setState(e.target.value)}
         >
           <option>All Statuses</option>
-          {Array.from(new Set(milestones?.map(m => m.overallStatus)))?.map(status => (
-            <option key={status} value={status}>{status}</option>
-          ))}
+          <option value="Pending">Pending</option>
+          <option value="In Progress">In Progress</option>
+          <option value="Delayed">Delayed</option>
+          <option value="Completed">Completed</option>
         </select>
       </div>
 

@@ -131,8 +131,7 @@ export default function Support() {
                 name="email" 
                 type="email" 
                 value={form.email} 
-                readOnly 
-                className="bg-gray-50 cursor-not-allowed" 
+                onChange={onChange}
                 placeholder="your.email@example.com" 
               />
             </Field>
