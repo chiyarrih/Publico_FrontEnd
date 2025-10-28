@@ -1,7 +1,6 @@
 import React, { useRef, useState } from "react";
 import { Card, Field, Input, Select, Textarea, PrimaryBtn } from "../../../../shared/ui";
 import { ContactSupportService, ContactSupportRequest } from "../../../shared/services/contactSupportService";
-import { getUserData, getCurrentUserRole } from "../../../../utils/auth";
 
 const Icon = {
   mail: (cls = "h-4 w-4") => (
@@ -29,31 +28,6 @@ export default function Support() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitMessage, setSubmitMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
-
-  // Pre-fill form with user data if available
-  React.useEffect(() => {
-    const userData = getUserData();
-    if (userData) {
-      let name = "";
-      let email = userData.email || "";
-      
-      // Handle different user types
-      if (userData.role === 'Citizen') {
-        name = `${userData.first_name || ''} ${userData.last_name || ''}`.trim();
-      } else if (userData.role === 'Agency') {
-        name = userData.agency_name || "";
-        email = userData.contact_email || userData.email || "";
-      } else if (userData.role === 'Admin') {
-        name = `${userData.first_name || ''} ${userData.last_name || ''}`.trim();
-      }
-      
-      setForm(prev => ({
-        ...prev,
-        name,
-        email
-      }));
-    }
-  }, []);
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
     setForm((s) => ({ ...s, [e.target.name]: e.target.value }));

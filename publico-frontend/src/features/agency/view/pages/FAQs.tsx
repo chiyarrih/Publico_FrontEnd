@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 
 const qs = [
   "Where does budget data come from?",
@@ -13,6 +14,8 @@ const qs = [
 
 export default function FAQs() {
   const [open, setOpen] = React.useState<number | null>(null);
+  const navigate = useNavigate();
+  
   return (
     <div className="space-y-4">
       <div className="bg-white border border-slate-200 rounded-lg p-4">
@@ -38,11 +41,16 @@ export default function FAQs() {
       </div>
 
       <div className="bg-blue-50 border border-blue-100 rounded-lg p-4">
-        <div className="text-sm font-medium">Can’t find what you’re looking for?</div>
+        <div className="text-sm font-medium">Can't find what you're looking for?</div>
         <div className="text-xs text-slate-600 mt-1">
-          If you didn’t find the answer to your question, reach out to our support team.
+          If you didn't find the answer to your question, reach out to our support team.
         </div>
-        <button className="mt-3 h-9 px-3 rounded bg-blue-600 text-white text-sm">Contact Support</button>
+        <button 
+          onClick={() => navigate('/agency/support')} 
+          className="mt-3 h-9 px-3 rounded bg-blue-600 text-white text-sm hover:bg-blue-700 transition-colors"
+        >
+          Contact Support
+        </button>
       </div>
     </div>
   );
