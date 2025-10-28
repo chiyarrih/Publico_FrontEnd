@@ -368,11 +368,19 @@ export async function getKeyProjects(limit = 5) {
       const json = await response.json();
       // Extract data array from response
       const milestones = json.data || json;
-      return Array.isArray(milestones) ? milestones : [];
+      const realData = Array.isArray(milestones) ? milestones : [];
+      
+      // Only return mock data if NO real data is available
+      if (realData.length === 0) {
+        console.warn("No milestone data available, showing sample projects");
+        return MOCK_PROJECTS.slice(0, limit);
+      }
+      
+      return realData;
     } catch (error) {
-      console.warn("Public milestones endpoint not available, using mock data:", error);
-      // Return mock data for demonstration
-      return MOCK_PROJECTS.slice(0, limit);
+      console.warn("Public milestones endpoint not available:", error);
+      // Return empty array instead of mock data for transparency
+      return [];
     }
   } else {
     // For agencies/admins, fetch their specific projects
@@ -602,11 +610,20 @@ export async function getDashboardAlerts(): Promise<DashboardAlert[]> {
       }
 
       const json = await response.json();
-      return json;
+      console.log("✅ Dashboard alerts (REAL PROJECT DATA):", json);
+      
+      // Validate that we got real data
+      if (Array.isArray(json) && json.length > 0) {
+        return json;
+      }
+      
+      // If empty array, return empty (don't show mock alerts)
+      console.warn("Dashboard alerts API returned empty data");
+      return [];
     } catch (error) {
-      console.warn("Public alerts endpoint not available, using mock data:", error);
-      // Return mock alert data
-      return MOCK_ALERTS;
+      console.error("Error fetching dashboard alerts:", error);
+      // Return empty array instead of mock data for transparency
+      return [];
     }
   } else {
     // For agencies/admins, fetch their specific alerts
@@ -638,13 +655,20 @@ export async function getMonthlySpending(): Promise<MonthlyPoint[]> {
       }
 
       const json = await response.json();
-      console.log("✅ Monthly spending data:", json);
-      return json;
-    } catch (error) {
-      console.warn("Public monthly analytics endpoint not available, using mock data:", error);
-      console.log("📊 Using mock monthly data:", MOCK_MONTHLY_SPENDING);
-      // Return mock monthly spending data
+      console.log("✅ Monthly spending data (REAL-TIME):", json);
+      
+      // Validate that we got real data
+      if (Array.isArray(json) && json.length > 0) {
+        return json;
+      }
+      
+      // If empty array, use mock for demonstration
+      console.warn("Monthly spending API returned empty data, using sample data");
       return MOCK_MONTHLY_SPENDING;
+    } catch (error) {
+      console.error("Error fetching monthly spending:", error);
+      // Return empty array instead of mock data for transparency
+      return [];
     }
   } else {
     // For agencies/admins, fetch their specific analytics
@@ -676,11 +700,20 @@ export async function getBudgetByCategory(): Promise<CategorySlice[]> {
       }
 
       const json = await response.json();
-      return json;
-    } catch (error) {
-      console.warn("Public category analytics endpoint not available, using mock data:", error);
-      // Return mock category data
+      console.log("✅ Budget by category data (REAL-TIME):", json);
+      
+      // Validate that we got real data
+      if (Array.isArray(json) && json.length > 0) {
+        return json;
+      }
+      
+      // If empty array, use mock for demonstration
+      console.warn("Budget category API returned empty data, using sample data");
       return MOCK_CATEGORIES;
+    } catch (error) {
+      console.error("Error fetching budget by category:", error);
+      // Return empty array instead of mock data for transparency
+      return [];
     }
   } else {
     // For agencies/admins, fetch their specific analytics
