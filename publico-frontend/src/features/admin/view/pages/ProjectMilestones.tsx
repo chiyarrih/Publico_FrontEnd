@@ -298,7 +298,7 @@ export default function ProjectMilestones(){
               Next
             </button>
           </div>
-        </div>
+      </div>
       )}
 
       <CreateMilestoneModal
