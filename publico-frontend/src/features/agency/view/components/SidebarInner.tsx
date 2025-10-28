@@ -49,7 +49,7 @@ export default function SidebarInner ({mobile, profile, className, setSidebarOpe
         </div>
       </div>
       <nav className="space-y-2">
-        <NavLink to="/agency" end className={className}>
+        <NavLink to="/agency/dashboard" end className={className}>
           <I.dashboard />
           <span>Dashboard</span>
         </NavLink>

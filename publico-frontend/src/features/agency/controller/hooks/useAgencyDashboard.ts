@@ -32,10 +32,10 @@ export function useAgencyDashboard() {
   ];
 
   const statusPie: PieSlice[] = [
-    { name: "On Track",  value: 65, color: "#3b82f6" },
-    { name: "Delayed",   value: 20, color: "#22c55e" },
-    { name: "At Risk",   value: 10, color: "#f59e0b" },
-    { name: "Completed", value: 5,  color: "#ef4444" },
+    { name: "In Progress",  value: 60, color: "#3b82f6" },
+    { name: "Completed",   value: 10, color: "#22c55e" },
+    { name: "Not Started",   value: 10, color: "#f59e0b" },
+    { name: "Delayed", value: 0,  color: "#ef4444" },
   ];
 
   const projects: Project[] = [

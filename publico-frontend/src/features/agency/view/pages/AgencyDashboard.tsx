@@ -106,16 +106,13 @@ const AgencyDashboard: React.FC = () => {
           <span>Smart Contract Alerts</span></div>}
         right={<button className="text-sm font-semibold text-blue-600 hover:text-blue-700 transition-colors">View All →</button>}
         variant="elevated">
-        <div className="space-y-3">
+        <div className="space-y-2">
           {alerts.map((a,i)=>(
-            <div key={i} className={`rounded-xl px-4 py-3 ${a.color} border border-slate-100 hover:shadow-md transition-all duration-200`}>
+            <div key={i} className={`rounded-xl px-4 py-2.5 ${a.color} border border-slate-100 hover:shadow-md transition-all duration-200`}>
               <div className="flex items-center justify-between gap-4">
-                <div className="flex items-start gap-3">
-                  <span className="text-lg mt-0.5">{a.icon}</span>
-                  <div>
-                    <div className="font-semibold text-slate-900">{a.title}</div>
-                    <div className="text-sm text-slate-600 mt-1">{a.desc}</div>
-                  </div>
+                <div className="flex-1">
+                  <div className="font-semibold text-slate-900">{a.title}</div>
+                  <div className="text-sm text-slate-600 mt-0.5">{a.desc}</div>
                 </div>
                 <span className="text-sm text-slate-500 font-medium">{a.date}</span>
               </div>
