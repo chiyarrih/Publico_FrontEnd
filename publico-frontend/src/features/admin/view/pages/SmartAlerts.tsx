@@ -4,16 +4,16 @@ import type { ContractAlert } from "../../model/types/contractAlerts"
 import { formatAlertTimestamp, formatAlertType, formatSeverity } from "@/utils/serializers"
 import { CheckCircle, AlertTriangle, XCircle, Info } from "lucide-react"
 
-const bar = (s: ContractAlert["severity"]) =>
+export const bar = (s: ContractAlert["severity"]) =>
   s === "High"
     ? "border-rose-200 bg-rose-50"
     : s === "Medium"
       ? "border-amber-200 bg-amber-50"
       : "border-emerald-200 bg-emerald-50"
 
-const tone = (s: ContractAlert["severity"]) => (s === "High" ? "red" : s === "Medium" ? "yellow" : "green")
+export const tone = (s: ContractAlert["severity"]) => (s === "High" ? "red" : s === "Medium" ? "yellow" : "green")
 
-const IconForSeverity = ({ severity }: { severity: string }) => {
+export const IconForSeverity = ({ severity }: { severity: string }) => {
   switch (severity) {
     case "High":
       return <XCircle className="text-red-500" size={24} />
@@ -65,7 +65,7 @@ export default function SmartAlerts() {
           disabled={alerts.length === 0}
           className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <svg className="w-4 h-4 mr-2 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="inline-block w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
           </svg>
           Export Alerts
@@ -85,9 +85,9 @@ export default function SmartAlerts() {
 
       {!loading && !error && alerts.length === 0 && (
         <div className="flex flex-col items-center justify-center py-12 text-center">
-          <CheckCircle className="text-emerald-500 mb-3" size={48} />
+          <CheckCircle className="mb-3 text-emerald-500" size={48} />
           <h3 className="text-lg font-medium text-slate-700">No Smart Contract Alerts</h3>
-          <p className="text-sm text-slate-500 mt-1">
+          <p className="mt-1 text-sm text-slate-500">
             All systems are operating normally. No alerts to display at this time.
           </p>
         </div>
@@ -108,7 +108,7 @@ export default function SmartAlerts() {
 
                   <div className="mt-1 text-sm text-slate-600">{a.description}</div>
 
-                  <div className="mt-2 flex gap-2">
+                  <div className="flex gap-2 mt-2">
                     <Badge tone={tone(formatSeverity(a.severity))}>{formatSeverity(a.severity)}</Badge>
                   </div>
                 </div>
