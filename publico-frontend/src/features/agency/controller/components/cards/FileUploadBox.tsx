@@ -31,7 +31,7 @@ export default function FileUploadBox({ files, setFiles }: FileUploadBoxProps) {
           multiple
           className="hidden"
           onChange={handleFileChange}
-          accept=".pdf,.jpg,.jpeg,.png"
+          accept="image/png,image/jpeg,image/jpg,application/pdf"
         />
       </label>
 
