@@ -21,8 +21,18 @@ export function useAgencyDashboard() {
   const [statusPie, setStatusPie] = useState<PieSlice[]>([]);
   
   useEffect(() => {
+    if (!milestones || !Array.isArray(milestones) || milestones.length === 0) {
+      setAnnualBudget("₱0");
+      setMonthlySpending([]);
+      setStatusPie([]);
+      return;
+    }
+    
     // Calculate annual budget from milestones
-    const totalBudget = milestones.reduce((sum, m) => sum + (m.totalBudget || 0), 0);
+    const totalBudget = milestones.reduce((sum, m) => {
+      if (!m || !m.totalBudget) return sum;
+      return sum + (m.totalBudget || 0);
+    }, 0);
     setAnnualBudget(`₱${(totalBudget / 1000000).toFixed(1)}M`);
     
     // Calculate monthly spending from milestones
@@ -33,16 +43,15 @@ export function useAgencyDashboard() {
       { m: "Jul", actual: 0, budget: 0 }, { m: "Aug", actual: 0, budget: 0 },
     ];
     milestones.forEach(m => {
-      if (m.startDate) {
-        const startMonth = new Date(m.startDate).getMonth();
-        const avgMonthly = (m.totalBudget || 0) / 8; // Distribute across 8 months
-        const currentMonth = new Date().getMonth();
-        
-        monthly.slice(startMonth, currentMonth + 1).forEach((month, idx) => {
-          month.budget += avgMonthly / 1000;
-          month.actual += (avgMonthly * 0.85) / 1000; // 85% spent
-        });
-      }
+      if (!m || !m.startDate) return;
+      const startMonth = new Date(m.startDate).getMonth();
+      const avgMonthly = (m.totalBudget || 0) / 8; // Distribute across 8 months
+      const currentMonth = new Date().getMonth();
+      
+      monthly.slice(startMonth, currentMonth + 1).forEach((month, idx) => {
+        month.budget += avgMonthly / 1000;
+        month.actual += (avgMonthly * 0.85) / 1000; // 85% spent
+      });
     });
     setMonthlySpending(monthly);
     
@@ -54,6 +63,7 @@ export function useAgencyDashboard() {
       "Completed": 0
     };
     milestones.forEach(m => {
+      if (!m) return;
       // Get progress from milestone data
       const progress = m.overallProgress !== undefined && m.overallProgress !== null 
         ? m.overallProgress 
@@ -76,10 +86,16 @@ export function useAgencyDashboard() {
 
   // Generate real alerts from milestone data
   const alerts: Alert[] = useMemo(() => {
+    if (!milestones || !Array.isArray(milestones)) return [];
+    
     const alertList: Alert[] = [];
     
     milestones.forEach(m => {
-      const spent = m.phases?.reduce((sum, p) => sum + (p.spent || 0), 0) || 0;
+      if (!m) return;
+      const spent = m.phases?.reduce((sum, p) => {
+        if (!p || !p.spent) return sum;
+        return sum + (p.spent || 0);
+      }, 0) || 0;
       const budget = m.totalBudget || 0;
       const progress = m.overallProgress || 0;
       const status = m.overallStatus || 'Pending';
@@ -91,7 +107,7 @@ export function useAgencyDashboard() {
           color: "bg-rose-50",
           icon: "⚠️",
           title: "Budget Overrun",
-          desc: `${m.projectName} is ${overrunPercent}% over budget`,
+          desc: `${m.projectName || 'Project'} is ${overrunPercent}% over budget`,
           date: new Date(m.startDate || Date.now()).toISOString().split('T')[0]
         });
       }
@@ -102,7 +118,7 @@ export function useAgencyDashboard() {
           color: "bg-amber-50",
           icon: "🕒",
           title: "Project Delayed",
-          desc: `${m.projectName} is behind schedule`,
+          desc: `${m.projectName || 'Project'} is behind schedule`,
           date: new Date(m.endDate || Date.now()).toISOString().split('T')[0]
         });
       }
@@ -115,7 +131,7 @@ export function useAgencyDashboard() {
             color: "bg-yellow-50",
             icon: "⚠️",
             title: "Project At Risk",
-            desc: `${m.projectName} is ${progress}% complete but overdue`,
+            desc: `${m.projectName || 'Project'} is ${progress}% complete but overdue`,
             date: new Date(m.startDate || Date.now()).toISOString().split('T')[0]
           });
         }
@@ -144,23 +160,30 @@ export function useAgencyDashboard() {
     { m: "Jul", actual: 1500, budget: 1520 }, { m: "Aug", actual: 1220, budget: 1530 },
   ];
 
-  const projects: Project[] = milestones.slice(0, 4).map(m => {
-    const spent = m.phases?.reduce((sum, p) => sum + (p.spent || 0), 0) || 0;
-    const budget = m.totalBudget || 0;
-    // Use overallProgress if it exists, otherwise calculate from spent/budget
-    const pct = (m.overallProgress !== undefined && m.overallProgress !== null) 
-      ? m.overallProgress 
-      : (budget > 0 ? Math.round((spent / budget) * 100) : 0);
-    
-    return {
-      name: m.projectName,
-      dept: m.department || "N/A",
-      pct,
-      color: pct >= 80 ? "#22c55e" : pct >= 50 ? "#3b82f6" : "#f59e0b",
-      budget: `₱${(budget / 1000000).toFixed(1)}M`,
-      spent: `₱${(spent / 1000000).toFixed(1)}M`
-    };
-  });
+  const projects: Project[] = useMemo(() => {
+    if (!milestones || !Array.isArray(milestones)) return [];
+    return milestones.slice(0, 4).map(m => {
+      if (!m) return null;
+      const spent = m.phases?.reduce((sum, p) => {
+        if (!p || !p.spent) return sum;
+        return sum + (p.spent || 0);
+      }, 0) || 0;
+      const budget = m.totalBudget || 0;
+      // Use overallProgress if it exists, otherwise calculate from spent/budget
+      const pct = (m.overallProgress !== undefined && m.overallProgress !== null) 
+        ? m.overallProgress 
+        : (budget > 0 ? Math.round((spent / budget) * 100) : 0);
+      
+      return {
+        name: m.projectName || 'Unknown Project',
+        dept: m.department || "N/A",
+        pct,
+        color: pct >= 80 ? "#22c55e" : pct >= 50 ? "#3b82f6" : "#f59e0b",
+        budget: `₱${(budget / 1000000).toFixed(1)}M`,
+        spent: `₱${(spent / 1000000).toFixed(1)}M`
+      };
+    }).filter(p => p !== null) as Project[];
+  }, [milestones]);
 
   const submitBudget = (payload: any) => {
     console.log("Budget submitted:", payload);

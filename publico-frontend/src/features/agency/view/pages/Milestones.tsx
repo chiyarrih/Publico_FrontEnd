@@ -15,10 +15,16 @@ export default function Milestones() {
   const {milestone, loading, error, refetch} = useMilestone()
   const milestones = milestone || []; // Use real API data
 
-  const filtered = useMemo(() => milestones?.filter(p =>
-    (state === "All" || p.overallStatus === state) &&
-    (p.projectName.toLowerCase().includes(search.toLowerCase()) || p._id.includes(search))
-  ), [milestones, search, state]);
+  const filtered = useMemo(() => {
+    if (!milestones || !Array.isArray(milestones)) return [];
+    return milestones.filter(p => {
+      if (!p) return false;
+      const projectName = p.projectName || '';
+      const projectId = p._id || '';
+      return (state === "All" || p.overallStatus === state) &&
+             (projectName.toLowerCase().includes(search.toLowerCase()) || projectId.includes(search));
+    });
+  }, [milestones, search, state]);
 
   // Pagination logic
   const totalPages = Math.ceil(filtered.length / itemsPerPage);
@@ -122,41 +128,44 @@ export default function Milestones() {
           </div>
           
           {/* Table Body */}
-          {filtered?.length === 0 ? (
+          {(!paginatedData || paginatedData.length === 0) ? (
             <div className="px-6 py-8 text-center text-gray-500">
               No projects found
             </div>
           ) : (
             <>
               <div className="divide-y divide-gray-200">
-                {paginatedData?.map(project => (
-                  <div key={project._id} className="grid grid-cols-6 gap-4 px-6 py-4 hover:bg-gray-50">
-                    <div className="text-sm font-medium text-gray-900">{project._id}</div>
-                    <div className="text-sm text-gray-900">{project.projectName}</div>
-                    <div className="flex items-center text-sm text-gray-600">
-                      <svg className="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                      </svg>
-                      {project.department}
+                {paginatedData.map(project => {
+                  if (!project || !project._id) return null;
+                  return (
+                    <div key={project._id} className="grid grid-cols-6 gap-4 px-6 py-4 hover:bg-gray-50">
+                      <div className="text-sm font-medium text-gray-900">{project._id}</div>
+                      <div className="text-sm text-gray-900">{project.projectName || 'N/A'}</div>
+                      <div className="flex items-center text-sm text-gray-600">
+                        <svg className="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                        </svg>
+                        {project.department || 'N/A'}
+                      </div>
+                      <div className="text-sm font-semibold text-blue-600">₱{(project.totalBudget || 0).toLocaleString()}</div>
+                      <div className="text-sm text-gray-600">
+                        {project.startDate ? new Date(project.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'} - {project.endDate ? new Date(project.endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}
+                      </div>
+                      <div className="flex items-center justify-end gap-2">
+                        <span className="inline-flex items-center px-3 py-1 text-xs font-medium text-blue-800 bg-blue-100 rounded-full">
+                          {project.overallStatus || 'Unknown'}
+                        </span>
+                        <Link 
+                          to={`/agency/milestones/${project._id}`}
+                          className="inline-flex items-center justify-center w-8 h-8 text-gray-600 transition-colors rounded-lg hover:text-blue-600 hover:bg-blue-50"
+                          title="View Details"
+                        >
+                          <Eye />
+                        </Link>
+                      </div>
                     </div>
-                    <div className="text-sm font-semibold text-blue-600">₱{project.totalBudget.toLocaleString()}</div>
-                    <div className="text-sm text-gray-600">
-                      {new Date(project.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} - {new Date(project.endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                    </div>
-                    <div className="flex items-center justify-end gap-2">
-                      <span className="inline-flex items-center px-3 py-1 text-xs font-medium text-blue-800 bg-blue-100 rounded-full">
-                        {project.overallStatus}
-                      </span>
-                      <Link 
-                        to={`/agency/milestones/${project._id}`}
-                        className="inline-flex items-center justify-center w-8 h-8 text-gray-600 transition-colors rounded-lg hover:text-blue-600 hover:bg-blue-50"
-                        title="View Details"
-                      >
-                        <Eye />
-                      </Link>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
               
               {/* Pagination */}

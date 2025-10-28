@@ -94,7 +94,9 @@ const AgencyDashboard: React.FC = () => {
   } = useAgencyDashboard();
   const { alerts, loading, error } = useContractAlerts()
 
-  return (
+  // Error boundary - catch any rendering errors
+  try {
+    return (
     <div className="p-1 space-y-8">
       {/* Page Header */}
       <div className="mb-8">
@@ -119,59 +121,67 @@ const AgencyDashboard: React.FC = () => {
         </button>}
         variant="elevated">
         <div className="space-y-3">
-                {alerts.map((a, index) =>
-                  a.resolved === false ? (
-                    <Card key={index} className={`${bar(formatSeverity(a.severity))} border`}>
-                      <div className="flex items-start gap-3">
-                        <IconForSeverity severity={formatSeverity(a.severity)} />
-        
-                        <div className="flex-1">
-                          <div className="flex items-center justify-between">
-                            <div className="font-medium">{formatAlertType(a.alertType)}</div>
-                            <div className="text-xs text-slate-500">{formatAlertTimestamp(a.timestamp)}</div>
-                          </div>
-        
-                          <div className="mt-1 text-sm text-slate-600">{a.description}</div>
-        
-                          <div className="flex gap-2 mt-2">
-                            <Badge tone={tone(formatSeverity(a.severity))}>{formatSeverity(a.severity)}</Badge>
-                          </div>
-                        </div>
+          {alerts && Array.isArray(alerts) ? (
+            alerts.map((a, index) =>
+              a && a.resolved === false ? (
+                <Card key={index} className={`${bar(formatSeverity(a.severity))} border`}>
+                  <div className="flex items-start gap-3">
+                    <IconForSeverity severity={formatSeverity(a.severity)} />
+      
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between">
+                        <div className="font-medium">{formatAlertType(a.alertType)}</div>
+                        <div className="text-xs text-slate-500">{formatAlertTimestamp(a.timestamp)}</div>
                       </div>
-                    </Card>
-                  ) : null,
-                )}
-              </div>
+      
+                      <div className="mt-1 text-sm text-slate-600">{a.description}</div>
+      
+                      <div className="flex gap-2 mt-2">
+                        <Badge tone={tone(formatSeverity(a.severity))}>{formatSeverity(a.severity)}</Badge>
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              ) : null,
+            )
+          ) : (
+            <div className="text-center py-4 text-slate-500">No alerts available</div>
+          )}
+        </div>
       </Card>
 
       {/* KPIs */}
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-        {kpis.map((k,i)=>{
-          const icons = [
-            <svg key="budget" className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-            </svg>,
-            <svg key="allocation" className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-            </svg>,
-            <svg key="projects" className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-            </svg>,
-            <svg key="approvals" className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-          ];
-          return (
-            <StatCard 
-              key={i}
-              label={k.label}
-              value={String(k.value)}
-              delta={k.delta}
-              trend={k.up ? 'up' : k.delta ? 'down' : 'neutral'}
-              icon={icons[i]}
-            />
-          );
-        })}
+        {kpis && Array.isArray(kpis) ? (
+          kpis.map((k,i)=>{
+            const icons = [
+              <svg key="budget" className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+              </svg>,
+              <svg key="allocation" className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>,
+              <svg key="projects" className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+              </svg>,
+              <svg key="approvals" className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            ];
+            return (
+              <StatCard 
+                key={i}
+                label={k.label}
+                value={String(k.value)}
+                delta={k.delta}
+                trend={k.up ? 'up' : k.delta ? 'down' : 'neutral'}
+                icon={icons[i]}
+              />
+            );
+          })
+        ) : (
+          <div className="col-span-4 text-center py-8 text-slate-500">Loading KPI data...</div>
+        )}
       </div>
 
       {/* Charts */}
@@ -307,37 +317,44 @@ const AgencyDashboard: React.FC = () => {
           </button>}
           variant="elevated">
           <div className="space-y-4">
-            {projects.map((p,i)=>(
-              <div key={i} className="p-5 transition-all duration-200 border group rounded-xl border-slate-200 hover:shadow-md hover:border-slate-300">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex-1">
-                    <div className="font-semibold transition-colors text-slate-900 group-hover:text-slate-700">{p.name}</div>
-                    <div className="mt-1 text-sm text-slate-600">{p.dept}</div>
-                    {(p.budget || p.spent) && (
-                      <div className="flex items-center gap-4 mt-2 text-xs text-slate-500">
-                        {p.budget && <span>Budget: {p.budget}</span>}
-                        {p.spent && <span>Spent: {p.spent}</span>}
+            {projects && Array.isArray(projects) && projects.length > 0 ? (
+              projects.map((p,i)=>{
+                if (!p) return null;
+                return (
+                  <div key={i} className="p-5 transition-all duration-200 border group rounded-xl border-slate-200 hover:shadow-md hover:border-slate-300">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex-1">
+                        <div className="font-semibold transition-colors text-slate-900 group-hover:text-slate-700">{p.name}</div>
+                        <div className="mt-1 text-sm text-slate-600">{p.dept}</div>
+                        {(p.budget || p.spent) && (
+                          <div className="flex items-center gap-4 mt-2 text-xs text-slate-500">
+                            {p.budget && <span>Budget: {p.budget}</span>}
+                            {p.spent && <span>Spent: {p.spent}</span>}
+                          </div>
+                        )}
                       </div>
-                    )}
+                      <div className="text-right">
+                        <div className="text-lg font-bold text-slate-900">{p.pct}%</div>
+                        <div className="text-xs text-slate-500">Complete</div>
+                      </div>
+                    </div>
+                    <div className="relative">
+                      <div className="w-full h-3 overflow-hidden rounded-full bg-slate-100">
+                        <div 
+                          className="h-full transition-all duration-500 ease-out rounded-full"
+                          style={{ 
+                            width: `${p.pct}%`, 
+                            background: `linear-gradient(90deg, ${p.color} 0%, ${p.color}dd 100%)`
+                          }}
+                        />
+                      </div>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <div className="text-lg font-bold text-slate-900">{p.pct}%</div>
-                    <div className="text-xs text-slate-500">Complete</div>
-                  </div>
-                </div>
-                <div className="relative">
-                  <div className="w-full h-3 overflow-hidden rounded-full bg-slate-100">
-                    <div 
-                      className="h-full transition-all duration-500 ease-out rounded-full"
-                      style={{ 
-                        width: `${p.pct}%`, 
-                        background: `linear-gradient(90deg, ${p.color} 0%, ${p.color}dd 100%)`
-                      }}
-                    />
-                  </div>
-                </div>
-              </div>
-            ))}
+                );
+              })
+            ) : (
+              <div className="text-center py-8 text-slate-500">No projects available</div>
+            )}
           </div>
         </Card>
 
@@ -381,6 +398,23 @@ const AgencyDashboard: React.FC = () => {
       </div>
     </div>
   );
+  } catch (err: any) {
+    console.error('Agency Dashboard Error:', err);
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-center">
+          <div className="text-red-600 text-lg font-medium mb-2">⚠️ Dashboard Error</div>
+          <p className="text-slate-600 mb-4">{err?.message || "Something went wrong"}</p>
+          <button 
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+          >
+            Reload Page
+          </button>
+        </div>
+      </div>
+    );
+  }
 };
 
 export default AgencyDashboard;
