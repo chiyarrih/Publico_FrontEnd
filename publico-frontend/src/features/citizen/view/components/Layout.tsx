@@ -255,7 +255,7 @@ const Header: React.FC = () => {
     <header className="sticky top-0 z-10 h-16 w-full border-b border-gray-200/60 bg-white/80 backdrop-blur-md shadow-sm">
       <div className="flex h-full items-center justify-between px-6">
         <div className="flex items-center gap-3">
-          <img src="/logo.jpg" alt="Publico Logo" className="h-8 w-8" />
+          <img src="/logo.png" alt="Publico Logo" className="h-8 w-8" />
           <div className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
             Publico
           </div>
@@ -471,7 +471,7 @@ function AppLayoutInner() {
               </svg>
             </button>
             
-            <img src="/logo.jpg" alt="Publico Logo" className="h-8 w-8" />
+            <img src="/logo.png" alt="Publico Logo" className="h-8 w-8" />
             <div className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
               Publico
             </div>

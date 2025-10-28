@@ -255,7 +255,6 @@ export default function BudgetRequests() {
             onDepartmentChange={setSelectedDepartment}
             selectedStatus={selectedStatus}
             onStatusChange={setSelectedStatus}
-            onMoreFilters={() => console.log("More filters clicked")}
           />
         </div>
 

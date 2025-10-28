@@ -243,9 +243,10 @@ export default function Transactions(){
           <div className="py-8 text-center text-slate-500">No transactions found</div>
         ) : (
           <>
-            <Table
-              head={["Transaction ID", "Agency ID", "Date", "Department", "Project", "Amount", "Status", "Digital Signature", "Actions"]}
-              rows={ledgers.map(proposal => [
+            <div className="overflow-x-auto">
+              <Table
+                head={["Transaction ID", "Agency ID", "Date", "Department", "Project", "Amount", "Status", "Digital Signature", "Actions"]}
+                rows={ledgers.map(proposal => [
                 <a 
                   onClick={() => handleViewDetails(proposal)}
                   className="text-sky-600 hover:underline cursor-pointer"
@@ -275,7 +276,8 @@ export default function Transactions(){
                   
                 </div>
               ])}
-            />
+              />
+            </div>
 
             {/* Pagination */}
             {totalPages > 1 && (

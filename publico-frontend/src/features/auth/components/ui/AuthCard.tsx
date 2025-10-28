@@ -12,7 +12,7 @@ const AuthCard: React.FC<Props> = ({ title, subtitle, children, footer }) => (
     {/* Logo/Brand */}
     <div className="w-full mb-8 text-center">
       <div className="flex items-center justify-center gap-3 mb-2">
-        <img src="/logo.jpg" alt="Publico Logo" className="h-10 w-10" />
+        <img src="/logo.png" alt="Publico Logo" className="h-10 w-10" />
         <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
           Publico
         </span>

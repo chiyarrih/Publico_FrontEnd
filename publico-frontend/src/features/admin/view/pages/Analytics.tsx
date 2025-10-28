@@ -45,7 +45,6 @@ export default function Analytics(){
       <div className="flex items-center gap-2">
         <Select defaultValue="All"><option>All Departments</option></Select>
         <Select defaultValue="Current"><option>Current Year</option><option>Last Year</option></Select>
-        <Button className="ml-auto">More Filters</Button>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">

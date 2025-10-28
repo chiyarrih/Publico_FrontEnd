@@ -10,7 +10,6 @@ interface BudgetRequestsFiltersProps {
   onDepartmentChange?: (dept: string) => void;
   selectedStatus?: string;
   onStatusChange?: (status: string) => void;
-  onMoreFilters?: () => void;
 }
 
 export default function BudgetRequestsFilters({
@@ -20,7 +19,6 @@ export default function BudgetRequestsFilters({
   onDepartmentChange,
   selectedStatus,
   onStatusChange,
-  onMoreFilters,
 }: BudgetRequestsFiltersProps) {
   return (
     <div className="flex flex-wrap items-center gap-3">
@@ -55,14 +53,6 @@ export default function BudgetRequestsFilters({
           <option value="Approved">Approved</option>
           <option value="Rejected">Rejected</option>
         </Select>
-
-        <button
-          onClick={onMoreFilters}
-          className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-sm hover:bg-slate-50"
-        >
-          <Filter size={16} />
-          More Filters
-        </button>
       </div>
     </div>
   );

@@ -15,6 +15,7 @@ import {
   ResponsiveContainer, PieChart, Pie, Cell
 } from "recharts";
 import { useNavigate } from "react-router-dom";
+import { useDepartmentFilter } from "../context/DepartmentFilterContext";
 import { useCitizenDashboard } from "../../controller/hooks/useCitizenDashboard";
 // Simplified loading components
 
@@ -29,6 +30,7 @@ interface UiProject {
   id: string;
   name: string;
   dept?: string;
+  department?: string;
   budget?: number;
   spent?: number;
   pct: number;
@@ -443,6 +445,7 @@ export default function Dashboard() {
   // ============================================================================
 
   const navigate = useNavigate();
+  const { selectedDepartment } = useDepartmentFilter();
   const { loading, error, alerts, monthly, categories, projects, ledger, reload } = useCitizenDashboard();
   
   const [openProjects, setOpenProjects] = useState(false);
@@ -472,10 +475,27 @@ export default function Dashboard() {
   // ============================================================================
   
   const filteredProjects = useMemo(
-    () => uiProjects.filter((project) => 
-      project.name.toLowerCase().includes(searchQuery.toLowerCase())
-    ),
-    [searchQuery, uiProjects]
+    () => {
+      let filtered = uiProjects;
+      
+      // Filter by department if one is selected
+      if (selectedDepartment && selectedDepartment !== "All Departments") {
+        filtered = filtered.filter((project) =>
+          project.dept?.toLowerCase().includes(selectedDepartment.toLowerCase()) ||
+          project.department?.toLowerCase().includes(selectedDepartment.toLowerCase())
+        );
+      }
+      
+      // Filter by search query
+      if (searchQuery.trim()) {
+        filtered = filtered.filter((project) =>
+          project.name.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+      }
+      
+      return filtered;
+    },
+    [searchQuery, uiProjects, selectedDepartment]
   );
 
   // ============================================================================
@@ -644,7 +664,7 @@ export default function Dashboard() {
               No projects.
             </div>
           )}
-          {uiProjects.slice(0, 4).map((project) => (
+          {uiProjects.map((project) => (
             <ProjectRow key={project.id} project={project} onViewDetails={handleViewProjectDetails} />
           ))}
         </div>

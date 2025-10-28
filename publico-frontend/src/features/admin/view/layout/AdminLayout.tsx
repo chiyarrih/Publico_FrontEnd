@@ -206,6 +206,18 @@ export default function AdminLayout() {
 
         {/* Main */}
         <main>
+          {/* Mobile hamburger button */}
+          <div className="lg:hidden">
+            <button
+              onClick={() => setMobileOpen(true)}
+              className="fixed top-4 left-4 z-50 p-2 rounded-lg bg-blue-700 text-white hover:bg-blue-800 shadow-lg"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+          </div>
+          
           <div className="mx-auto max-w-6xl p-4 lg:p-6">
             <ErrorBoundary>
               <Outlet />
