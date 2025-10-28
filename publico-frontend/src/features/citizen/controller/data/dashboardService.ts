@@ -522,24 +522,29 @@ export async function fetchLedger(page = 1, limit = 10) {
       const json = await response.json();
       
       // Transform the data to match frontend expectations
-      const items = json.data?.map((item: any) => ({
-        _id: item._id,
-        id: item._id,
-        title: item.budgetId?.projectName || 'Project Transaction',
-        tx: item.budgetId?.projectName || 'Project Transaction',
-        date: item.createdAt ? new Date(item.createdAt).toLocaleDateString() : undefined,
-        createdAt: item.createdAt,
-        dept: item.budgetId?.department || item.agencyId?.agency_name || 'Government Department',
-        department: item.budgetId?.department || item.agencyId?.agency_name || 'Government Department',
-        project: item.budgetId?.projectName || 'Government Project',
-        projectName: item.budgetId?.projectName || 'Government Project',
-        amount: item.amount || 0,
-        status: item.status === 'completed' ? 'Verified' : item.status === 'Verified' ? 'Verified' : 'Pending',
-        signature: item.signature || item.blockchainTxHash || 'Blockchain Verified',
-        hash: item.signature || item.blockchainTxHash || 'Blockchain Verified',
-        sig: item.signature || item.blockchainTxHash || 'Blockchain Verified',
-        purpose: item.purpose || 'Government Project Funding'
-      })) || [];
+      const items = json.data?.map((item: any) => {
+        const department = item.budgetId?.department || item.agencyId?.agency_name || 'Government Department';
+        const projectName = item.budgetId?.projectName || 'Government Project';
+        
+        return {
+          _id: item._id,
+          id: item._id,
+          title: department, // Show department name instead of "Project Transaction"
+          tx: department, // Show department name instead of "Project Transaction"
+          date: item.createdAt ? new Date(item.createdAt).toLocaleDateString() : undefined,
+          createdAt: item.createdAt,
+          dept: department,
+          department: department,
+          project: projectName,
+          projectName: projectName,
+          amount: item.amount || 0,
+          status: item.status === 'completed' ? 'Verified' : item.status === 'Verified' ? 'Verified' : 'Pending',
+          signature: item.signature || item.blockchainTxHash || 'Blockchain Verified',
+          hash: item.signature || item.blockchainTxHash || 'Blockchain Verified',
+          sig: item.signature || item.blockchainTxHash || 'Blockchain Verified',
+          purpose: item.purpose || 'Government Project Funding'
+        };
+      }) || [];
       
       const total = json.pagination?.totalItems || items.length;
       

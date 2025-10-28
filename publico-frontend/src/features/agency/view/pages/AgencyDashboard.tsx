@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import { useAgencyDashboard } from "../../controller/hooks/useAgencyDashboard";
 import { ActiveProjectsCard } from "../components/ActiveProjectsCard";
 import { PendingApprovalsCard } from "../components/PendingApprovalsCard";
@@ -75,6 +76,7 @@ const UploadIcon = () => (
 );
 
 const AgencyDashboard: React.FC = () => {
+  const navigate = useNavigate();
   const { 
     alerts, 
     kpis, 
@@ -104,7 +106,12 @@ const AgencyDashboard: React.FC = () => {
             </svg>
           </div>
           <span>Smart Contract Alerts</span></div>}
-        right={<button className="text-sm font-semibold text-blue-600 hover:text-blue-700 transition-colors">View All →</button>}
+        right={<button 
+          onClick={() => navigate('/agency/alerts')}
+          className="text-sm font-semibold text-blue-600 hover:text-blue-700 transition-colors"
+        >
+          View All →
+        </button>}
         variant="elevated">
         <div className="space-y-3">
           {alerts.map((a,i)=>(
@@ -279,7 +286,12 @@ const AgencyDashboard: React.FC = () => {
             </div>
             Department Projects
           </div>}
-          right={<button className="text-sm font-semibold text-blue-600 hover:text-blue-700 transition-colors">View All →</button>}
+          right={<button 
+            onClick={() => navigate('/agency/milestones')}
+            className="text-sm font-semibold text-blue-600 hover:text-blue-700 transition-colors"
+          >
+            View All →
+          </button>}
           variant="elevated">
           <div className="space-y-4">
             {projects.map((p,i)=>(
