@@ -60,6 +60,10 @@ interface ProofOfWorkModalProps {
 
 const ProofOfWorkModal: React.FC<ProofOfWorkModalProps> = ({ proof, onClose, onVerify }) => {
   const [rejectionReason, setRejectionReason] = useState("")
+  
+  const fileUrl = proof.fileUrl?.startsWith('http') 
+    ? proof.fileUrl 
+    : `http://localhost:5000${proof.fileUrl}`;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -91,7 +95,7 @@ const ProofOfWorkModal: React.FC<ProofOfWorkModalProps> = ({ proof, onClose, onV
 
         <div className="flex gap-2 mb-4">
           <button
-            onClick={() => window.open(`http://localhost:5000${proof.fileUrl}`, "_blank")}
+            onClick={() => window.open(fileUrl, "_blank")}
             className="flex-1 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 flex items-center justify-center gap-2"
           >
             <Eye />
@@ -424,6 +428,9 @@ export default function MilestoneDetail() {
                 .flatMap((phase) => phase.proofOfWork)
                 .map((proof) => {
                   const isImage = proof.fileUrl?.match(/\.(jpg|jpeg|png|gif|webp)$/i);
+                  const imageUrl = proof.fileUrl?.startsWith('http') 
+                    ? proof.fileUrl 
+                    : `http://localhost:5000${proof.fileUrl}`;
                   return (
                     <div
                       key={proof.documentId}
@@ -432,7 +439,7 @@ export default function MilestoneDetail() {
                       <div className="flex items-center gap-3">
                         {isImage ? (
                           <img 
-                            src={`http://localhost:5000${proof.fileUrl}`} 
+                            src={imageUrl}
                             alt={proof.description}
                             className="w-16 h-16 object-cover rounded border border-gray-200"
                           />

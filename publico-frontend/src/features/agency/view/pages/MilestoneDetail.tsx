@@ -489,12 +489,15 @@ export default function MilestoneDetail() {
                 <div className="space-y-4">
                   {phase.proofOfWork.map((proof:any) => {
                     const isImage = proof.fileUrl?.match(/\.(jpg|jpeg|png|gif|webp)$/i);
+                    const imageUrl = proof.fileUrl?.startsWith('http') 
+                      ? proof.fileUrl 
+                      : `http://localhost:5000${proof.fileUrl}`;
                     return (
                       <div key={proof.documentId} className="flex items-start gap-4 p-4 border border-gray-200 rounded-lg">
                         {isImage && (
                           <div className="flex-shrink-0">
                             <img 
-                              src={`http://localhost:5000${proof.fileUrl}`} 
+                              src={imageUrl}
                               alt={proof.description}
                               className="w-24 h-24 object-cover rounded border border-gray-200"
                             />
@@ -524,7 +527,7 @@ export default function MilestoneDetail() {
                               {proof.verificationStatus}
                             </span>
                             <button
-                              onClick={() => window.open(`http://localhost:5000${proof.fileUrl}`, '_blank')}
+                              onClick={() => window.open(imageUrl, '_blank')}
                               className="inline-flex items-center gap-1 px-3 py-1 text-xs text-blue-600 rounded hover:bg-blue-50"
                             >
                               <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
