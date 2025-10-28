@@ -11,7 +11,7 @@ export const useExportLedger = () => {
       const allLedgers = await fetchAllLedgers();
 
       if (!allLedgers || allLedgers.length === 0) {
-        alert('No data available to export.');
+        console.warn('No data available to export.');
         return;
       }
 
@@ -68,7 +68,7 @@ export const useExportLedger = () => {
       URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Error exporting CSV:', error);
-      alert('Failed to export ledger. Please try again.');
+      console.error('Failed to export ledger. Please try again.');
     } finally {
       setIsExporting(false);
     }

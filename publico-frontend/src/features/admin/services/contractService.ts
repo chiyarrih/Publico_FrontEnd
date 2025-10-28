@@ -5,11 +5,17 @@ export async function getAlertsByAdmin(): Promise<any> {
 
     if (!privateKey) {
         console.log("No private key found");
-        return;
+        return [];
     }
 
-    const toJson = JSON.parse(privateKey);
     try {
+        const toJson = JSON.parse(privateKey);
+        
+        if (!toJson?.user?.agency_web3_account?.address) {
+            console.log("Invalid user data structure");
+            return [];
+        }
+
         const response = await fetch(`http://localhost:5000/smart/contract/alert/${toJson.user.agency_web3_account.address}`, {
         method: "GET",
         headers: {
@@ -23,8 +29,9 @@ export async function getAlertsByAdmin(): Promise<any> {
         console.error(json);
         throw new Error(json.message || json.error );
       }
-      return json.data;
+      return json.data || [];
     } catch (error) {
         console.error("Error fetching smart contract alerts:", error);
+        return [];
     }
 }

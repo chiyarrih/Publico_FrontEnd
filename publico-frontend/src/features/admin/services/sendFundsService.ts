@@ -16,9 +16,13 @@ export const sendFunds = async ({ projectId, phaseNumber, milestoneId }: Props) 
     return;
   }
 
-  const json = JSON.parse(privateKey);
-
   try {
+    const json = JSON.parse(privateKey);
+    
+    if (!json?.user?.privateKey) {
+      toast.error("Invalid user data");
+      return;
+    }
     const response = await fetch(
       "http://localhost:5000/admin/transaction/create_transaction",
       {
@@ -48,7 +52,11 @@ export const sendFunds = async ({ projectId, phaseNumber, milestoneId }: Props) 
         toast.success("Funded successfuly!")
     }
   } catch (error: any) {
-    toast.error("Insufficient funds.")
+    if (error instanceof SyntaxError) {
+      toast.error("Invalid user data format");
+    } else {
+      toast.error("Insufficient funds.")
+    }
     console.error("Error sending funds:", error.response?.message || error.message);
   }
 };
@@ -62,9 +70,14 @@ export const approveBudget = async ({ projectId }: Props) => {
     console.log("No private key found");
     return;
   }
-  const json = await JSON.parse(privateKey)
 
   try {
+    const json = JSON.parse(privateKey);
+    
+    if (!json?.user?.user_id) {
+      toast.error("Invalid user data");
+      return;
+    }
     const response = await fetch(
       "http://localhost:5000/admin/transaction/approve",
       {
@@ -88,7 +101,11 @@ export const approveBudget = async ({ projectId }: Props) => {
         toast.success("Approved successfuly!")
     }
   } catch (error: any) {
-    toast.error("Insufficient funds.")
-    console.error("Error sending funds:", error.response?.message || error.message);
+    if (error instanceof SyntaxError) {
+      toast.error("Invalid user data format");
+    } else {
+      toast.error(error.message || "Failed to approve budget")
+    }
+    console.error("Error approving budget:", error.response?.message || error.message);
   }
 };

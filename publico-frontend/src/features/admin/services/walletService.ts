@@ -2,7 +2,17 @@ export const updateAdminToConnected = async () => {
   const userData = localStorage.getItem('publico_user_data');
   if (!userData) throw new Error("No user data found");
   
-  const parse = JSON.parse(userData);
+  let parse;
+  try {
+    parse = JSON.parse(userData);
+    
+    if (!parse?.user?.token || !parse?.email) {
+      throw new Error("Invalid user data structure");
+    }
+  } catch (error) {
+    throw new Error("Failed to parse user data: " + (error instanceof Error ? error.message : "Unknown error"));
+  }
+
   const response = await fetch(
     `http://localhost:5000/admin/auth/management/update`,
     {
@@ -27,7 +37,17 @@ export const fetchAdminUser = async () => {
   const userData = localStorage.getItem('publico_user_data');
   if (!userData) throw new Error("No user data found");
   
-  const parse = JSON.parse(userData);
+  let parse;
+  try {
+    parse = JSON.parse(userData);
+    
+    if (!parse?.user?.token || !parse?.email) {
+      throw new Error("Invalid user data structure");
+    }
+  } catch (error) {
+    throw new Error("Failed to parse user data: " + (error instanceof Error ? error.message : "Unknown error"));
+  }
+  
   const response = await fetch(
     `http://localhost:5000/admin/auth/management/fetch/${parse.email}`,
     {

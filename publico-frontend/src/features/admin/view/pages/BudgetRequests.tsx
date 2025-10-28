@@ -11,6 +11,8 @@ import ProjectApprovalModal from "../modals/ProjectApprovalModal";
 import { useNavigate } from "react-router-dom";
 import useSendFunds from "@admin/controller/hooks/useSendFunds";
 import { io, Socket } from "socket.io-client";
+import { Button } from "../ui/blocks";
+import toast from "react-hot-toast";
 
 export default function BudgetRequests() {
   const [items, setItems] = useState<BudgetProposal[]>([]);
@@ -50,7 +52,7 @@ export default function BudgetRequests() {
   }, [currentPage, selectedStatus]);
   
   useEffect(() => {
-  const socket = io('http://localhost:3001', {
+  const socket = io('http://localhost:5000', {
     auth: { token },
   });
 
@@ -92,7 +94,37 @@ export default function BudgetRequests() {
   
 
   const handleReject = async (proposal: BudgetProposal) => {
-    if (!confirm("Reject this budget request?")) return;
+    // Use toast for confirmation instead of browser confirm
+    const confirmed = await new Promise<boolean>((resolve) => {
+      toast((t) => (
+        <div className="flex flex-col gap-3">
+          <p className="font-semibold">Reject Budget Request?</p>
+          <p className="text-sm text-gray-600">Project: {proposal.projectName}</p>
+          <div className="flex gap-2">
+            <button
+              onClick={() => {
+                toast.dismiss(t.id);
+                resolve(true);
+              }}
+              className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+            >
+              Reject
+            </button>
+            <button
+              onClick={() => {
+                toast.dismiss(t.id);
+                resolve(false);
+              }}
+              className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      ), { duration: Infinity });
+    });
+    
+    if (!confirmed) return;
 
     try {
       // Try API call first
@@ -101,30 +133,92 @@ export default function BudgetRequests() {
       setItems(prev => prev.map(p => p._id === proposal._id ? { ...p, status: "Rejected" } : p));
       setSelectedProposal({ ...proposal, status: "Rejected" });
       setShowApprovalModal(true);
+      toast.success(`Budget request for "${proposal.projectName}" has been rejected`);
     } catch (err) {
       console.error("Failed to reject proposal:", err);
       const errorMessage = err instanceof Error ? err.message : "Unknown error occurred";
-      alert(`Failed to reject proposal: ${errorMessage}`);
+      toast.error(`Failed to reject proposal: ${errorMessage}`);
       // Don't update UI state or reopen modal on error
       return;
     }
   };
 
   const handleDelete = async (proposal: BudgetProposal) => {
-    if (!confirm("Are you sure you want to delete this budget request?")) return;
+    // Use toast for confirmation
+    const confirmed = await new Promise<boolean>((resolve) => {
+      toast((t) => (
+        <div className="flex flex-col gap-3">
+          <p className="font-semibold text-red-600">Delete Budget Request?</p>
+          <p className="text-sm text-gray-600">Project: {proposal.projectName}</p>
+          <p className="text-xs text-red-500">This action cannot be undone.</p>
+          <div className="flex gap-2">
+            <button
+              onClick={() => {
+                toast.dismiss(t.id);
+                resolve(true);
+              }}
+              className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+            >
+              Delete
+            </button>
+            <button
+              onClick={() => {
+                toast.dismiss(t.id);
+                resolve(false);
+              }}
+              className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      ), { duration: Infinity });
+    });
+    
+    if (!confirmed) return;
     
     try {
       await AdminService.deleteBudgetProposal(proposal.projectId);
       // Reload proposals
       loadProposals();
+      toast.success(`Budget request "${proposal.projectName}" has been deleted`);
     } catch (err) {
       console.error("Failed to delete proposal:", err);
-      alert("Failed to delete proposal");
+      toast.error("Failed to delete proposal. Please try again.");
     }
   };
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
+  };
+
+  const handleExport = () => {
+    const csvHeaders = ['Project ID', 'Date', 'Department', 'Project Name', 'Amount', 'Current Spending', 'Status'];
+    const csvRows = filtered.map(item => [
+      item.projectId,
+      new Date(item.date).toLocaleDateString(),
+      item.department,
+      item.projectName,
+      `₱${item.amount.toLocaleString()}`,
+      `₱${item.currentSpending.toLocaleString()}`,
+      item.status
+    ]);
+
+    const csvContent = [
+      csvHeaders.join(','),
+      ...csvRows.map(row => row.map(cell => `"${cell}"`).join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `budget_requests_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   if (loading) {
@@ -137,7 +231,19 @@ export default function BudgetRequests() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-semibold text-slate-800">Budget Requests</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-semibold text-slate-800">Budget Requests</h1>
+        <Button 
+          onClick={handleExport}
+          disabled={filtered.length === 0}
+          className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <svg className="w-4 h-4 mr-2 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+          </svg>
+          Export Data
+        </Button>
+      </div>
 
       <Card>
         {/* Filters */}

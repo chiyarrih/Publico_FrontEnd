@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Button } from "../ui/blocks";
+import toast from "react-hot-toast";
 
 interface RejectAgencyModalProps {
   isOpen: boolean;
@@ -19,7 +20,7 @@ export default function RejectAgencyModal({
 
   const handleSubmit = async () => {
     if (!reason.trim()) {
-      alert("Please provide a reason for rejection");
+      toast.error("Please provide a reason for rejection");
       return;
     }
 
@@ -28,6 +29,7 @@ export default function RejectAgencyModal({
       await onConfirm(reason.trim());
     } catch (error) {
       console.error("Error rejecting agency:", error);
+      toast.error("Failed to reject agency. Please try again.");
     } finally {
       setIsSubmitting(false);
     }

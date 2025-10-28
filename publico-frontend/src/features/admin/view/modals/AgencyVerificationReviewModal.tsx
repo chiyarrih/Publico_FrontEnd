@@ -3,6 +3,7 @@ import { Card, Button } from "../ui/blocks";
 import { useAgencyVerification } from "../../controller/hooks/useAgencyVerification";
 import ApproveAgencyModal from "../modals/ApproveAgencyModal";
 import RejectAgencyModal from "../modals/RejectAgencyModal";
+import toast from "react-hot-toast";
 
 interface AgencyVerificationReviewModalProps {
   isOpen: boolean;
@@ -79,10 +80,10 @@ export default function AgencyVerificationReviewModal({
       setLoading(true);
       
       onClose();
-      // parent hook refresh should update list; optionally you can show a toast here
+      toast.success(`Agency "${agency?.agency_name}" has been removed`);
     } catch (error) {
       console.error("Error removing agency:", error);
-      alert((error as any)?.message || "Failed to remove agency");
+      toast.error((error as any)?.message || "Failed to remove agency");
     } finally {
       setLoading(false);
     }

@@ -29,9 +29,48 @@ const IconForSeverity = ({ severity }: { severity: string }) => {
 export default function SmartAlerts() {
   const { alerts, loading, error } = useContractAlerts()
 
+  const handleExport = () => {
+    const csvHeaders = ['Alert Type', 'Severity', 'Description', 'Timestamp', 'Resolved'];
+    const csvRows = alerts.map(alert => [
+      formatAlertType(alert.alertType),
+      formatSeverity(alert.severity),
+      alert.description,
+      formatAlertTimestamp(alert.timestamp),
+      alert.resolved ? 'Yes' : 'No'
+    ]);
+
+    const csvContent = [
+      csvHeaders.join(','),
+      ...csvRows.map(row => row.map(cell => `"${cell}"`).join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `smart_contract_alerts_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="space-y-4">
-      <h1 className="text-lg font-semibold">Smart Contract Alerts</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-lg font-semibold">Smart Contract Alerts</h1>
+        <Button 
+          onClick={handleExport}
+          disabled={alerts.length === 0}
+          className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <svg className="w-4 h-4 mr-2 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+          </svg>
+          Export Alerts
+        </Button>
+      </div>
       <div className="flex items-center gap-2">
         <Select defaultValue="All">
           <option>All Alert Types</option>

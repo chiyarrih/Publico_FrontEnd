@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { toast } from "react-hot-toast";
 import { AgencyVerificationService } from "../../services/agencyVerification.api";
 
@@ -39,31 +39,7 @@ export function useAgencyVerification() {
   const [allAgencies, setAllAgencies] = useState<AgencyVerificationData[]>([]);
   const itemsPerPage = 10;
 
-  const fetchAgencies = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const data = await AgencyVerificationService.getAllAgencies();
-      // Ensure data is always an array
-      const agenciesData = Array.isArray(data) ? data : [];
-      setAllAgencies(agenciesData);
-      
-      // Apply pagination and filtering
-      applyFiltersAndPagination(agenciesData, currentPage, statusFilter, searchTerm);
-    } catch (err: any) {
-      const errorMessage = err.message || "Failed to fetch agencies";
-      setError(errorMessage);
-      console.error("Error fetching agencies:", err);
-      // Set empty array on error to prevent undefined filter calls
-      setAgencies([]);
-      setAllAgencies([]);
-      toast.error(errorMessage);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const applyFiltersAndPagination = (
+  const applyFiltersAndPagination = useCallback((
     data: AgencyVerificationData[], 
     page: number, 
     status: string, 
@@ -90,11 +66,35 @@ export function useAgencyVerification() {
 
     setAgencies(paginatedAgencies);
     setTotalPages(totalPages);
-  };
+  }, [itemsPerPage]);
 
-  const refreshAgencies = () => {
+  const fetchAgencies = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await AgencyVerificationService.getAllAgencies();
+      // Ensure data is always an array
+      const agenciesData = Array.isArray(data) ? data : [];
+      setAllAgencies(agenciesData);
+      
+      // Apply pagination and filtering
+      applyFiltersAndPagination(agenciesData, currentPage, statusFilter, searchTerm);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : "Failed to fetch agencies";
+      setError(errorMessage);
+      console.error("Error fetching agencies:", err);
+      // Set empty array on error to prevent undefined filter calls
+      setAgencies([]);
+      setAllAgencies([]);
+      toast.error(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  }, [currentPage, statusFilter, searchTerm, applyFiltersAndPagination]);
+
+  const refreshAgencies = useCallback(() => {
     fetchAgencies();
-  };
+  }, [fetchAgencies]);
 
   const handleSearchChange = (search: string) => {
     setSearchTerm(search);
@@ -118,8 +118,8 @@ export function useAgencyVerification() {
       await AgencyVerificationService.approveAgency(agencyId);
       await fetchAgencies(); // Refresh the list
       toast.success("Agency approved successfully!");
-    } catch (err: any) {
-      const errorMessage = err.message || "Failed to approve agency";
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : "Failed to approve agency";
       setError(errorMessage);
       toast.error(errorMessage);
       throw err;
@@ -131,8 +131,8 @@ export function useAgencyVerification() {
       await AgencyVerificationService.rejectAgency(agencyId, reason);
       await fetchAgencies(); // Refresh the list
       toast.success("Agency rejected successfully!");
-    } catch (err: any) {
-      const errorMessage = err.message || "Failed to reject agency";
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : "Failed to reject agency";
       setError(errorMessage);
       toast.error(errorMessage);
       throw err;
@@ -142,15 +142,16 @@ export function useAgencyVerification() {
   const getAgencyDetails = async (agencyId: string) => {
     try {
       return await AgencyVerificationService.getAgencyDetails(agencyId);
-    } catch (err: any) {
-      setError(err.message || "Failed to fetch agency details");
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : "Failed to fetch agency details";
+      setError(errorMessage);
       throw err;
     }
   };
 
   useEffect(() => {
     fetchAgencies();
-  }, []);
+  }, [fetchAgencies]);
 
   return {
     agencies,

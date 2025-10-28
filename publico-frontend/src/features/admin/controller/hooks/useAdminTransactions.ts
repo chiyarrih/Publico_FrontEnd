@@ -112,7 +112,7 @@ export default function useAdminTransactions() {
       setProposals(prev => prev.filter(p => p._id !== id));
     } catch (err) {
       console.error('Failed to delete proposal:', err);
-      alert('Failed to delete proposal');
+      console.error('Failed to delete proposal');
     }
   };
 
@@ -121,7 +121,7 @@ export default function useAdminTransactions() {
   }, [page, statusFilter, searchQuery, departmentFilter, dateRange]);
 
   useEffect(() => {
-    const socket = io('http://localhost:3001', {
+    const socket = io('http://localhost:5000', {
       auth: { token },
     });
 

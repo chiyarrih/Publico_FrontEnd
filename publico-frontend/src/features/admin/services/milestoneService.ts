@@ -79,9 +79,21 @@ export interface ProjectMilestone {
   updatedAt: string;
 }
 
+export interface PhaseInput {
+  phaseName: string;
+  description: string;
+  budget: number;
+  spent: number;
+  progress: number;
+  status: 'Pending' | 'In Progress' | 'Completed' | 'On Hold';
+  startDate: string;
+  endDate: string;
+  requiredDocuments: RequiredDocument[];
+}
+
 export interface CreateMilestoneRequest {
   projectId: string;
-  phases: Omit<Phase, 'phaseNumber' | 'budgetEth' | 'spentEth' | 'proofOfWork' | 'budgetReleased' | 'budgetReleaseDate' | 'budgetReleaseTxHash' | 'completionDate'>[];
+  phases: PhaseInput[];
   proposedBy: string;
 }
 
@@ -117,7 +129,8 @@ export interface UpdateProgressRequest {
 class MilestoneService {
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     const token = localStorage.getItem('publico_auth_token');
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    const url = `${API_BASE_URL}${endpoint}`;
+    const response = await fetch(url, {
       ...options,
       headers: {
         'Content-Type': 'application/json',

@@ -3,6 +3,7 @@ import { NavLink, Outlet } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import { Input, Ghost } from "../ui/blocks";
 import { logout } from "../../../../utils/auth";
+import ErrorBoundary from "@/shared/components/layout/ErrorBoundary";
 
 /* Icons matching the sidebar UI */
 const I = {
@@ -206,7 +207,9 @@ export default function AdminLayout() {
         {/* Main */}
         <main>
           <div className="mx-auto max-w-6xl p-4 lg:p-6">
-            <Outlet />
+            <ErrorBoundary>
+              <Outlet />
+            </ErrorBoundary>
           </div>
         </main>
       </div>

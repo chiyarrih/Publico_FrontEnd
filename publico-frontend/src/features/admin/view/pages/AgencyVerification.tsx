@@ -21,6 +21,35 @@ export default function AgencyVerification() {
   const [selectedAgency, setSelectedAgency] = useState(null);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
 
+  const handleExport = () => {
+    const csvHeaders = ['Agency ID', 'Agency Name', 'Email', 'Department', 'Submitted Date', 'Documents', 'Status'];
+    const csvRows = agencies.map(agency => [
+      agency.agency_id,
+      agency.agency_name,
+      agency.email,
+      agency.department,
+      new Date(agency.date_registered).toLocaleDateString(),
+      `${agency.documents?.length || 0} file(s)`,
+      agency.status
+    ]);
+
+    const csvContent = [
+      csvHeaders.join(','),
+      ...csvRows.map(row => row.map(cell => `"${cell}"`).join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `agency_verification_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   const handleReviewAgency = (agency: any) => {
     setSelectedAgency(agency);
     setIsReviewModalOpen(true);
@@ -133,7 +162,11 @@ export default function AgencyVerification() {
             Filter
           </Button>
           
-          <Button className="border-gray-300 text-gray-700 hover:bg-gray-50 flex items-center gap-2">
+          <Button 
+            onClick={handleExport}
+            disabled={agencies.length === 0}
+            className="border-gray-300 text-gray-700 hover:bg-gray-50 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
