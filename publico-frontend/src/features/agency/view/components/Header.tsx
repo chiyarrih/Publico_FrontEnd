@@ -31,9 +31,7 @@ export default function Header({notificationsEnabled, setSidebarOpen, menuOpen, 
                           <I.menu />
                         </button>
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
-                            <span className="text-white font-bold text-sm">P</span>
-                          </div>
+                          <img src="/logo.png" alt="Publico Logo" className="w-8 h-8" />
                           <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
                             Publico
                           </span>

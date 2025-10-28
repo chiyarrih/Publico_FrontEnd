@@ -1,0 +1,31 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Dark Blue to Light Blue Gradient -->
+    <linearGradient id="darkBlueGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1e3a8a;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#3b82f6;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Sky Blue to Teal Gradient -->
+    <linearGradient id="lightBlueGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#06b6d4;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0d9488;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Lime to Emerald Green Gradient -->
+    <linearGradient id="limeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#a3e635;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#059669;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Leftmost shape (dark to light blue) -->
+  <path d="M10 52 L14 12 L28 24 Z" fill="url(#darkBlueGradient)" opacity="0.9"/>
+  
+  <!-- Middle shape (cyan to teal) -->
+  <path d="M18 48 L22 8 L36 20 Z" fill="url(#lightBlueGradient)" opacity="0.9"/>
+  
+  <!-- Rightmost shape (lime to emerald) -->
+  <path d="M26 44 L30 4 L44 16 Z" fill="url(#limeGradient)" opacity="0.9"/>
+</svg>
+

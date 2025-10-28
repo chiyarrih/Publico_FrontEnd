@@ -1,6 +1,5 @@
 import ProposalForm from "@agency/controller/components/forms/ProposalForm";
 import React from "react";
-import { SimpleDepartmentSelect } from "@/shared/components/DepartmentSelect";
 
 type Status = "Approved" | "In Review" | "Pending" | "Rejected";
 
@@ -35,11 +34,11 @@ export default function Budgets() {
   const [tab, setTab] = React.useState<"proposals"|"new">("proposals");
   const [q, setQ] = React.useState("");
   const [status, setStatus] = React.useState<"All" | Status>("All");
-  const [dept, setDept] = React.useState("All Departments");
+  const [selectedProposal, setSelectedProposal] = React.useState<typeof rows[0] | null>(null);
+  const [showModal, setShowModal] = React.useState(false);
 
   const data = rows
     .filter(r => (status === "All" ? true : r.status === status))
-    .filter(r => (dept === "All Departments" ? true : r.dept === dept))
     .filter(r => [r.title, r.dept].some(t => t.toLowerCase().includes(q.toLowerCase())));
 
   return (
@@ -67,13 +66,6 @@ export default function Budgets() {
             <select value={status} onChange={e=>setStatus(e.target.value as any)} className="px-2 text-sm border rounded h-9 border-slate-300">
               <option>All</option><option>Approved</option><option>In Review</option><option>Pending</option><option>Rejected</option>
             </select>
-            <SimpleDepartmentSelect
-              value={dept}
-              onChange={setDept}
-              className="px-2 text-sm border rounded h-9 border-slate-300"
-              includeAll={true}
-              allLabel="All Departments"
-            />
           </div>
         )}
       </div>
@@ -105,7 +97,13 @@ export default function Budgets() {
                       </div>
                       <Chip s={r.status}/>
                     </div>
-                    <button className="inline-flex items-center gap-1 mt-2 text-sm text-blue-600 hover:underline">
+                    <button 
+                      onClick={() => {
+                        setSelectedProposal(r);
+                        setShowModal(true);
+                      }}
+                      className="inline-flex items-center gap-1 mt-2 text-sm text-blue-600 hover:underline"
+                    >
                       View Details <I.chev/>
                     </button>
                   </div>
@@ -123,6 +121,61 @@ export default function Budgets() {
       ) : (
         /* New Proposal (compact mock to match style) */
         <ProposalForm setTab={()=>setTab("proposals")}/>
+      )}
+
+      {/* View Details Modal */}
+      {showModal && selectedProposal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => setShowModal(false)}>
+          <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="sticky top-0 bg-white border-b px-6 py-4 flex items-center justify-between">
+              <h2 className="text-xl font-bold text-slate-900">Project Proposal Details</h2>
+              <button onClick={() => setShowModal(false)} className="p-2 hover:bg-slate-100 rounded-lg transition-colors">
+                <svg className="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="px-6 py-6 space-y-6">
+              <div>
+                <h3 className="text-sm font-medium text-slate-500 mb-1">Project Title</h3>
+                <p className="text-lg font-semibold text-slate-900">{selectedProposal.title}</p>
+              </div>
+              <div>
+                <h3 className="text-sm font-medium text-slate-500 mb-1">Department</h3>
+                <p className="text-base text-slate-900">{selectedProposal.dept}</p>
+              </div>
+              <div>
+                <h3 className="text-sm font-medium text-slate-500 mb-1">Timeline</h3>
+                <p className="text-base text-slate-900">{selectedProposal.timeline}</p>
+              </div>
+              <div>
+                <h3 className="text-sm font-medium text-slate-500 mb-1">Amount</h3>
+                <p className="text-2xl font-bold text-blue-600">{selectedProposal.amount}</p>
+              </div>
+              <div>
+                <h3 className="text-sm font-medium text-slate-500 mb-1">Status</h3>
+                <div className="inline-block"><Chip s={selectedProposal.status}/></div>
+              </div>
+              <div>
+                <h3 className="text-sm font-medium text-slate-500 mb-1">Submitted On</h3>
+                <p className="text-base text-slate-900">{selectedProposal.submitted}</p>
+              </div>
+            </div>
+            <div className="sticky bottom-0 bg-slate-50 border-t px-6 py-4 flex items-center justify-end gap-3">
+              <button 
+                onClick={() => setShowModal(false)}
+                className="px-4 py-2 rounded-lg border border-slate-300 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
+              >
+                Close
+              </button>
+              <button 
+                className="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition-colors"
+              >
+                Approve Proposal
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

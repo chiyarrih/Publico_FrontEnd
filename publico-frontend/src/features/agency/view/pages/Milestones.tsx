@@ -95,7 +95,6 @@ export default function Milestones() {
           onChange={e => setState(e.target.value)}
         >
           <option>All Statuses</option>
-          <option value="Pending">Pending</option>
           <option value="In Progress">In Progress</option>
           <option value="Delayed">Delayed</option>
           <option value="Completed">Completed</option>

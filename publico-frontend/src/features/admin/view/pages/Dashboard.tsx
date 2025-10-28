@@ -49,75 +49,142 @@ export default function Dashboard() {
   const { totals, utilizationSeries, categories, depts } = data;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
+      {/* Enhanced Header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-slate-800">Dagupan City Admin Panel</h1>
-        <Button>Generate Report</Button>
+        <div>
+          <h1 className="text-3xl font-bold text-slate-900">Dashboard Overview</h1>
+          <p className="mt-1 text-sm text-slate-500">Dagupan City Government Transparency Portal</p>
+        </div>
+        <div className="hidden sm:flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-100">
+          <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span className="text-sm font-medium text-blue-700">Last updated: Just now</span>
+        </div>
       </div>
 
-      {/* KPI Cards */}
+      {/* Enhanced KPI Cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <div className="flex items-start gap-3">
-            <KpiIcon bg="bg-sky-500">{Icons.budget}</KpiIcon>
-            <div className="flex-1">
-              <div className="text-xs font-medium text-slate-500">Total Budget for FY 2023</div>
-              <div className="mt-1 text-2xl font-bold text-slate-900">{peso(totals.budget)}</div>
-              <div className="mt-1 text-xs text-slate-400">+10% from previous year</div>
+        <Card className="hover:shadow-lg transition-shadow duration-300">
+          <div className="flex items-start gap-4">
+            <div className="flex-shrink-0 w-14 h-14 rounded-xl bg-gradient-to-br from-sky-500 to-sky-600 flex items-center justify-center shadow-lg shadow-sky-500/20">
+              {Icons.budget}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">Total Budget FY 2023</p>
+              <p className="text-2xl font-bold text-slate-900 mb-1">{peso(totals.budget)}</p>
+              <div className="flex items-center gap-1 text-xs">
+                <svg className="w-3 h-3 text-emerald-600" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                </svg>
+                <span className="text-emerald-600 font-medium">+10%</span>
+                <span className="text-slate-500">from previous year</span>
+              </div>
             </div>
           </div>
         </Card>
 
-        <Card>
-          <div className="flex items-start gap-3">
-            <KpiIcon bg="bg-emerald-500">{Icons.percent}</KpiIcon>
-            <div className="flex-1">
-              <div className="text-xs font-medium text-slate-500">Budget Utilization</div>
-              <div className="mt-1 text-2xl font-bold text-slate-900">{totals.utilizationPct}%</div>
-              <div className="mt-1 text-xs text-emerald-600">+2.5% from last month</div>
+        <Card className="hover:shadow-lg transition-shadow duration-300">
+          <div className="flex items-start gap-4">
+            <div className="flex-shrink-0 w-14 h-14 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+              {Icons.percent}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">Budget Utilization</p>
+              <p className="text-2xl font-bold text-slate-900 mb-1">{totals.utilizationPct}%</p>
+              <div className="flex items-center gap-1 text-xs">
+                <svg className="w-3 h-3 text-emerald-600" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                </svg>
+                <span className="text-emerald-600 font-medium">+2.5%</span>
+                <span className="text-slate-500">from last month</span>
+              </div>
             </div>
           </div>
         </Card>
 
-        <Card>
-          <div className="flex items-start gap-3">
-            <KpiIcon bg="bg-amber-500">{Icons.clipboard}</KpiIcon>
-            <div className="flex-1">
-              <div className="text-xs font-medium text-slate-500">Pending Requests</div>
-              <div className="mt-1 text-2xl font-bold text-slate-900">{pendingCount}</div>
-              <div className="mt-1 text-xs text-slate-400">3 urgent</div>
+        <Card className="hover:shadow-lg transition-shadow duration-300">
+          <div className="flex items-start gap-4">
+            <div className="flex-shrink-0 w-14 h-14 rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center shadow-lg shadow-amber-500/20">
+              {Icons.clipboard}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">Pending Requests</p>
+              <p className="text-2xl font-bold text-slate-900 mb-1">{pendingCount}</p>
+              <div className="flex items-center gap-1 text-xs">
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-rose-100 text-rose-800">
+                  3 urgent
+                </span>
+              </div>
             </div>
           </div>
         </Card>
 
-        <Card>
-          <div className="flex items-start gap-3">
-            <KpiIcon bg="bg-rose-500">{Icons.alert}</KpiIcon>
-            <div className="flex-1">
-              <div className="text-xs font-medium text-slate-500">Active Alerts</div>
-              <div className="mt-1 text-2xl font-bold text-slate-900">{totals.activeAlerts}</div>
-              <div className="mt-1 text-xs text-rose-600">2 critical</div>
+        <Card className="hover:shadow-lg transition-shadow duration-300">
+          <div className="flex items-start gap-4">
+            <div className="flex-shrink-0 w-14 h-14 rounded-xl bg-gradient-to-br from-rose-500 to-rose-600 flex items-center justify-center shadow-lg shadow-rose-500/20">
+              {Icons.alert}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">Active Alerts</p>
+              <p className="text-2xl font-bold text-slate-900 mb-1">{totals.activeAlerts}</p>
+              <div className="flex items-center gap-1 text-xs">
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-rose-100 text-rose-800">
+                  2 critical
+                </span>
+              </div>
             </div>
           </div>
         </Card>
       </div>
 
       {/* Charts Row 1 */}
-      <div className="grid gap-4 lg:grid-cols-2">
-        <Card>
-          <div className="mb-3 text-base font-semibold text-slate-800">Budget Utilization Trends</div>
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Card className="hover:shadow-lg transition-shadow duration-300">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h3 className="text-lg font-semibold text-slate-900">Budget Utilization Trends</h3>
+              <p className="text-xs text-slate-500 mt-0.5">Monthly spending vs allocation</p>
+            </div>
+            <button className="p-2 rounded-lg hover:bg-slate-100 transition-colors">
+              <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+              </svg>
+            </button>
+          </div>
           <LineMini data={utilizationSeries} />
         </Card>
-        <Card>
-          <div className="mb-3 text-base font-semibold text-slate-800">Budget Allocation by Category</div>
+        <Card className="hover:shadow-lg transition-shadow duration-300">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h3 className="text-lg font-semibold text-slate-900">Budget Allocation</h3>
+              <p className="text-xs text-slate-500 mt-0.5">Distribution by category</p>
+            </div>
+            <button className="p-2 rounded-lg hover:bg-slate-100 transition-colors">
+              <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+              </svg>
+            </button>
+          </div>
           <PieMini data={categories} />
         </Card>
       </div>
 
       {/* Charts Row 2 */}
-      <div className="grid gap-4 lg:grid-cols-2">
-        <Card>
-          <div className="mb-3 text-base font-semibold text-slate-800">Department Budget Comparison</div>
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Card className="hover:shadow-lg transition-shadow duration-300">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h3 className="text-lg font-semibold text-slate-900">Department Comparison</h3>
+              <p className="text-xs text-slate-500 mt-0.5">Budget allocation across departments</p>
+            </div>
+            <button className="p-2 rounded-lg hover:bg-slate-100 transition-colors">
+              <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+              </svg>
+            </button>
+          </div>
           <BarMini data={depts} />
         </Card>
         <BarangayProjectsMap />

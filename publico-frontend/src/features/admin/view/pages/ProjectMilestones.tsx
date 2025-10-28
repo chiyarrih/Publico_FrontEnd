@@ -28,6 +28,8 @@ export default function ProjectMilestones(){
   const [milestones, setMilestones] = useState<Milestone[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   useEffect(() => {
     let mounted = true;
@@ -131,8 +133,23 @@ export default function ProjectMilestones(){
   }, [milestones, search, dept, state]);
 
   const uniqueStatuses = useMemo(() => {
-    return Array.from(new Set(milestones.map(m => m.overallStatus).filter(Boolean)));
-  }, [milestones]);
+    return ["In Progress", "Delayed", "Completed"].filter(Boolean);
+  }, []);
+
+  // Pagination
+  const totalPages = Math.ceil(filtered.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedMilestones = filtered.slice(startIndex, endIndex);
+
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage);
+  };
+
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, dept, state]);
 
   if (loading) {
     return (
@@ -214,7 +231,7 @@ export default function ProjectMilestones(){
             {milestones.length === 0 ? 'No milestones found' : 'No milestones match your filters'}
           </div>
         ) : (
-          filtered.map(p => (
+          paginatedMilestones.map(p => (
             <div key={p._id} className="grid grid-cols-[140px_1fr_160px_140px_180px_130px] gap-x-4 px-4 py-3 border-t">
               <div className="text-[13px]">{p._id.slice(-8)}</div>
               <div className="text-[13px]">
@@ -256,9 +273,33 @@ export default function ProjectMilestones(){
         )}
       </Panel>
       
-      <div className="mt-4 text-sm text-slate-600 text-center">
-        Showing {filtered.length} of {milestones.length} milestones
-      </div>
+      {/* Pagination Controls */}
+      {filtered.length > 0 && (
+        <div className="flex items-center justify-between px-4 py-3 border-t">
+          <div className="text-sm text-slate-600">
+            Showing {startIndex + 1}-{Math.min(endIndex, filtered.length)} of {filtered.length} milestones
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="px-3 py-1.5 rounded-md border border-slate-300 text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50"
+            >
+              Previous
+            </button>
+            <span className="text-sm text-slate-600">
+              Page {currentPage} of {totalPages}
+            </span>
+            <button
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className="px-3 py-1.5 rounded-md border border-slate-300 text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      )}
 
       <CreateMilestoneModal
         isOpen={showCreateModal}
