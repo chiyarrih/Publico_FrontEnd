@@ -13,6 +13,7 @@ import useSendFunds from "@admin/controller/hooks/useSendFunds";
 import { io, Socket } from "socket.io-client";
 import { Button } from "../ui/blocks";
 import toast from "react-hot-toast";
+import { rejectBudget } from "../../services/sendFundsService";
 
 export default function BudgetRequests() {
   const [items, setItems] = useState<BudgetProposal[]>([]);
@@ -106,7 +107,7 @@ export default function BudgetRequests() {
                 toast.dismiss(t.id);
                 resolve(true);
               }}
-              className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+              className="px-4 py-2 text-white bg-red-600 rounded-md hover:bg-red-700"
             >
               Reject
             </button>
@@ -115,7 +116,7 @@ export default function BudgetRequests() {
                 toast.dismiss(t.id);
                 resolve(false);
               }}
-              className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300"
+              className="px-4 py-2 text-gray-800 bg-gray-200 rounded-md hover:bg-gray-300"
             >
               Cancel
             </button>
@@ -128,7 +129,7 @@ export default function BudgetRequests() {
 
     try {
       // Try API call first
-      await AdminService.rejectBudgetProposal(proposal.projectId);
+      await rejectBudget({projectId: proposal.projectId});
       // Only update UI if API call succeeds
       setItems(prev => prev.map(p => p._id === proposal._id ? { ...p, status: "Rejected" } : p));
       setSelectedProposal({ ...proposal, status: "Rejected" });
@@ -157,7 +158,7 @@ export default function BudgetRequests() {
                 toast.dismiss(t.id);
                 resolve(true);
               }}
-              className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+              className="px-4 py-2 text-white bg-red-600 rounded-md hover:bg-red-700"
             >
               Delete
             </button>
@@ -166,7 +167,7 @@ export default function BudgetRequests() {
                 toast.dismiss(t.id);
                 resolve(false);
               }}
-              className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300"
+              className="px-4 py-2 text-gray-800 bg-gray-200 rounded-md hover:bg-gray-300"
             >
               Cancel
             </button>
@@ -238,7 +239,7 @@ export default function BudgetRequests() {
           disabled={filtered.length === 0}
           className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <svg className="w-4 h-4 mr-2 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="inline-block w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
           </svg>
           Export Data
@@ -280,6 +281,7 @@ export default function BudgetRequests() {
       {/* Project Approval Modal */}
       {selectedProposal && (
         <ProjectApprovalModal
+          status={selectedProposal.status}
           isFunded={selectedProposal.isFunded}
           onApproved={()=>{
             onApprove()

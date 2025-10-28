@@ -12,6 +12,7 @@ interface ProjectApprovalModalProps {
   onSendFunds?: () => void;
   onApproved?: () => void;
   isFunded?: boolean;
+  status?: string;
 }
 
 export default function ProjectApprovalModal({
@@ -21,7 +22,8 @@ export default function ProjectApprovalModal({
   onReject,
   onSendFunds,
   onApproved,
-  isFunded
+  isFunded,
+  status
 }: ProjectApprovalModalProps) {
   if (!isOpen) return null;
   const getStatusColor = (status: string) => {
@@ -47,7 +49,7 @@ export default function ProjectApprovalModal({
           </h2>
           <button
             onClick={onClose}
-            className="p-1 rounded-lg hover:bg-slate-100 transition-colors"
+            className="p-1 transition-colors rounded-lg hover:bg-slate-100"
           >
             <X size={24} className="text-slate-600" />
           </button>
@@ -55,14 +57,14 @@ export default function ProjectApprovalModal({
 
         {/* Content */}
         <div className="p-6">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
             {/* Left Column - Project Details */}
-            <div className="lg:col-span-2 space-y-6">
+            <div className="space-y-6 lg:col-span-2">
               {/* Project Header */}
-              <div className="p-6 bg-slate-50 rounded-xl border border-slate-200">
+              <div className="p-6 border bg-slate-50 rounded-xl border-slate-200">
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex-1">
-                    <h3 className="text-xl font-semibold text-slate-900 mb-1">
+                    <h3 className="mb-1 text-xl font-semibold text-slate-900">
                       {proposal.projectName}
                     </h3>
                     <p className="text-slate-600">{proposal.department}</p>
@@ -98,7 +100,7 @@ export default function ProjectApprovalModal({
                   </div>
                   <div>
                     <p className="text-sm text-slate-500">Requested Amount</p>
-                    <p className="font-bold text-sky-600 text-lg">
+                    <p className="text-lg font-bold text-sky-600">
                       ₱{proposal.amountRequested.toLocaleString()}
                     </p>
                   </div>
@@ -125,7 +127,7 @@ export default function ProjectApprovalModal({
 
               {/* Supporting Documents */}
               <div>
-                <h4 className="text-base font-semibold text-slate-900 mb-3">
+                <h4 className="mb-3 text-base font-semibold text-slate-900">
                   Supporting Documents
                 </h4>
                 <div className="space-y-2">
@@ -156,7 +158,7 @@ export default function ProjectApprovalModal({
                         };
 
                         return (
-                          <div key={index} className="flex items-center justify-between p-4 bg-slate-50 rounded-lg border border-slate-200 hover:border-sky-300 transition-colors">
+                          <div key={index} className="flex items-center justify-between p-4 transition-colors border rounded-lg bg-slate-50 border-slate-200 hover:border-sky-300">
                             <div className="flex items-center gap-3">
                               {getFileIcon(fileExtension || '')}
                               <div>
@@ -172,7 +174,7 @@ export default function ProjectApprovalModal({
                               href={fileUrl}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="px-3 py-1 text-sm font-medium text-sky-600 hover:text-sky-700 transition-colors"
+                              className="px-3 py-1 text-sm font-medium transition-colors text-sky-600 hover:text-sky-700"
                             >
                               View
                             </a>
@@ -205,7 +207,7 @@ export default function ProjectApprovalModal({
                         };
 
                         return (
-                          <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg border border-slate-200 hover:border-sky-300 transition-colors">
+                          <div className="flex items-center justify-between p-4 transition-colors border rounded-lg bg-slate-50 border-slate-200 hover:border-sky-300">
                             <div className="flex items-center gap-3">
                               {getFileIcon(fileExtension || '')}
                               <div>
@@ -221,7 +223,7 @@ export default function ProjectApprovalModal({
                               href={proposal.fileUrl}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="px-3 py-1 text-sm font-medium text-sky-600 hover:text-sky-700 transition-colors"
+                              className="px-3 py-1 text-sm font-medium transition-colors text-sky-600 hover:text-sky-700"
                             >
                               View
                             </a>
@@ -230,10 +232,10 @@ export default function ProjectApprovalModal({
                       })()
                     )
                   ) : (
-                    <div className="flex items-center justify-center p-8 bg-slate-50 rounded-lg border border-slate-200">
+                    <div className="flex items-center justify-center p-8 border rounded-lg bg-slate-50 border-slate-200">
                       <div className="text-center">
-                        <FileText className="text-slate-400 mx-auto mb-2" size={32} />
-                        <p className="text-slate-500 text-sm">No supporting documents provided</p>
+                        <FileText className="mx-auto mb-2 text-slate-400" size={32} />
+                        <p className="text-sm text-slate-500">No supporting documents provided</p>
                       </div>
                     </div>
                   )}
@@ -244,8 +246,8 @@ export default function ProjectApprovalModal({
             {/* Right Column - Actions & Activity */}
             <div className="space-y-6">
               {/* Approval Actions */}
-              <div className="p-6 bg-white rounded-xl border border-slate-200">
-                <h4 className="text-base font-semibold text-slate-900 mb-4">
+              <div className="p-6 bg-white border rounded-xl border-slate-200">
+                <h4 className="mb-4 text-base font-semibold text-slate-900">
                   Approval Actions
                 </h4>
                 <div className="space-y-3">
@@ -253,14 +255,14 @@ export default function ProjectApprovalModal({
                     <>
                       <button
                         onClick={onApproved}
-                        className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-emerald-600 text-white rounded-xl font-medium hover:bg-emerald-700 transition-colors"
+                        className="flex items-center justify-center w-full gap-2 px-4 py-3 font-medium text-white transition-colors bg-emerald-600 rounded-xl hover:bg-emerald-700"
                       >
                         <CheckCircle size={20} />
                         Approve Request
                       </button>
                       <button
                         onClick={onReject}
-                        className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-rose-600 text-white rounded-xl font-medium hover:bg-rose-700 transition-colors"
+                        className="flex items-center justify-center w-full gap-2 px-4 py-3 font-medium text-white transition-colors bg-rose-600 rounded-xl hover:bg-rose-700"
                       >
                         <XCircle size={20} />
                         Reject Request
@@ -268,20 +270,20 @@ export default function ProjectApprovalModal({
                     </>
                   ) : (
                     <>
-                      <div className="flex items-center gap-2 px-4 py-3 bg-emerald-50 text-emerald-700 rounded-xl">
+                      <div className={status == 'Rejected' ? 'flex items-center gap-2 px-4 py-3 bg-red-300 text-red-700 rounded-xl' : 'flex items-center gap-2 px-4 py-3 bg-emerald-50 text-emerald-700 rounded-xl'}>
                         <CheckCircle size={20} />
-                        <span className="font-medium">Project Approved</span>
+                        <span className="font-medium">{status == 'Rejected' ? 'Project Rejected' : 'Project Approved'}</span>
                       </div>
                       <button
-                        disabled={isFunded}//TODO:CALL THE IS FUNDED HERE
+                        disabled={isFunded || status == 'Rejected'}//TODO:CALL THE IS FUNDED HERE
                         onClick={onSendFunds}
-                        className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-sky-600 text-white rounded-xl font-medium hover:bg-sky-700 transition-colors"
+                        className="flex items-center justify-center w-full gap-2 px-4 py-3 font-medium text-white transition-colors bg-sky-600 rounded-xl hover:bg-sky-700"
                       >
-                        {isFunded ? 'Project is already funded' : 'Send Funds to Agency'}
+                        {isFunded || status== 'Rejected' ? 'Project is already funded or rejected' : 'Send Funds to Agency'}
                       </button>
                     </>
                   )}
-                  <button className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-white border-2 border-slate-200 text-slate-700 rounded-xl font-medium hover:bg-slate-50 transition-colors">
+                  <button className="flex items-center justify-center w-full gap-2 px-4 py-3 font-medium transition-colors bg-white border-2 border-slate-200 text-slate-700 rounded-xl hover:bg-slate-50">
                     <AlertCircle size={20} />
                     Request More Information
                   </button>
@@ -289,26 +291,26 @@ export default function ProjectApprovalModal({
               </div>
 
               {/* Activity Log */}
-              <div className="p-6 bg-white rounded-xl border border-slate-200">
-                <h4 className="text-base font-semibold text-slate-900 mb-4">
+              <div className="p-6 bg-white border rounded-xl border-slate-200">
+                <h4 className="mb-4 text-base font-semibold text-slate-900">
                   Activity Log
                 </h4>
                 <div className="space-y-4">
-                  <div className="border-l-2 border-sky-500 pl-4">
-                    <p className="font-medium text-slate-900 text-sm">
+                  <div className="pl-4 border-l-2 border-sky-500">
+                    <p className="text-sm font-medium text-slate-900">
                       Budget Request Created
                     </p>
-                    <p className="text-xs text-slate-500 mt-1">
+                    <p className="mt-1 text-xs text-slate-500">
                       {new Date(proposal.createdAt).toLocaleDateString()} by{" "}
                       {proposal.agencyId?.name || proposal.agencyId?.email || "Unknown"}
                     </p>
                   </div>
                   {proposal.approvedBy && (
-                    <div className="border-l-2 border-emerald-500 pl-4">
-                      <p className="font-medium text-slate-900 text-sm">
+                    <div className="pl-4 border-l-2 border-emerald-500">
+                      <p className="text-sm font-medium text-slate-900">
                         Request Approved
                       </p>
-                      <p className="text-xs text-slate-500 mt-1">
+                      <p className="mt-1 text-xs text-slate-500">
                         {proposal.approvalDate
                           ? new Date(proposal.approvalDate).toLocaleDateString()
                           : "N/A"}{" "}
