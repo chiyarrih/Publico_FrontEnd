@@ -12,14 +12,14 @@ const Pill: React.FC<{ tone: "blue" | "green" | "gray"; children: React.ReactNod
 
 const Progress: React.FC<{ value: number; tone?: "blue" | "green" | "slate" }> = ({ value, tone = "blue" }) => {
   const thumb = tone === "green" ? "bg-emerald-500" : tone === "slate" ? "bg-slate-300" : "bg-blue-500";
-  return <div className="h-2 w-full rounded-full bg-slate-100"><div className={`h-2 rounded-full ${thumb}`} style={{ width: `${Math.max(0, Math.min(100, value))}%` }} /></div>;
+  return <div className="w-full h-2 rounded-full bg-slate-100"><div className={`h-2 rounded-full ${thumb}`} style={{ width: `${Math.max(0, Math.min(100, value))}%` }} /></div>;
 };
 
 const AlertBanner: React.FC<{ kind: "warn" | "info"; children: React.ReactNode }> = ({ kind, children }) => {
   const tone = kind === "warn" ? "bg-amber-50 border-amber-200 text-amber-800" : "bg-blue-50 border-blue-200 text-blue-700";
   const icon = kind === "warn"
-    ? <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 9v4M12 17h.01" /><path d="M10 2h4l9 16H1L10 2z" /></svg>
-    : <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M13 16h-1v-4h-1M12 8h.01" /><circle cx="12" cy="12" r="9" /></svg>;
+    ? <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 9v4M12 17h.01" /><path d="M10 2h4l9 16H1L10 2z" /></svg>
+    : <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M13 16h-1v-4h-1M12 8h.01" /><circle cx="12" cy="12" r="9" /></svg>;
   return <div className={`flex items-center gap-3 rounded-lg border px-3 py-2 ${tone}`}>{icon}<span className="text-sm">{children}</span></div>;
 };
 
@@ -71,15 +71,15 @@ const MilestoneDetail: React.FC = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <button onClick={() => nav(-1)} className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 hover:bg-slate-50" aria-label="Back">
-            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M15 18l-6-6 6-6" /></svg>
+          <button onClick={() => nav(-1)} className="inline-flex items-center justify-center border rounded-full h-9 w-9 border-slate-200 hover:bg-slate-50" aria-label="Back">
+            <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M15 18l-6-6 6-6" /></svg>
           </button>
           <div className="text-lg font-semibold text-slate-900">
             Project Milestones — <span className="font-normal">{title}</span>
           </div>
         </div>
         <div className="text-xs text-slate-500">
-          <span className="uppercase tracking-wide">Project ID:</span>{" "}
+          <span className="tracking-wide uppercase">Project ID:</span>{" "}
           <span className="font-medium text-slate-700">{id}</span>
         </div>
       </div>
@@ -88,11 +88,11 @@ const MilestoneDetail: React.FC = () => {
       {loading && <div className="text-sm text-slate-500">Loading project…</div>}
 
       {/* Overview */}
-      <div className="rounded-xl border border-slate-200 bg-white p-6">
+      <div className="p-6 bg-white border rounded-xl border-slate-200">
         <div className="mb-4 text-sm font-semibold text-slate-700">Project Overview</div>
         <div className="grid gap-6 md:grid-cols-3">
           <RowLabel label="Department" value={<span className="text-slate-700">{department}</span>} />
-          <RowLabel label="Total Budget" value={<button className="text-blue-600 hover:underline font-semibold">{peso(budget)}</button>} />
+          <RowLabel label="Total Budget" value={<button className="font-semibold text-blue-600 hover:underline">{peso(budget)}</button>} />
           <RowLabel
             label="Timeline"
             value={<span className="text-slate-700">
@@ -102,7 +102,7 @@ const MilestoneDetail: React.FC = () => {
         </div>
 
         <div className="mt-6">
-          <div className="mb-2 flex items-center justify-between text-sm">
+          <div className="flex items-center justify-between mb-2 text-sm">
             <span className="text-slate-500">Overall Progress</span>
             <span className="font-medium text-slate-900">{overallProgress}%</span>
           </div>
@@ -118,11 +118,11 @@ const MilestoneDetail: React.FC = () => {
 
       {/* Milestone Phases */}
       {project?.phases && project.phases.length > 0 && (
-        <div className="rounded-xl border border-slate-200 bg-white p-6">
+        <div className="p-6 bg-white border rounded-xl border-slate-200">
           <div className="mb-4 text-sm font-semibold text-slate-700">Project Phases</div>
           <div className="space-y-4">
             {project.phases.map((phase: any, index: number) => (
-              <div key={index} className="border border-slate-100 rounded-lg p-4">
+              <div key={index} className="p-4 border rounded-lg border-slate-100">
                 <div className="flex items-center justify-between mb-2">
                   <div className="text-sm font-medium text-slate-900">{phase.phaseName}</div>
                   <Pill tone={phase.status === 'Completed' ? 'green' : phase.status === 'In Progress' ? 'blue' : 'gray'}>
@@ -130,7 +130,7 @@ const MilestoneDetail: React.FC = () => {
                   </Pill>
                 </div>
                 <div className="mb-2">
-                  <div className="flex items-center justify-between text-xs text-slate-500 mb-1">
+                  <div className="flex items-center justify-between mb-1 text-xs text-slate-500">
                     <span>Progress</span>
                     <span>{phase.progress || 0}%</span>
                   </div>

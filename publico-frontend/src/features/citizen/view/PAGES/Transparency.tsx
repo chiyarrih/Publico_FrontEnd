@@ -1,12 +1,28 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { Card, Progress } from "../../../../shared/ui";
 import { getBudgetByCategory, getKeyProjects } from "../../controller/data/dashboardService";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
+import { useDepartmentFilter } from "../context/DepartmentFilterContext";
+import { getCategoryForDepartment, DEPARTMENT_CATEGORIES } from "@/shared/constants/departments";
 
 type Slice = { label: string; value: number; color?: string };
 type ProjectRowProps = { name: string; dept: string; pct: number; color: string };
 
 const palette = ["#3b82f6","#22c55e","#f59e0b","#ef4444","#94a3b8","#a78bfa","#10b981","#f97316"];
+
+// Helper function to determine category color
+const getCategoryColor = (categoryName: string) => {
+  const colors: Record<string, string> = {
+    "Economic Services & Business Development": "#3b82f6", // blue
+    "Executive & Administrative Services": "#22c55e", // green
+    "Public Safety & Disaster Management": "#f97316", // orange
+    "Health & Social Services": "#ef4444", // red
+    "Financial Management & Revenue": "#94a3b8", // gray
+    "Infrastructure & Development": "#a78bfa", // purple
+    "General Services & Support": "#10b981", // teal
+  };
+  return colors[categoryName] || palette[0];
+};
 
 const ProjectRow: React.FC<ProjectRowProps> = ({ name, dept, pct, color }) => (
   <div className="space-y-1">
@@ -20,8 +36,9 @@ const ProjectRow: React.FC<ProjectRowProps> = ({ name, dept, pct, color }) => (
 );
 
 export default function Transparency() {
-  const [slices, setSlices] = useState<Slice[]>([]);
-  const [projects, setProjects] = useState<{ name: string; dept: string; pct: number; color: string }[]>([]);
+  const { selectedDepartment, setAvailableDepartments } = useDepartmentFilter();
+  const [allSlices, setAllSlices] = useState<Slice[]>([]);
+  const [allProjects, setAllProjects] = useState<{ name: string; dept: string; pct: number; color: string }[]>([]);
   const [err, setErr] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -31,30 +48,21 @@ export default function Transparency() {
       try {
         setLoading(true); setErr(null);
 
-        // pie
-        const cats = await getBudgetByCategory(); // [{label, value}]
-        
-        // Calculate total to get percentages
-        const total = cats?.reduce((sum, cat) => sum + (cat.value || 0), 0) || 1;
-        
-        // Convert values to percentages
-        const percentages = (cats ?? []).map((c, i) => ({ 
-          ...c, 
-          color: palette[i % palette.length],
-          value: total > 0 ? Math.round((c.value / total) * 100) : 0
-        }));
-        
-        if (!ignore) setSlices(percentages);
-
         // key projects (convert to rows with pct if available, else fake % by budget rank)
-        const list = await getKeyProjects(6);
+        const list = await getKeyProjects(50); // Get more projects to filter
         let rows = list.map((p: any, i: number) => ({
           name: p.projectName ?? "-",
           dept: p.department ?? "-",
           pct: typeof p.progress === "number" ? Math.max(0, Math.min(100, p.progress)) : 100 - i * 12, // simple fallback
           color: ["blue","green","amber","slate","green","blue"][i % 6],
         }));
-        if (!ignore) setProjects(rows);
+        if (!ignore) {
+          setAllProjects(rows);
+          
+          // Extract unique departments from projects
+          const uniqueDepartments = Array.from(new Set(rows.map(p => p.dept).filter(d => d && d !== "-")));
+          setAvailableDepartments(uniqueDepartments);
+        }
       } catch (e: any) {
         if (!ignore) setErr(e?.message || "Failed to load transparency data");
       } finally {
@@ -63,6 +71,42 @@ export default function Transparency() {
     })();
     return () => { ignore = true; };
   }, []);
+
+  // Filter projects AND recalculate slices based on selected department
+  const { projects, slices } = useMemo(() => {
+    // Filter projects by department
+    const filteredProjects = selectedDepartment === "All" 
+      ? allProjects 
+      : allProjects.filter(p => {
+          const matches = p.dept && p.dept.toLowerCase().includes(selectedDepartment.toLowerCase());
+          return matches;
+        });
+    
+    // Recalculate category breakdown based on filtered projects
+    const categoryCounts: Record<string, number> = {};
+    
+    filteredProjects.forEach(project => {
+      const category = getCategoryForDepartment(project.dept);
+      if (category) {
+        categoryCounts[category] = (categoryCounts[category] || 0) + 1;
+      }
+    });
+    
+    // Convert counts to percentages for the donut chart
+    const totalCount = Object.values(categoryCounts).reduce((sum, count) => sum + count, 0);
+    
+    const calculatedSlices = DEPARTMENT_CATEGORIES.map(cat => {
+      const count = categoryCounts[cat.value] || 0;
+      const percentage = totalCount > 0 ? Math.round((count / totalCount) * 100) : 0;
+      return {
+        label: cat.label,
+        value: percentage,
+        color: getCategoryColor(cat.value)
+      };
+    }).filter(slice => slice.value > 0); // Only show categories with projects
+    
+    return { projects: filteredProjects, slices: calculatedSlices };
+  }, [selectedDepartment, allProjects]);
 
   return (
     <div className="space-y-8">

@@ -28,3 +28,24 @@ export async function getAlertsByAgency(): Promise<any> {
         console.error("Error fetching smart contract alerts:", error);
     }
 }
+
+export async function getAllAlerts(): Promise<any> {
+;
+    try {
+        const response = await fetch(`http://localhost:5000/citizen/getAllAlerts`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          'Accept': 'application/json'
+        },
+      });
+      const json = await response.json();
+      if (!response.ok) {
+        console.error(json);
+        throw new Error(json.message || json.error );
+      }
+      return json.data;
+    } catch (error) {
+        console.error("Error fetching smart contract alerts:", error);
+    }
+}

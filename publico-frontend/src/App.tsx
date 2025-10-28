@@ -25,6 +25,7 @@ const CitizenDashboard = lazy(() => import("./features/citizen/view/PAGES/Dashbo
 
 const Ledger         = lazy(() => import("./features/citizen/view/PAGES/Ledger"));
 const Transparency   = lazy(() => import("./features/citizen/view/PAGES/Transparency"));
+const SmartContract  = lazy(() => import("./features/citizen/view/PAGES/SmartContract"));
 const Support        = lazy(() => import("./features/citizen/view/PAGES/Support"));
 
 /* ---------- Lazy agency pages ---------- */
@@ -93,6 +94,7 @@ export default function App() {
             <Route path="dashboard" element={<Safe><CitizenDashboard /></Safe>} />
             <Route path="ledger" element={<Safe><Ledger /></Safe>} />
             <Route path="transparency" element={<Safe><Transparency /></Safe>} />
+            <Route path="smart-contract" element={<Safe><SmartContract /></Safe>} />
             <Route path="support" element={<Safe><Support /></Safe>} />
             <Route path="milestones" element={<Safe><CitizenMilestones /></Safe>} />
             <Route path="milestones/:id" element={<Safe><CitizenMilestoneDetail /></Safe>} />

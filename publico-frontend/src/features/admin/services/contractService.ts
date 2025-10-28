@@ -35,3 +35,24 @@ export async function getAlertsByAdmin(): Promise<any> {
         return [];
     }
 }
+  export async function getAllAlerts(): Promise<any> {
+    try {
+      const response = await fetch(`http://localhost:5000/smart/contract/alert/all`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          'Authorization': `Bearer ${localStorage.getItem('publico_auth_token')}`,
+          'Accept': 'application/json'
+        },
+      });
+      const json = await response.json();
+      if (!response.ok) {
+        console.error(json);
+        throw new Error(json.message || json.error);
+      }
+      return json.data || [];
+    } catch (error) {
+      console.error("Error fetching all smart contract alerts:", error);
+      return [];
+    }
+  }

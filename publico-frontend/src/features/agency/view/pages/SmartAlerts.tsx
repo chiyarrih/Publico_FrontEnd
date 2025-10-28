@@ -1,51 +1,126 @@
-import React from "react";
+import useContractAlerts from "@/features/admin/controller/hooks/useContractAlerts"
+import { ContractAlert } from "@/features/admin/model/types/contractAlerts"
+import { Badge } from "@/features/admin/view/ui/blocks"
+import { Card, Select } from "@/shared/ui"
+import { Button } from "@/shared/ui/button"
 
-type State = "Unresolved" | "Pending" | "Under review" | "Resolved";
-const alerts = [
-  { title: "Budget Overrun", meta: "Downtown Bridge Repair Project is 8% over budget", state: "Unresolved" as State, date: "2023-09-15", dept: "Transportation" },
-  { title: "Pending Disbursement", meta: "Q4 infrastructure funds awaiting approval", state: "Pending" as State, date: "2023-09-14", dept: "Infrastructure" },
-  { title: "Document Expiration", meta: "Contract #TR-2023-45 expires in 14 days", state: "Under review" as State, date: "2023-09-10", dept: "Transportation" },
-  { title: "Spending Pattern Anomaly", meta: "IT spending increased by 22% this month", state: "Under review" as State, date: "2023-09-08", dept: "IT" },
-  { title: "Project Delay", meta: "City Park Renovation behind schedule by 3 weeks", state: "Unresolved" as State, date: "2023-09-05", dept: "Parks & Recreation" },
-  { title: "Price Discrepancy", meta: "Purchase exceeds market rate by 15%", state: "Under review" as State, date: "2023-09-03", dept: "IT" },
-];
 
-const Chip: React.FC<{ s: State }> = ({ s }) => {
-  const map: Record<State, string> = {
-    Unresolved: "bg-rose-100 text-rose-700",
-    Pending: "bg-amber-100 text-amber-700",
-    "Under review": "bg-blue-100 text-blue-700",
-    Resolved: "bg-emerald-100 text-emerald-700",
-  };
-  return <span className={`text-xs px-2 py-0.5 rounded ${map[s]}`}>{s}</span>;
-};
+import { formatAlertTimestamp, formatAlertType, formatSeverity } from "@/utils/serializers"
+import { CheckCircle, AlertTriangle, XCircle, Info } from "lucide-react"
+
+export const bar = (s: ContractAlert["severity"]) =>
+  s === "High"
+    ? "border-rose-200 bg-rose-50"
+    : s === "Medium"
+      ? "border-amber-200 bg-amber-50"
+      : "border-emerald-200 bg-emerald-50"
+
+export const tone = (s: ContractAlert["severity"]) => (s === "High" ? "red" : s === "Medium" ? "yellow" : "green")
+
+export const IconForSeverity = ({ severity }: { severity: string }) => {
+  switch (severity) {
+    case "High":
+      return <XCircle className="text-red-500" size={24} />
+    case "Medium":
+      return <AlertTriangle className="text-amber-500" size={24} />
+    case "Low":
+      return <CheckCircle className="text-emerald-500" size={24} />
+    default:
+      return <Info className="text-slate-500" size={24} />
+  }
+}
 
 export default function SmartAlerts() {
+  const { alerts, loading, error } = useContractAlerts()
+
+  const handleExport = () => {
+    const csvHeaders = ['Alert Type', 'Severity', 'Description', 'Timestamp', 'Resolved'];
+    const csvRows = alerts.map(alert => [
+      formatAlertType(alert.alertType),
+      formatSeverity(alert.severity),
+      alert.description,
+      formatAlertTimestamp(alert.timestamp),
+      alert.resolved ? 'Yes' : 'No'
+    ]);
+
+    const csvContent = [
+      csvHeaders.join(','),
+      ...csvRows.map(row => row.map(cell => `"${cell}"`).join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `smart_contract_alerts_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="space-y-4">
-      <div className="bg-white border border-slate-200 rounded-lg p-4">
-        <div className="flex items-center justify-between">
-          <div className="text-lg font-semibold">Smart Contract Alerts</div>
-          <div className="text-xs text-slate-500">Last updated: <b>Just now</b></div>
-        </div>
-        <div className="mt-3 flex items-center gap-2">
-          <select className="h-9 rounded border border-slate-300 px-2 text-sm"><option>All Types</option></select>
-          <select className="h-9 rounded border border-slate-300 px-2 text-sm"><option>All Severities</option></select>
-        </div>
+      <div className="flex items-center justify-between">
+        <h1 className="text-lg font-semibold">Smart Contract Alerts</h1>
+        <Button 
+          onClick={handleExport}
+          disabled={alerts.length === 0}
+          className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <svg className="inline-block w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+          </svg>
+          Export Alerts
+        </Button>
+      </div>
+      <div className="flex items-center gap-2">
+        <Select defaultValue="All">
+          <option>All Alert Types</option>
+        </Select>
+        <Button className="ml-auto" disabled={loading}>
+          Mark All as Read
+        </Button>
       </div>
 
-      <div className="bg-white border border-slate-200 rounded-lg divide-y">
-        {alerts.map((a,i)=>(
-          <div key={i} className="p-4">
-            <div className="flex items-center justify-between">
-              <div className="font-medium">{a.title}</div>
-              <Chip s={a.state}/>
-            </div>
-            <div className="text-sm text-slate-600 mt-1">{a.meta}</div>
-            <div className="text-xs text-slate-500 mt-1">{a.date} • {a.dept}</div>
-          </div>
-        ))}
+      {loading && <div className="text-slate-500">Loading alerts...</div>}
+      {error && <div className="text-red-500">Failed to load alerts: {error}</div>}
+
+      {!loading && !error && alerts.length === 0 && (
+        <div className="flex flex-col items-center justify-center py-12 text-center">
+          <CheckCircle className="mb-3 text-emerald-500" size={48} />
+          <h3 className="text-lg font-medium text-slate-700">No Smart Contract Alerts</h3>
+          <p className="mt-1 text-sm text-slate-500">
+            All systems are operating normally. No alerts to display at this time.
+          </p>
+        </div>
+      )}
+
+      <div className="space-y-3">
+        {alerts.map((a, index) =>
+          a.resolved === false ? (
+            <Card key={index} className={`${bar(formatSeverity(a.severity))} border`}>
+              <div className="flex items-start gap-3">
+                <IconForSeverity severity={formatSeverity(a.severity)} />
+
+                <div className="flex-1">
+                  <div className="flex items-center justify-between">
+                    <div className="font-medium">{formatAlertType(a.alertType)}</div>
+                    <div className="text-xs text-slate-500">{formatAlertTimestamp(a.timestamp)}</div>
+                  </div>
+
+                  <div className="mt-1 text-sm text-slate-600">{a.description}</div>
+
+                  <div className="flex gap-2 mt-2">
+                    <Badge tone={tone(formatSeverity(a.severity))}>{formatSeverity(a.severity)}</Badge>
+                  </div>
+                </div>
+              </div>
+            </Card>
+          ) : null,
+        )}
       </div>
     </div>
-  );
+  )
 }

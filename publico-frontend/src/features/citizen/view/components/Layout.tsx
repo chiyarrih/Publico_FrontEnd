@@ -11,6 +11,8 @@
 import React, { useState } from "react";
 import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { SimpleDepartmentSelect } from "@/shared/components/DepartmentSelect";
+import { DepartmentFilterProvider, useDepartmentFilter } from "../context/DepartmentFilterContext";
+import { ALL_DEPARTMENTS } from "@/shared/constants/departments";
 
 // ============================================================================
 // CONSTANTS & CONFIGURATION
@@ -58,6 +60,12 @@ const Icon = {
       <path d="M18 15v3a3 3 0 0 1-3 3H9l-4 4v-4a3 3 0 0 1-3-3V9a7 7 0 0 1 7-7h6a7 7 0 0 1 7 7v3" />
     </svg>
   ),
+  smartContract: (className = "h-5 w-5") => (
+    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="1.5">
+      <path d="M9 22h6a2 2 0 002-2V4a2 2 0 00-2-2H9a2 2 0 00-2 2v16a2 2 0 002 2z" />
+      <path d="M7 8h10M7 12h10M7 16h5" />
+    </svg>
+  ),
   chevronDown: (className = "h-4 w-4") => (
     <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="1.5">
       <path d="M6 9l6 6 6-6" />
@@ -95,6 +103,8 @@ function getPageTitle(pathname: string): string {
     '/citizen/transparency': 'Transparency Portal',
     '/app/ledger': 'Transaction Ledger',
     '/citizen/ledger': 'Transaction Ledger',
+    '/app/smart-contract': 'Smart Contract',
+    '/citizen/smart-contract': 'Smart Contract',
     '/app/support': 'Contact Support',
     '/citizen/support': 'Contact Support',
   };
@@ -168,6 +178,12 @@ const NAVIGATION_ITEMS = [
     path: "/citizen/ledger",
     icon: Icon.ledger,
     label: "Transaction Ledger",
+    exact: false,
+  },
+  {
+    path: "/citizen/smart-contract",
+    icon: Icon.smartContract,
+    label: "Smart Contract",
     exact: false,
   },
   {
@@ -312,8 +328,9 @@ const PageHeader: React.FC<{
   title: string; 
   isTransparency: boolean; 
 }> = ({ title, isTransparency }) => {
-  const [department, setDepartment] = useState("All Departments");
-  const [view, setView] = useState("Monthly View");
+  const { selectedDepartment, setSelectedDepartment, availableDepartments, selectedView, setSelectedView } = useDepartmentFilter();
+  
+  const department = selectedDepartment === "All" ? "All Departments" : selectedDepartment;
 
   return (
     <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
@@ -329,28 +346,32 @@ const PageHeader: React.FC<{
         {isTransparency && (
           <>
             <select
-              value={department}
-              onChange={(e) => setDepartment(e.target.value)}
+              value={selectedDepartment}
+              onChange={(e) => setSelectedDepartment(e.target.value)}
               className="select-field text-xs py-2"
               aria-label="Department"
             >
               <option value="All">All Departments</option>
-              <option>City Mayor's Office</option>
-              <option>City Engineering Office</option>
-              <option>City Health Office</option>
-              <option>City Social Welfare & Development Office</option>
-              <option>City Planning & Development Office</option>
+              {availableDepartments.length > 0 ? (
+                availableDepartments.map((dept) => (
+                  <option key={dept} value={dept}>
+                    {dept}
+                  </option>
+                ))
+              ) : (
+                <option disabled>Loading departments...</option>
+              )}
             </select>
 
             <select
-              value={view}
-              onChange={(e) => setView(e.target.value)}
+              value={selectedView}
+              onChange={(e) => setSelectedView(e.target.value)}
               className="select-field text-xs py-2"
               aria-label="Time View"
             >
-              <option>Monthly View</option>
-              <option>Quarterly View</option>
-              <option>Yearly View</option>
+              <option value="Monthly View">Monthly View</option>
+              <option value="Quarterly View">Quarterly View</option>
+              <option value="Yearly View">Yearly View</option>
             </select>
           </>
         )}
@@ -395,7 +416,7 @@ const MainContent: React.FC<{
  * - Main content area with page-specific headers
  * - Proper routing and outlet rendering
  */
-export default function AppLayout() {
+function AppLayoutInner() {
   // ============================================================================
   // HOOKS & STATE
   // ============================================================================
@@ -498,5 +519,13 @@ export default function AppLayout() {
         <MainContent title={title} isTransparency={isTransparency} />
       </div>
     </div>
+  );
+}
+
+export default function AppLayout() {
+  return (
+    <DepartmentFilterProvider>
+      <AppLayoutInner />
+    </DepartmentFilterProvider>
   );
 }
