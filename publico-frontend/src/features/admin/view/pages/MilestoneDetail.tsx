@@ -56,9 +56,11 @@ interface ProofOfWorkModalProps {
   proof: ProofOfWork
   onClose: () => void
   onVerify: (status: "Verified" | "Rejected", reason?: string) => void
+  projectName?: string
+  agencyName?: string
 }
 
-const ProofOfWorkModal: React.FC<ProofOfWorkModalProps> = ({ proof, onClose, onVerify }) => {
+const ProofOfWorkModal: React.FC<ProofOfWorkModalProps> = ({ proof, onClose, onVerify, projectName, agencyName }) => {
   const [rejectionReason, setRejectionReason] = useState("")
   
   const fileUrl = proof.fileUrl?.startsWith('http') 
@@ -71,6 +73,18 @@ const ProofOfWorkModal: React.FC<ProofOfWorkModalProps> = ({ proof, onClose, onV
         <h3 className="text-lg font-semibold mb-4">{proof.description}</h3>
 
         <div className="space-y-3 mb-4">
+          {projectName && (
+            <div>
+              <span className="text-sm text-gray-600">Project:</span>
+              <span className="ml-2 font-medium text-blue-600">{projectName}</span>
+            </div>
+          )}
+          {agencyName && (
+            <div>
+              <span className="text-sm text-gray-600">Agency:</span>
+              <span className="ml-2 font-medium">{agencyName}</span>
+            </div>
+          )}
           <div>
             <span className="text-sm text-gray-600">Uploaded by:</span>
             <span className="ml-2 font-medium">{proof.uploadedBy}</span>
@@ -81,7 +95,7 @@ const ProofOfWorkModal: React.FC<ProofOfWorkModalProps> = ({ proof, onClose, onV
           </div>
           <div>
             <span className="text-sm text-gray-600">File size:</span>
-            <span className="ml-2">{(proof.fileSize / 1024 / 1024).toFixed(1)} MB</span>
+            <span className="ml-2">{(proof.fileSize / 1024).toFixed(1)} KB</span>
           </div>
           <div>
             <span className="text-sm text-gray-600">Status:</span>
@@ -501,7 +515,13 @@ export default function MilestoneDetail() {
 
       {/* Proof of Work Modal */}
       {selectedProof && (
-        <ProofOfWorkModal proof={selectedProof} onClose={() => setSelectedProof(null)} onVerify={handleVerifyProof} />
+        <ProofOfWorkModal 
+          proof={selectedProof} 
+          onClose={() => setSelectedProof(null)} 
+          onVerify={handleVerifyProof}
+          projectName={milestone?.projectName}
+          agencyName={milestone?.proposedBy}
+        />
       )}
     </div>
   )
