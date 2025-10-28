@@ -194,32 +194,57 @@ export default function BudgetRequests() {
   };
 
   const handleExport = () => {
-    const csvHeaders = ['Project ID', 'Date', 'Department', 'Project Name', 'Amount', 'Current Spending', 'Status'];
-    const csvRows = filtered.map(item => [
-      item.projectId,
-      new Date(item.date).toLocaleDateString(),
-      item.department,
-      item.projectName,
-      `₱${item.amount.toLocaleString()}`,
-      `₱${item.currentSpending.toLocaleString()}`,
-      item.status
-    ]);
+    try {
+      // Create CSV content with proper escaping
+      const csvHeaders = ['Project ID', 'Date', 'Department', 'Project Name', 'Amount', 'Current Spending', 'Status'];
+      const csvRows = filtered.map(item => [
+        item.projectId || '',
+        new Date(item.date).toLocaleDateString(),
+        item.department || '',
+        item.projectName || '',
+        `₱${(item.amount || 0).toLocaleString()}`,
+        `₱${(item.currentSpending || 0).toLocaleString()}`,
+        item.status || ''
+      ]);
 
-    const csvContent = [
-      csvHeaders.join(','),
-      ...csvRows.map(row => row.map(cell => `"${cell}"`).join(','))
-    ].join('\n');
+      // Escape special characters in CSV cells
+      const escapeCSV = (cell: string) => {
+        if (cell.includes(',') || cell.includes('"') || cell.includes('\n')) {
+          return `"${cell.replace(/"/g, '""')}"`;
+        }
+        return cell;
+      };
 
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', `budget_requests_${new Date().toISOString().split('T')[0]}.csv`);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+      const csvContent = [
+        csvHeaders.map(escapeCSV).join(','),
+        ...csvRows.map(row => row.map(escapeCSV).join(','))
+      ].join('\n');
+
+      // Add BOM for UTF-8 to ensure Excel opens it correctly
+      const BOM = '\uFEFF';
+      const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+      
+      // Create and trigger download
+      const link = document.createElement('a');
+      const url = window.URL.createObjectURL(blob);
+      link.href = url;
+      link.download = `budget_requests_${new Date().toISOString().split('T')[0]}.csv`;
+      
+      // Ensure button is in DOM before clicking
+      document.body.appendChild(link);
+      link.click();
+      
+      // Cleanup
+      setTimeout(() => {
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      }, 100);
+      
+      toast.success('CSV file downloaded successfully!');
+    } catch (error) {
+      console.error('Export error:', error);
+      toast.error('Failed to export CSV. Please try again.');
+    }
   };
 
   if (loading) {

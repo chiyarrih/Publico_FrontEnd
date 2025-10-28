@@ -211,28 +211,39 @@ export default function Transactions() {
 
           <button
             onClick={() => {
-              const csvContent = [
-                ['Date', 'Department', 'Project', 'Amount', 'Signature'].join(','),
-                ...ledgers.map((r: any) => [
-                  new Date(r.createdAt).toLocaleDateString(),
-                  r.department || '',
-                  r.projectName || '',
-                  r.amount || 0,
-                  r.blockchainTxHash || ''
-                ].join(','))
-              ].join('\n');
-              
-              const blob = new Blob([csvContent], { type: 'text/csv' });
-              const url = window.URL.createObjectURL(blob);
-              const a = document.createElement('a');
-              a.href = url;
-              a.download = `transactions_${new Date().toISOString().split('T')[0]}.csv`;
-              a.click();
-              window.URL.revokeObjectURL(url);
+              try {
+                // Format the CSV content with proper escaping
+                const csvContent = [
+                  ['Date', 'Department', 'Project', 'Amount', 'Signature'].join(','),
+                  ...ledgers.map((r: any) => [
+                    new Date(r.createdAt).toLocaleDateString(),
+                    `"${(r.department || '').replace(/"/g, '""')}"`,
+                    `"${(r.projectName || '').replace(/"/g, '""')}"`,
+                    r.amount || 0,
+                    `"${(r.blockchainTxHash || '').replace(/"/g, '""')}"`
+                  ].join(','))
+                ].join('\n');
+                
+                // Create blob and download
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `transactions_${new Date().toISOString().split('T')[0]}.csv`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+                
+                console.log('✅ CSV exported successfully:', ledgers.length, 'records');
+              } catch (error) {
+                console.error('❌ Error exporting CSV:', error);
+                alert('Failed to export CSV. Please try again.');
+              }
             }}
-            className="px-3 text-sm border rounded h-9 border-slate-300 hover:bg-slate-50"
+            className="px-3 text-sm border rounded h-9 border-slate-300 hover:bg-slate-50 whitespace-nowrap"
           >
-            Export
+            📥 Export CSV
           </button>
         </div>
       </div>

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import toast from 'react-hot-toast';
 
 export const useExportLedger = () => {
   const [isExporting, setIsExporting] = useState(false);
@@ -11,7 +12,7 @@ export const useExportLedger = () => {
       const allLedgers = await fetchAllLedgers();
 
       if (!allLedgers || allLedgers.length === 0) {
-        console.warn('No data available to export.');
+        toast.error('No data available to export.');
         return;
       }
 
@@ -26,6 +27,16 @@ export const useExportLedger = () => {
         'Status',
         'Blockchain Hash'
       ];
+
+      // Escape special characters in CSV cells
+      const escapeCSV = (cell: string) => {
+        if (!cell) return '';
+        const stringCell = String(cell);
+        if (stringCell.includes(',') || stringCell.includes('"') || stringCell.includes('\n')) {
+          return `"${stringCell.replace(/"/g, '""')}"`;
+        }
+        return stringCell;
+      };
 
       // Convert ledgers to CSV rows with safe property access
       const csvRows = allLedgers.map(ledger => {
@@ -46,29 +57,35 @@ export const useExportLedger = () => {
         ];
       });
 
-      // Combine headers and rows
+      // Combine headers and rows with proper escaping
       const csvContent = [
-        headers.join(','),
-        ...csvRows.map(row => row.map(cell => `"${cell}"`).join(','))
+        headers.map(escapeCSV).join(','),
+        ...csvRows.map(row => row.map(escapeCSV).join(','))
       ].join('\n');
 
-      // Create blob and download
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      // Add BOM for UTF-8 to ensure Excel opens it correctly
+      const BOM = '\uFEFF';
+      const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
       const link = document.createElement('a');
       const url = URL.createObjectURL(blob);
       
-      link.setAttribute('href', url);
-      link.setAttribute('download', `transaction_ledger_${new Date().toISOString().split('T')[0]}.csv`);
+      link.href = url;
+      link.download = `transaction_ledger_${new Date().toISOString().split('T')[0]}.csv`;
       link.style.visibility = 'hidden';
       
       document.body.appendChild(link);
       link.click();
-      document.body.removeChild(link);
       
-      URL.revokeObjectURL(url);
+      // Cleanup
+      setTimeout(() => {
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      }, 100);
+      
+      toast.success(`CSV exported successfully! ${allLedgers.length} records downloaded.`);
     } catch (error) {
       console.error('Error exporting CSV:', error);
-      console.error('Failed to export ledger. Please try again.');
+      toast.error('Failed to export ledger. Please try again.');
     } finally {
       setIsExporting(false);
     }
