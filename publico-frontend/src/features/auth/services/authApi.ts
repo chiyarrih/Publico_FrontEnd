@@ -13,10 +13,49 @@ export class AuthService {
   static async register(data: RegisterRequest): Promise<AuthResponse> {
     console.log('🔧 AuthService.register called with:', data);
     console.log('🌐 API Base URL:', import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000');
+    
     try {
-      const response = await apiClient.post<AuthResponse>('/auth/user/register', data);
-      console.log('✅ API Response:', response);
-      return response;
+      // For Agency role with documents, use FormData
+      if (data.role === 'Agency' && data.documents) {
+        console.log('📎 Detected Agency registration with documents');
+        
+        const formData = new FormData();
+        
+        // Add all text fields
+        formData.append('role', data.role);
+        formData.append('email', data.email);
+        formData.append('password', data.password);
+        formData.append('agency_name', data.agency_name || '');
+        formData.append('agency_code', data.agency_code || '');
+        formData.append('contact_phone', data.contact_phone || '');
+        formData.append('department', data.department || '');
+        formData.append('address', data.address || '');
+        
+        // Add document files
+        if (data.documents.agencyLicense) {
+          formData.append('agencyLicense', data.documents.agencyLicense);
+          console.log('✅ Added agencyLicense:', data.documents.agencyLicense.name);
+        }
+        if (data.documents.businessCertificate) {
+          formData.append('businessCertificate', data.documents.businessCertificate);
+          console.log('✅ Added businessCertificate:', data.documents.businessCertificate.name);
+        }
+        if (data.documents.proofOfInsurance) {
+          formData.append('proofOfInsurance', data.documents.proofOfInsurance);
+          console.log('✅ Added proofOfInsurance:', data.documents.proofOfInsurance.name);
+        }
+        
+        // Send FormData - apiClient will automatically handle multipart/form-data
+        const response = await apiClient.post<AuthResponse>('/auth/user/register', formData);
+        
+        console.log('✅ API Response:', response);
+        return response;
+      } else {
+        // For other roles (Citizen, Admin), use JSON
+        const response = await apiClient.post<AuthResponse>('/auth/user/register', data);
+        console.log('✅ API Response:', response);
+        return response;
+      }
     } catch (error) {
       console.error('❌ API Error:', error);
       throw error;

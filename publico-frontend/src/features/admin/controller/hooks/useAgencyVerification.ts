@@ -149,6 +149,19 @@ export function useAgencyVerification() {
     }
   };
 
+  const deleteAgency = async (agencyId: string) => {
+    try {
+      await AgencyVerificationService.deleteAgency(agencyId);
+      await fetchAgencies(); // Refresh the list
+      toast.success("Agency removed successfully!");
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : "Failed to delete agency";
+      setError(errorMessage);
+      toast.error(errorMessage);
+      throw err;
+    }
+  };
+
   useEffect(() => {
     fetchAgencies();
   }, [fetchAgencies]);
@@ -170,5 +183,6 @@ export function useAgencyVerification() {
     approveAgency,
     rejectAgency,
     getAgencyDetails,
+    deleteAgency,
   };
 }
