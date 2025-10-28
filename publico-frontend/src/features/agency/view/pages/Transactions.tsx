@@ -221,7 +221,29 @@ export default function Transactions() {
             ))}
           </select>
 
-          <button className="px-3 text-sm border rounded h-9 border-slate-300 hover:bg-slate-50">
+          <button 
+            onClick={() => {
+              const csvContent = [
+                ['Date', 'Department', 'Project', 'Amount', 'Signature'].join(','),
+                ...ledgers.map((r: any) => [
+                  new Date(r.createdAt).toLocaleDateString(),
+                  r.department || '',
+                  r.projectName || '',
+                  r.amount || 0,
+                  r.blockchainTxHash || ''
+                ].join(','))
+              ].join('\n');
+              
+              const blob = new Blob([csvContent], { type: 'text/csv' });
+              const url = window.URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = `transactions_${new Date().toISOString().split('T')[0]}.csv`;
+              a.click();
+              window.URL.revokeObjectURL(url);
+            }}
+            className="px-3 text-sm border rounded h-9 border-slate-300 hover:bg-slate-50"
+          >
             Export
           </button>
         </div>

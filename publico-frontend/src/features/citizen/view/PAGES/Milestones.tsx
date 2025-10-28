@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { getKeyProjects } from "../../controller/data/dashboardService";
 import { useDebounce } from "../../controller/hooks/useDebounce";
 import { SimpleDepartmentSelect } from "@/shared/components/DepartmentSelect";
+import { useDepartmentFilter } from "../context/DepartmentFilterContext";
 
 type ProjectRow = {
   _id?: string;
@@ -149,12 +150,15 @@ const Pagination: React.FC<{
 
 const Milestones: React.FC = () => {
   const navigate = useNavigate();
+  const { selectedDepartment, setSelectedDepartment, availableDepartments, setAvailableDepartments } = useDepartmentFilter();
   const [q, setQ] = useState("");
   const debouncedQ = useDebounce(q, 300);
-  const [dept, setDept] = useState("All Departments");
   const [status, setStatus] = useState("All Statuses");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 15;
+
+  // Use selectedDepartment from context, defaulting to "All Departments"
+  const dept = selectedDepartment === "All" ? "All Departments" : selectedDepartment;
 
   const [rows, setRows] = useState<ProjectRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -169,6 +173,11 @@ const Milestones: React.FC = () => {
         console.log('Loaded projects:', arr);
         if (!ignore) {
           setRows(arr);
+          
+          // Extract unique departments and update context
+          const uniqueDepartments = Array.from(new Set(arr.map(p => p.department).filter(d => d && d !== "-")));
+          setAvailableDepartments(uniqueDepartments);
+          
           if (arr.length === 0) {
             setErr("No projects available. Check back later or contact support.");
           }
@@ -186,7 +195,7 @@ const Milestones: React.FC = () => {
   // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [debouncedQ, dept, status]);
+  }, [debouncedQ, selectedDepartment, status]);
 
   const filtered = useMemo(() => {
     return rows.filter((r) => {
@@ -226,13 +235,18 @@ const Milestones: React.FC = () => {
             <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search projects..." className="w-full rounded-lg border border-slate-200 px-10 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-100" />
             <svg viewBox="0 0 24 24" className="pointer-events-none absolute left-3 top-2.5 h-5 w-5 text-slate-400" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" /></svg>
           </div>
-          <SimpleDepartmentSelect
-            value={dept}
-            onChange={setDept}
+          <select
+            value={selectedDepartment}
+            onChange={(e) => setSelectedDepartment(e.target.value)}
             className="rounded-lg border border-slate-200 bg-white pl-3 pr-8 py-2.5 text-sm text-slate-700"
-            includeAll={true}
-            allLabel="All Departments"
-          />
+          >
+            <option value="All">All Departments</option>
+            {availableDepartments.map((dept) => (
+              <option key={dept} value={dept}>
+                {dept}
+              </option>
+            ))}
+          </select>
           <select value={status} onChange={(e) => setStatus(e.target.value)} className="rounded-lg border border-slate-200 bg-white pl-3 pr-8 py-2.5 text-sm text-slate-700">
             <option>All Statuses</option>
             <option>In Progress</option>

@@ -36,6 +36,8 @@ export default function Budgets() {
   const [q, setQ] = React.useState("");
   const [status, setStatus] = React.useState<"All" | Status>("All");
   const [dept, setDept] = React.useState("All Departments");
+  const [selectedProposal, setSelectedProposal] = React.useState<typeof rows[0] | null>(null);
+  const [showModal, setShowModal] = React.useState(false);
 
   const data = rows
     .filter(r => (status === "All" ? true : r.status === status))
@@ -83,10 +85,10 @@ export default function Budgets() {
         <>
           <div className="bg-white border divide-y rounded-lg border-slate-200">
             {data.map((r)=>(
-              <div key={r.title} className="p-4">
+              <div key={r.title} className="p-4 hover:bg-slate-50">
                 <div className="flex items-start justify-between gap-4">
                   {/* left */}
-                  <div className="min-w-0">
+                  <div className="min-w-0 flex-1">
                     <div className="truncate text-[15px] font-medium text-slate-900">{r.title}</div>
                     <div className="flex flex-wrap items-center mt-1 text-xs gap-x-4 gap-y-1 text-slate-500">
                       <span className="inline-flex items-center gap-1"><I.dept/>{r.dept}</span>
@@ -95,9 +97,10 @@ export default function Budgets() {
                   </div>
 
                   {/* right */}
-                  <div className="text-right shrink-0">
-                    <div className="flex items-center justify-end gap-2 text-sm font-semibold text-slate-900">
-                      <I.money/>{r.amount}
+                  <div className="flex items-center gap-3 shrink-0">
+                    <div className="text-right">
+                      <div className="flex items-center justify-end gap-2 text-sm font-semibold text-slate-900">
+                        <I.money/>{r.amount}
                     </div>
                     <div className="flex items-center justify-end gap-3 mt-1">
                       <div className="inline-flex items-center gap-1 text-xs text-slate-500">
@@ -105,7 +108,13 @@ export default function Budgets() {
                       </div>
                       <Chip s={r.status}/>
                     </div>
-                    <button className="inline-flex items-center gap-1 mt-2 text-sm text-blue-600 hover:underline">
+                    <button 
+                      onClick={() => {
+                        setSelectedProposal(r);
+                        setShowModal(true);
+                      }}
+                      className="inline-flex items-center gap-1 mt-2 text-sm text-blue-600 hover:underline"
+                    >
                       View Details <I.chev/>
                     </button>
                   </div>
@@ -123,6 +132,68 @@ export default function Budgets() {
       ) : (
         /* New Proposal (compact mock to match style) */
         <ProposalForm setTab={()=>setTab("proposals")}/>
+      )}
+
+      {/* View Details Modal */}
+      {showModal && selectedProposal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between p-6 border-b">
+              <h3 className="text-lg font-semibold">Project Proposal Details</h3>
+              <button 
+                onClick={() => setShowModal(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="text-sm font-medium text-gray-600">Project Title</label>
+                <p className="text-base text-gray-900">{selectedProposal.title}</p>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium text-gray-600">Department</label>
+                  <p className="text-base text-gray-900">{selectedProposal.dept}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-600">Status</label>
+                  <div className="mt-1"><Chip s={selectedProposal.status}/></div>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-600">Budget Amount</label>
+                  <p className="text-base font-semibold text-gray-900">{selectedProposal.amount}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-600">Submitted Date</label>
+                  <p className="text-base text-gray-900">{selectedProposal.submitted}</p>
+                </div>
+              </div>
+              
+              <div>
+                <label className="text-sm font-medium text-gray-600">Timeline</label>
+                <p className="text-base text-gray-900">{selectedProposal.timeline}</p>
+              </div>
+              
+              <div className="flex gap-3 pt-4 border-t">
+                <button 
+                  onClick={() => setShowModal(false)}
+                  className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200"
+                >
+                  Close
+                </button>
+                <button className="flex-1 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                  Download Proposal
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

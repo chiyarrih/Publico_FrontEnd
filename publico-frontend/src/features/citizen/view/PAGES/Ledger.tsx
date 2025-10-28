@@ -24,7 +24,7 @@ type Tx = {
 const money = (n?: number) =>
   typeof n === "number" ? n.toLocaleString("en-PH", { style: "currency", currency: "PHP", maximumFractionDigits: 0 }) : "-";
 
-const DEPTS    = ["All Departments","Health","Education","Infrastructure","Utilities","Administration","Public Works","Social Welfare","Department of Public Works and Highways"] as const;
+const DEPTS    = ["All Departments"] as const;
 const PERIODS  = ["This Month","Last 30 Days","This Quarter","This Year","All Time"] as const;
 const STATUSES = ["Verified","Pending","Flagged","All"] as const;
 
@@ -125,12 +125,13 @@ export default function Ledger() {
   const [query, setQuery]     = useState("");
   const debouncedQuery        = useDebounce(query, 300); // Debounce search input
   const [period, setPeriod]   = useState<typeof PERIODS[number]>("All Time");
-  const [dept, setDept]       = useState<typeof DEPTS[number]>("All Departments");
+  const [dept, setDept]       = useState("All Departments");
   const [status, setStatus]   = useState<typeof STATUSES[number]>("All");
   const [page, setPage]       = useState(1);
   const pageSize              = 15; // Show 15 transactions per page for clean display
 
   const [allRows, setAllRows]     = useState<Tx[]>([]); // Store ALL rows from all pages
+  const [deptOptions, setDeptOptions] = useState<string[]>([]); // Dynamic department options
   const [total, setTotal]         = useState(0);
   const [loading, setLoading]     = useState(true);
   const [err, setErr]             = useState<string | null>(null);
@@ -142,8 +143,16 @@ export default function Ledger() {
       setLoading(true); setErr(null);
       // Fetch all data at once (all 127 items) for client-side pagination
       const res = await fetchLedger(1, 127); // Fetch all items at once
-      setAllRows(Array.isArray(res?.items) ? res.items : []);
-      setTotal(typeof res?.total === "number" ? res.total : (res?.items?.length ?? 0));
+      const items = Array.isArray(res?.items) ? res.items : [];
+      setAllRows(items);
+      setTotal(typeof res?.total === "number" ? res.total : items.length);
+      
+      // Extract unique departments from transaction data
+      const uniqueDepts = Array.from(new Set(
+        items.map(tx => tx.dept || tx.department).filter(d => d && d !== "Government Department" && d !== "-")
+      ));
+      setDeptOptions(uniqueDepts);
+      console.log('Found departments in transactions:', uniqueDepts);
     } catch (e: any) {
       setErr(e?.message || "Failed to load ledger");
     } finally {
@@ -175,13 +184,24 @@ export default function Ledger() {
     const q = debouncedQuery.trim().toLowerCase(); // Use debounced query
     const result = allRows.filter(r => {
       const dOk  = period === "All Time" ? true : (r.date ? new Date(r.date) >= start : true);
-      const dep  = dept === "All Departments" || 
-                   r.dept?.toLowerCase().includes(dept.toLowerCase()) || 
-                   dept.toLowerCase().includes(r.dept?.toLowerCase() || '');
+      
+      // Improved department filtering
+      let dep = true; // Default to true (show all) if "All Departments"
+      if (dept !== "All Departments") {
+        const transactionDept = (r.dept || r.department || "").toLowerCase();
+        const selectedDept = dept.toLowerCase();
+        // Check if transaction department contains the selected department or vice versa
+        dep = transactionDept.includes(selectedDept) || selectedDept.includes(transactionDept);
+      }
+      
       const st   = status === "All" || r.status === status;
-      const text = q === "" || `${r.project ?? ""} ${r.dept ?? ""} ${r.signature ?? ""}`.toLowerCase().includes(q);
+      const text = q === "" || `${r.project ?? ""} ${r.dept ?? ""} ${r.projectName ?? ""} ${r.department ?? ""} ${r.signature ?? ""}`.toLowerCase().includes(q);
       return dOk && dep && st && text;
     });
+    
+    console.log('Filtered results:', result.length, 'from', allRows.length, 'total rows');
+    console.log('Department filter:', dept, 'Period:', period, 'Status:', status);
+    
     return result;
   }, [allRows, debouncedQuery, period, dept, status]);
 
@@ -226,7 +246,10 @@ export default function Ledger() {
               Refresh
             </button>
             <Select value={period} onChange={(e)=>{ setPeriod(e.target.value as any); setSafePage(1); }}>{PERIODS.map(p => <option key={p}>{p}</option>)}</Select>
-            <Select value={dept} onChange={(e)=>{ setDept(e.target.value as any); setSafePage(1); }}>{DEPTS.map(d => <option key={d}>{d}</option>)}</Select>
+            <Select value={dept} onChange={(e)=>{ setDept(e.target.value); setSafePage(1); }}>
+              <option value="All Departments">All Departments</option>
+              {deptOptions.map(d => <option key={d} value={d}>{d}</option>)}
+            </Select>
             <Select value={status} onChange={(e)=>{ setStatus(e.target.value as any); setSafePage(1); }}>{STATUSES.map(s => <option key={s}>{s}</option>)}</Select>
           </div>
         </div>

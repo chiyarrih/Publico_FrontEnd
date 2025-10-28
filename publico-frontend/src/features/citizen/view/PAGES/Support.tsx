@@ -138,11 +138,12 @@ export default function Support() {
             <Field label="Issue Type">
               <Select name="type" value={form.type} onChange={onChange}>
                 <option value="">Select an issue type</option>
+                <option>Report Scam / Fraud</option>
+                <option>Smart Contract</option>
                 <option>General</option>
                 <option>Account / Login</option>
                 <option>Data Accuracy</option>
                 <option>Reports & Downloads</option>
-                <option>Smart Contract Alert</option>
                 <option>Data Concern</option>
                 <option>Other</option>
               </Select>
@@ -200,6 +201,25 @@ export default function Support() {
                 <div className="text-slate-500">Phone</div>
                 <div className="text-slate-900">Hotline: (075) 123-4567</div>
                 <div className="text-xs text-slate-500">If urgent, call us so we can help right away.</div>
+              </div>
+            </div>
+
+            {/* Report Scam - Important Notice */}
+            <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+              <div className="flex items-start gap-2">
+                <svg className="w-5 h-5 text-red-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <div>
+                  <div className="text-sm font-semibold text-red-900">⚠️ Report Suspected Scams</div>
+                  <div className="text-xs text-red-700 mt-1">
+                    If you encounter a suspected scam or fraud related to this portal, 
+                    please report it immediately by selecting "Report Scam / Fraud" in the form.
+                  </div>
+                  <div className="text-xs text-red-600 mt-2 font-medium">
+                    Emergency Scam Hotline: (075) 911-HELP
+                  </div>
+                </div>
               </div>
             </div>
 
