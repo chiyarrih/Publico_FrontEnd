@@ -1,6 +1,63 @@
-import useBudget from "@agency/controller/hooks/useBudget";
 
 type Status = "Approved" | "In Review" | "Pending" | "Rejected";
+
+interface ReceiptModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  title: string;
+  amount: string;
+  dept: string;
+  date: string;
+}
+
+const ReceiptModal: React.FC<ReceiptModalProps> = ({ isOpen, onClose, title, amount, dept, date }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+      <div className="w-full max-w-lg p-6 mx-4 bg-white shadow-xl rounded-2xl">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-slate-900">Project Receipt</h3>
+          <button onClick={onClose} className="p-1 rounded-full hover:bg-slate-100">
+            <I.close />
+          </button>
+        </div>
+        
+        <div className="p-5 mb-4 border rounded-xl border-slate-200 bg-slate-50/80">
+          <div className="grid gap-4">
+            <div>
+              <div className="mb-1 text-sm text-slate-500">Project Title</div>
+              <div className="font-medium text-slate-900">{title}</div>
+            </div>
+            <div>
+              <div className="mb-1 text-sm text-slate-500">Department</div>
+              <div className="font-medium text-slate-900">{dept}</div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <div className="mb-1 text-sm text-slate-500">Amount</div>
+                <div className="font-medium text-slate-900">{amount}</div>
+              </div>
+              <div>
+                <div className="mb-1 text-sm text-slate-500">Date</div>
+                <div className="font-medium text-slate-900">{date}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex justify-end gap-3">
+          <button 
+            onClick={onClose}
+            className="px-4 py-2 text-sm font-medium transition-colors border rounded-lg text-slate-600 border-slate-200 hover:bg-slate-50"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 const StatusChip: React.FC<{ s: Status }> = ({ s }) => {
   const m: Record<Status, string> = {
     Approved: "bg-emerald-100 text-emerald-700",
@@ -28,8 +85,28 @@ const I = {
   cal:    () => <svg viewBox="0 0 24 24" className="w-4 h-4 text-slate-400"><path d="M7 3v4M17 3v4M3 9h18M5 21h14a2 2 0 0 0 2-2V9H3v10a2 2 0 0 0 2 2z" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>,
   check:  () => <svg viewBox="0 0 24 24" className="w-4 h-4 text-emerald-600"><path d="M20 6L9 17l-5-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>,
   chev:   () => <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 text-slate-500"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>,
+  close:  () => <svg viewBox="0 0 24 24" className="w-4 h-4 text-slate-500"><path d="M18 6L6 18M6 6l12 12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>,
+  receipt:() => <svg viewBox="0 0 24 24" className="w-4 h-4 text-slate-400"><path d="M4 21V3h16v18l-4-2-4 2-4-2-4 2z" fill="none" stroke="currentColor" strokeWidth="1.5"/><path d="M8 7h8M8 11h8M8 15h5" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>,
 };
+import React, { useState } from "react";
+
+interface ReceiptModalState {
+    isOpen: boolean;
+    title: string;
+    amount: string;
+    dept: string;
+    date: string;
+}
+
 export default function ProposalCard({data}:{data:any[]}){
+    const [receiptModal, setReceiptModal] = useState<ReceiptModalState>({
+        isOpen: false,
+        title: "",
+        amount: "",
+        dept: "",
+        date: "",
+    });
+
     return (
         <div className="bg-white border divide-y rounded-lg border-slate-200">
             {data.map((r, index)=>{
@@ -48,13 +125,31 @@ export default function ProposalCard({data}:{data:any[]}){
                       <div className="inline-flex items-center gap-1 text-xs text-slate-500"><I.cal/> Submitted: {r.createdAt}</div>
                       <StatusChip s={r.status}/>
                     </div>
-                    <button className="inline-flex items-center gap-1 mt-2 text-sm text-blue-600 hover:underline">
+                    <button 
+                      onClick={() => setReceiptModal({
+                        isOpen: true,
+                        title: r.projectName,
+                        amount: r.amountRequested,
+                        dept: r.category,
+                        date: r.createdAt
+                      })}
+                      className="inline-flex items-center gap-1 mt-2 text-sm text-blue-600 hover:underline"
+                    >
                       View Details <I.chev/>
                     </button>
                   </div>
                 </div>
               </div>
             })}
+
+            <ReceiptModal 
+              isOpen={receiptModal.isOpen}
+              onClose={() => setReceiptModal((prev: ReceiptModalState) => ({ ...prev, isOpen: false }))}
+              title={receiptModal.title}
+              amount={receiptModal.amount}
+              dept={receiptModal.dept}
+              date={receiptModal.date}
+            />
           </div>
     )
 }

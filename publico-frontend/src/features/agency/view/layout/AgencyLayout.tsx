@@ -62,13 +62,13 @@ export default function AgencyLayout() {
         {/* Sidebar */}
         <aside className="hidden bg-white border-r border-slate-200 lg:block">
           <div className="sticky top-16 h-[calc(100vh-4rem)] overflow-auto p-6">
-            <div className="flex items-center gap-3 mb-8 p-4 rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-lg">
+            <div className="flex items-center gap-3 p-4 mb-8 border border-blue-100 rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-50">
+              <div className="flex items-center justify-center w-12 h-12 text-lg font-bold text-white rounded-full bg-gradient-to-br from-blue-500 to-indigo-600">
                 {(profile.name || "Agency User").charAt(0).toUpperCase()}
               </div>
               <div>
                 <div className="text-sm font-semibold text-slate-900">{profile.name || "Agency User"}</div>
-                <div className="text-xs text-blue-600 font-medium">Full Access</div>
+                <div className="text-xs font-medium text-blue-600">Full Access</div>
               </div>
             </div>
             <nav className="space-y-2">
@@ -117,7 +117,7 @@ export default function AgencyLayout() {
           {/* title only */}
           <div className="flex items-center justify-between mb-6">
             <h1 className="text-xl font-semibold text-slate-900">{title}</h1>
-            <div />
+            <div/>
           </div>
 
           <div className="flex-1 min-h-0">{isBudgets ? <BudgetsInner /> : <Outlet />}</div>

@@ -1,8 +1,6 @@
-import React, { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
-import { Card, Pill } from "../../../../shared/ui";
-import { useProjectMilestone } from "@admin/controller/hooks/useProjectMilestones";
 import useMilestone from "@agency/controller/hooks/useMilestone";
+import { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 
 const Eye = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>;
 const Upload = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>;
@@ -15,11 +13,23 @@ export default function Milestones() {
   const {milestone, loading, error, refetch} = useMilestone()
   const milestones = milestone || []; // Use real API data
 
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
   const filtered = useMemo(() => milestones?.filter(p =>
     (dept === "All" || p.department === dept) &&
     (state === "All" || p.overallStatus === state) &&
     (p.projectName.toLowerCase().includes(search.toLowerCase()) || p._id.includes(search))
   ), [milestones, search, dept, state]);
+
+  // Calculate pagination
+  const totalPages = Math.ceil((filtered?.length || 0) / itemsPerPage);
+  const paginatedData = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    const end = start + itemsPerPage;
+    return filtered?.slice(start, end);
+  }, [filtered, currentPage]);
 
   const handleUploadProof = (milestoneId: string, phaseNumber: number) => {
     // In real app, this would open a file upload modal
@@ -39,9 +49,9 @@ export default function Milestones() {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
-          <div className="text-gray-600 mb-2">No milestones found</div>
-          <div className="text-gray-500 text-sm">You don't have any project milestones assigned yet.</div>
-          <div className="text-gray-500 text-sm">Contact your administrator to get milestones assigned to your agency.</div>
+          <div className="mb-2 text-gray-600">No milestones found</div>
+          <div className="text-sm text-gray-500">You don't have any project milestones assigned yet.</div>
+          <div className="text-sm text-gray-500">Contact your administrator to get milestones assigned to your agency.</div>
         </div>
       </div>
     );
@@ -51,8 +61,8 @@ export default function Milestones() {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
-          <div className="text-red-600 mb-2">Error loading milestones</div>
-          <div className="text-gray-600 text-sm mb-4">{error}</div>
+          <div className="mb-2 text-red-600">Error loading milestones</div>
+          <div className="mb-4 text-sm text-gray-600">{error}</div>
           <button 
             onClick={refetch} 
             className="px-4 py-2 text-white bg-blue-600 rounded hover:bg-blue-700"
@@ -131,7 +141,7 @@ export default function Milestones() {
             </div>
           ) : (
             <div className="divide-y divide-gray-200">
-              {filtered?.map(project => (
+              {paginatedData?.map(project => (
                 <div key={project._id} className="grid grid-cols-6 gap-4 px-6 py-4 hover:bg-gray-50">
                   <div className="text-sm font-medium text-gray-900">{project._id}</div>
                   <div className="text-sm text-gray-900">{project.projectName}</div>
@@ -158,6 +168,47 @@ export default function Milestones() {
             </div>
           )}
         </div>
+
+        {/* Pagination */}
+        {filtered?.length > 0 && (
+          <div className="flex items-center justify-between px-4 py-3 mt-4 bg-white border border-gray-200 rounded-lg sm:px-6">
+            <div className="flex items-center text-sm text-gray-700">
+              <span className="mr-2">
+                Showing {Math.min((currentPage - 1) * itemsPerPage + 1, filtered.length)} to{" "}
+                {Math.min(currentPage * itemsPerPage, filtered.length)} of {filtered.length} results
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="px-3 py-1 text-sm font-medium text-gray-700 transition-colors bg-white border border-gray-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+              >
+                Previous
+              </button>
+              {[...Array(totalPages)].map((_, idx) => (
+                <button
+                  key={idx + 1}
+                  onClick={() => setCurrentPage(idx + 1)}
+                  className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
+                    currentPage === idx + 1
+                      ? 'bg-blue-600 text-white'
+                      : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50'
+                  }`}
+                >
+                  {idx + 1}
+                </button>
+              ))}
+              <button
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+                className="px-3 py-1 text-sm font-medium text-gray-700 transition-colors bg-white border border-gray-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </>
   );
