@@ -9,7 +9,6 @@ export default function useLedger() {
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<string>("All");
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const [typeFilter, setTypeFilter] = useState<string>("All"); // optional filter (like department)
   const [dateRange, setDateRange] = useState<{ start: string; end: string } | null>(null);
   const [showDatePicker, setShowDatePicker] = useState<boolean>(false);
   const limit = 5;
@@ -23,7 +22,6 @@ export default function useLedger() {
     currentPage: number,
     status: string,
     search: string = "",
-    department: string = "All",
     dateFilter: { start: string; end: string } | null = null
   ) => {
     if (!agencyId) return;
@@ -32,16 +30,10 @@ export default function useLedger() {
     try {
       // When searching, date filtering, or status filtering — fetch all pages and paginate client-side
       if (search.trim() || dateFilter || status !== "All") {
-        await loadAllLedgersForSearch(status, search, department, dateFilter, currentPage);
+        await loadAllLedgersForSearch(status, search, dateFilter, currentPage);
       } else {
         const data = await fetchLedger(currentPage, limit);
         let filtered = data.data || [];
-        
-
-        // Optional type filter (like department)
-        if (department !== "All") {
-          filtered = filtered.filter((item: any) => item.department === department);
-        }
 
         setLedgers(filtered);
         setTotalPages(data.pagination?.totalPages || 1);
@@ -57,7 +49,6 @@ export default function useLedger() {
   const loadAllLedgersForSearch = async (
     status: string,
     search: string,
-    type: string,
     dateFilter: { start: string; end: string } | null = null,
     currentPage: number = 1
   ) => {
@@ -100,10 +91,6 @@ export default function useLedger() {
         );
       }
 
-      if (type !== "All") {
-        filtered = filtered.filter((ledger) => ledger.type === type);
-      }
-
       if (dateFilter) {
         filtered = filtered.filter((ledger) => {
           const ledgerDate = new Date(ledger.createdAt);
@@ -131,8 +118,8 @@ export default function useLedger() {
   };
 
   useEffect(() => {
-    loadLedgers(page, statusFilter, searchQuery, typeFilter, dateRange);
-  }, [page, statusFilter, searchQuery, typeFilter, dateRange]);
+    loadLedgers(page, statusFilter, searchQuery, dateRange);
+  }, [page, statusFilter, searchQuery, dateRange]);
 
   useEffect(() => {
     if (!agencyId) return;
@@ -167,10 +154,6 @@ export default function useLedger() {
     setPage(1);
   };
 
-  const handleTypeChange = (newType: string) => {
-    setTypeFilter(newType);
-    setPage(1);
-  };
 
   const handleDateRangeChange = (start: string, end: string) => {
     setDateRange({ start, end });
@@ -193,7 +176,7 @@ export default function useLedger() {
   };
 
   const refreshLedgers = () => {
-    loadLedgers(page, statusFilter, searchQuery, typeFilter, dateRange);
+    loadLedgers(page, statusFilter, searchQuery, dateRange);
   };
 
   const fetchAllLedgersForExport = async (): Promise<any[]> => {
@@ -241,10 +224,6 @@ export default function useLedger() {
         );
       }
 
-      if (typeFilter !== "All") {
-        filtered = filtered.filter((ledger) => ledger.department === typeFilter);
-      }
-
       if (dateRange) {
         filtered = filtered.filter((ledger) => {
           const ledgerDate = new Date(ledger.createdAt);
@@ -270,12 +249,10 @@ export default function useLedger() {
     loading,
     statusFilter,
     searchQuery,
-    typeFilter,
     dateRange,
     showDatePicker,
     handleStatusChange,
     handleSearchChange,
-    handleTypeChange,
     handleDateRangeChange,
     clearDateRange,
     toggleDatePicker,

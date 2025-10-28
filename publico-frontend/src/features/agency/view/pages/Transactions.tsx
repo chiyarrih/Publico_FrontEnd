@@ -1,6 +1,5 @@
 import useLedger from "@agency/controller/hooks/useLedger";
 import React, { useState, useEffect, useRef } from "react";
-import { SimpleDepartmentSelect } from "@/shared/components/DepartmentSelect";
 
 type Row = {
   date: string;
@@ -30,12 +29,10 @@ export default function Transactions() {
     loading,
     statusFilter,
     searchQuery,
-    typeFilter,
     dateRange,
     showDatePicker,
     handleStatusChange,
     handleSearchChange,
-    handleTypeChange,
     handleDateRangeChange,
     clearDateRange,
     toggleDatePicker,
@@ -201,15 +198,6 @@ export default function Transactions() {
             )}
           </div>
 
-          {/* Department Filter */}
-          <SimpleDepartmentSelect
-            value={typeFilter}
-            onChange={handleTypeChange}
-            className="px-2 text-sm border rounded h-9 border-slate-300"
-            includeAll={true}
-            allLabel="All Departments"
-          />
-
           {/* Status Filter */}
           <select 
             value={statusFilter} 
@@ -221,7 +209,7 @@ export default function Transactions() {
             ))}
           </select>
 
-          <button 
+          <button
             onClick={() => {
               const csvContent = [
                 ['Date', 'Department', 'Project', 'Amount', 'Signature'].join(','),

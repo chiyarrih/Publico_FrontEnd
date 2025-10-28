@@ -1,6 +1,5 @@
 import ProposalForm from "@agency/controller/components/forms/ProposalForm";
 import React from "react";
-import { SimpleDepartmentSelect } from "@/shared/components/DepartmentSelect";
 
 type Status = "Approved" | "In Review" | "Pending" | "Rejected";
 
@@ -35,13 +34,11 @@ export default function Budgets() {
   const [tab, setTab] = React.useState<"proposals"|"new">("proposals");
   const [q, setQ] = React.useState("");
   const [status, setStatus] = React.useState<"All" | Status>("All");
-  const [dept, setDept] = React.useState("All Departments");
   const [selectedProposal, setSelectedProposal] = React.useState<typeof rows[0] | null>(null);
   const [showModal, setShowModal] = React.useState(false);
 
   const data = rows
     .filter(r => (status === "All" ? true : r.status === status))
-    .filter(r => (dept === "All Departments" ? true : r.dept === dept))
     .filter(r => [r.title, r.dept].some(t => t.toLowerCase().includes(q.toLowerCase())));
 
   return (
@@ -69,13 +66,6 @@ export default function Budgets() {
             <select value={status} onChange={e=>setStatus(e.target.value as any)} className="px-2 text-sm border rounded h-9 border-slate-300">
               <option>All</option><option>Approved</option><option>In Review</option><option>Pending</option><option>Rejected</option>
             </select>
-            <SimpleDepartmentSelect
-              value={dept}
-              onChange={setDept}
-              className="px-2 text-sm border rounded h-9 border-slate-300"
-              includeAll={true}
-              allLabel="All Departments"
-            />
           </div>
         )}
       </div>

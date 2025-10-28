@@ -614,7 +614,7 @@ export default function Dashboard() {
                 cx="50%" 
                 cy="50%" 
                 outerRadius={100} 
-                label
+                label={(entry) => entry.name}
               >
                 {uiAllocation.map((category, index) => (
                   <Cell key={index} fill={category.color} />
