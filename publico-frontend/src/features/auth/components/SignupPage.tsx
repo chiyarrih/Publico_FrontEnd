@@ -2,23 +2,20 @@ import { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { AuthService } from "../services/authApi";
-import { RegisterCitizenRequest, RegisterAgencyRequest, RegisterAdminRequest } from "../../../shared/types/auth";
+import { RegisterAgencyRequest } from "../../../shared/types/auth";
 import { validateEmail, validatePassword } from "../../../utils/auth";
 import AuthLayout from "./AuthLayout";
 import AuthCard from "./ui/AuthCard";
 import FormField from "./ui/FormField";
 import PasswordField from "./ui/PasswordField";
-import RadioRow from "./ui/RadioRow";
 import TermsAndConditionsModal from "./ui/TermsAndConditionsModal";
 import { Upload, X, AlertCircle, CheckCircle } from "lucide-react";
 
-type Role = "citizen" | "agency" | "admin";
 type Errors = Record<string, string>;
 
 const SignupPage = () => {
   const { register, isLoading, error, clearError } = useAuth();
   const [form, setForm] = useState({
-    role: "citizen" as Role,
     firstName: "", lastName: "",
     email: "", password: "", confirm: "",
     agencyName: "", agencyCode: "", contactPhone: "", department: "", address: "",
@@ -40,7 +37,7 @@ const SignupPage = () => {
 
   // Real-time agency name validation
   const checkAgencyName = useCallback(async (agencyName: string) => {
-    if (!agencyName.trim() || form.role !== 'agency') {
+    if (!agencyName.trim()) {
       setAgencyNameStatus('idle');
       return;
     }
@@ -54,11 +51,11 @@ const SignupPage = () => {
       console.error('Error checking agency name:', error);
       setAgencyNameStatus('idle');
     }
-  }, [form.role]);
+  }, []);
 
   // Debounce the agency name check
   useEffect(() => {
-    if (form.role === 'agency' && form.agencyName.trim()) {
+    if (form.agencyName.trim()) {
       const timer = setTimeout(() => {
         checkAgencyName(form.agencyName);
       }, 800); // 800ms delay
@@ -67,7 +64,7 @@ const SignupPage = () => {
     } else {
       setAgencyNameStatus('idle');
     }
-  }, [form.agencyName, form.role, checkAgencyName]);
+  }, [form.agencyName, checkAgencyName]);
 
   // Reset agency name status when there's an error to avoid conflicts
   useEffect(() => {
@@ -176,7 +173,7 @@ const SignupPage = () => {
     const e: Errors = {};
     const need = (k: string, v: string, msg = "Required") => { if (!v.trim()) e[k] = msg; };
 
-    // common
+    // Common fields
     need("email", form.email, "Email is required");
     if (form.email && !validateEmail(form.email)) e.email = "Invalid email";
     need("password", form.password, "Password is required");
@@ -186,21 +183,18 @@ const SignupPage = () => {
     if (!hasReadTerms) e.terms = "Please read and accept the terms and conditions";
     if (!form.terms) e.terms = "You must agree to the terms and conditions";
 
-    // names (citizen always, agency also needs them)
+    // Agency-specific fields
     need("firstName", form.firstName, "First name is required");
     need("lastName", form.lastName, "Last name is required");
-
-    if (form.role === "agency") {
-      need("agencyName", form.agencyName, "Agency name is required");
-      need("agencyCode", form.agencyCode, "Agency code is required");
-      need("contactPhone", form.contactPhone, "Contact phone is required");
-      need("address", form.address, "Address is required");
-      
-      // Document validation for agency
-      if (!documents.agencyLicense) e.agencyLicense = "Agency License is required";
-      if (!documents.businessCertificate) e.businessCertificate = "Business Certificate is required";
-      if (!documents.proofOfInsurance) e.proofOfInsurance = "Proof of Insurance is required";
-    }
+    need("agencyName", form.agencyName, "Agency name is required");
+    need("agencyCode", form.agencyCode, "Agency code is required");
+    need("contactPhone", form.contactPhone, "Contact phone is required");
+    need("address", form.address, "Address is required");
+    
+    // Document validation
+    if (!documents.agencyLicense) e.agencyLicense = "Agency License is required";
+    if (!documents.businessCertificate) e.businessCertificate = "Business Certificate is required";
+    if (!documents.proofOfInsurance) e.proofOfInsurance = "Proof of Insurance is required";
 
     setErrs(e);
     return Object.keys(e).length === 0;
@@ -210,45 +204,26 @@ const SignupPage = () => {
     e.preventDefault();
     if (!validate()) return;
 
-    let payload: RegisterCitizenRequest | RegisterAgencyRequest | RegisterAdminRequest;
-    if (form.role === "citizen") {
-      payload = {
-        role: "Citizen",
-        first_name: form.firstName,
-        last_name: form.lastName,
-        email: form.email,
-        password: form.password,
-      };
-    } else if (form.role === "agency") {
-      payload = {
-        role: "Agency",
-        agency_name: form.agencyName,
-        agency_code: form.agencyCode,
-        email: form.email,
-        password: form.password,
-        contact_phone: form.contactPhone,
-        department: form.department,
-        address: form.address,
-        documents: documents, // Include documents for agency
-      };
-      console.log("🚀 Agency registration payload:", payload);
-    } else {
-      payload = {
-        role: "Admin",
-        first_name: form.firstName,
-        last_name: form.lastName,
-        email: form.email,
-        password: form.password,
-      };
-    }
+    const payload: RegisterAgencyRequest = {
+      role: "Agency",
+      agency_name: form.agencyName,
+      agency_code: form.agencyCode,
+      email: form.email,
+      password: form.password,
+      contact_phone: form.contactPhone,
+      department: form.department,
+      address: form.address,
+      documents: documents, // Include documents for agency
+    };
+    console.log("🚀 Agency registration payload:", payload);
     await register(payload);
   };
 
   return (
     <AuthLayout>
       <AuthCard
-        title="Create Your Account"
-        subtitle="Join the transparency platform"
+        title="Agency Registration"
+        subtitle="Register your government agency for budget transparency"
         footer={
           <p className="mt-6 text-center text-sm text-gray-600">
             Already have an account?{" "}
@@ -283,93 +258,77 @@ const SignupPage = () => {
         )}
 
         <form className="space-y-4" onSubmit={onSubmit}>
-          <RadioRow<Role>
-            label="I am creating an account as a:"
-            name="role"
-            value={form.role}
-            onChange={onChange}
-            options={[
-              { label: "Citizen", value: "citizen" },
-              { label: "Agency Representative", value: "agency" },
-              { label: "Administrator", value: "admin" },
-            ]}
-          />
-
           {/* Names */}
           <div className="grid grid-cols-2 gap-3">
             <FormField label="First Name" name="firstName" value={form.firstName} onChange={onChange} disabled={isLoading} error={errs.firstName} placeholder="John" />
             <FormField label="Last Name"  name="lastName"  value={form.lastName}  onChange={onChange} disabled={isLoading} error={errs.lastName} placeholder="Doe" />
           </div>
 
-          {/* Agency-only */}
-          {form.role === "agency" && (
-            <>
-              <div className="space-y-1">
-                <div className="relative">
-                  <FormField label="Agency Name" name="agencyName" value={form.agencyName} onChange={onChange} disabled={isLoading} error={errs.agencyName} placeholder="e.g., Department of Transportation" />
-                  {form.agencyName && agencyNameStatus !== 'idle' && (
-                    <div className="absolute right-3 top-8 flex items-center">
-                      {agencyNameStatus === 'checking' && (
-                        <div className="w-4 h-4 border-2 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
-                      )}
-                      {agencyNameStatus === 'available' && (
-                        <CheckCircle className="w-4 h-4 text-green-600" />
-                      )}
-                      {agencyNameStatus === 'taken' && (
-                        <AlertCircle className="w-4 h-4 text-red-600" />
-                      )}
-                    </div>
+          {/* Agency fields */}
+          <div className="space-y-1">
+            <div className="relative">
+              <FormField label="Agency Name" name="agencyName" value={form.agencyName} onChange={onChange} disabled={isLoading} error={errs.agencyName} placeholder="e.g., Department of Transportation" />
+              {form.agencyName && agencyNameStatus !== 'idle' && (
+                <div className="absolute right-3 top-8 flex items-center">
+                  {agencyNameStatus === 'checking' && (
+                    <div className="w-4 h-4 border-2 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+                  )}
+                  {agencyNameStatus === 'available' && (
+                    <CheckCircle className="w-4 h-4 text-green-600" />
+                  )}
+                  {agencyNameStatus === 'taken' && (
+                    <AlertCircle className="w-4 h-4 text-red-600" />
                   )}
                 </div>
-                <div className="space-y-1">
-                  <p className="text-[11px] text-slate-500">
-                    <span className="font-medium">Note:</span> Only one representative per agency is allowed to register.
-                  </p>
-                  {form.agencyName && agencyNameStatus === 'available' && (
-                    <p className="text-[11px] text-green-600 flex items-center gap-1">
-                      <CheckCircle className="w-3 h-3" />
-                      Agency name is available
-                    </p>
-                  )}
-                  {form.agencyName && agencyNameStatus === 'taken' && (
-                    <p className="text-[11px] text-red-600 flex items-center gap-1">
-                      <AlertCircle className="w-3 h-3" />
-                      This agency name is already registered
-                    </p>
-                  )}
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                <FormField label="Agency Code" name="agencyCode" value={form.agencyCode} onChange={onChange} disabled={isLoading} error={errs.agencyCode} placeholder="e.g., DOT" />
-                <FormField label="Contact Phone" name="contactPhone" value={form.contactPhone} onChange={onChange} disabled={isLoading} error={errs.contactPhone} placeholder="e.g., +63..." />
-              </div>
-              <FormField label="Department (Optional)" name="department" value={form.department} onChange={onChange} disabled={isLoading} placeholder="e.g., Budget Planning" />
-              <FormField label="Address" name="address" value={form.address} onChange={onChange} disabled={isLoading} error={errs.address} placeholder="Agency address" />
-              
-              {/* Document Upload Section */}
-              <div className="space-y-3 pt-2">
-                <h3 className="text-[13px] font-medium text-slate-700">Required Documents</h3>
-                <DocumentUploadField 
-                  label="Agency License" 
-                  type="agencyLicense" 
-                  file={documents.agencyLicense} 
-                  error={errs.agencyLicense} 
-                />
-                <DocumentUploadField 
-                  label="Business Certificate" 
-                  type="businessCertificate" 
-                  file={documents.businessCertificate} 
-                  error={errs.businessCertificate} 
-                />
-                <DocumentUploadField 
-                  label="Proof of Insurance" 
-                  type="proofOfInsurance" 
-                  file={documents.proofOfInsurance} 
-                  error={errs.proofOfInsurance} 
-                />
-              </div>
-            </>
-          )}
+              )}
+            </div>
+            <div className="space-y-1">
+              <p className="text-[11px] text-slate-500">
+                <span className="font-medium">Note:</span> Only one representative per agency is allowed to register.
+              </p>
+              {form.agencyName && agencyNameStatus === 'available' && (
+                <p className="text-[11px] text-green-600 flex items-center gap-1">
+                  <CheckCircle className="w-3 h-3" />
+                  Agency name is available
+                </p>
+              )}
+              {form.agencyName && agencyNameStatus === 'taken' && (
+                <p className="text-[11px] text-red-600 flex items-center gap-1">
+                  <AlertCircle className="w-3 h-3" />
+                  This agency name is already registered
+                </p>
+              )}
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <FormField label="Agency Code" name="agencyCode" value={form.agencyCode} onChange={onChange} disabled={isLoading} error={errs.agencyCode} placeholder="e.g., DOT" />
+            <FormField label="Contact Phone" name="contactPhone" value={form.contactPhone} onChange={onChange} disabled={isLoading} error={errs.contactPhone} placeholder="e.g., +63..." />
+          </div>
+          <FormField label="Department (Optional)" name="department" value={form.department} onChange={onChange} disabled={isLoading} placeholder="e.g., Budget Planning" />
+          <FormField label="Address" name="address" value={form.address} onChange={onChange} disabled={isLoading} error={errs.address} placeholder="Agency address" />
+          
+          {/* Document Upload Section */}
+          <div className="space-y-3 pt-2">
+            <h3 className="text-[13px] font-medium text-slate-700">Required Documents</h3>
+            <DocumentUploadField 
+              label="Agency License" 
+              type="agencyLicense" 
+              file={documents.agencyLicense} 
+              error={errs.agencyLicense} 
+            />
+            <DocumentUploadField 
+              label="Business Certificate" 
+              type="businessCertificate" 
+              file={documents.businessCertificate} 
+              error={errs.businessCertificate} 
+            />
+            <DocumentUploadField 
+              label="Proof of Insurance" 
+              type="proofOfInsurance" 
+              file={documents.proofOfInsurance} 
+              error={errs.proofOfInsurance} 
+            />
+          </div>
 
           {/* Common auth fields */}
           <FormField 

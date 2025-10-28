@@ -4,6 +4,7 @@ import { useAgencyVerification } from "../../controller/hooks/useAgencyVerificat
 import ApproveAgencyModal from "../modals/ApproveAgencyModal";
 import RejectAgencyModal from "../modals/RejectAgencyModal";
 import toast from "react-hot-toast";
+import { API_BASE_URL } from "@/config/api";
 
 interface AgencyVerificationReviewModalProps {
   isOpen: boolean;
@@ -16,7 +17,7 @@ export default function AgencyVerificationReviewModal({
   onClose,
   agency,
 }: AgencyVerificationReviewModalProps) {
-  const { getAgencyDetails, approveAgency, rejectAgency } = useAgencyVerification();
+  const { getAgencyDetails, approveAgency, rejectAgency, deleteAgency } = useAgencyVerification();
   const [agencyDetails, setAgencyDetails] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [isApproveModalOpen, setIsApproveModalOpen] = useState(false);
@@ -29,6 +30,7 @@ export default function AgencyVerificationReviewModal({
     .toLowerCase();
   const isApproved = currentStatus === "approved";
   const isRejected = currentStatus === "rejected";
+  const isAlreadyProcessed = isApproved || isRejected; // Either approved or rejected means action is complete
   const displayStatus = (agencyDetails?.status ?? agency?.status ?? "Pending") as string;
   
   useEffect(() => {
@@ -52,8 +54,10 @@ export default function AgencyVerificationReviewModal({
   const handleApprove = async () => {
     try {
       await approveAgency(agency._id);
+      // Refresh agency details to get the updated status
+      await fetchAgencyDetails();
       setIsApproveModalOpen(false);
-      onClose();
+      toast.success("Agency approved successfully!");
     } catch (error) {
       console.error("Error approving agency:", error);
     }
@@ -62,8 +66,10 @@ export default function AgencyVerificationReviewModal({
   const handleReject = async (reason: string) => {
     try {
       await rejectAgency(agency._id, reason);
+      // Refresh agency details to get the updated status
+      await fetchAgencyDetails();
       setIsRejectModalOpen(false);
-      onClose();
+      toast.success("Agency rejected successfully!");
     } catch (error) {
       console.error("Error rejecting agency:", error);
     }
@@ -72,15 +78,19 @@ export default function AgencyVerificationReviewModal({
   // new: remove handler
   const handleRemove = async () => {
     const ok = confirm(
-      `Are you sure you want to remove "${agency?.agency_name}" (${agency?.agency_id})? This action cannot be undone.`
+      `Are you sure you want to remove "${agency?.agency_name}" (${agency?.agency_id})? This action cannot be undone and will permanently delete the agency from the database.`
     );
     if (!ok) return;
 
     try {
       setLoading(true);
       
+      // Call the actual delete API
+      await deleteAgency(agency._id);
+      
+      // Close modal and refresh the list
       onClose();
-      toast.success(`Agency "${agency?.agency_name}" has been removed`);
+      toast.success(`Agency "${agency?.agency_name}" has been removed successfully`);
     } catch (error) {
       console.error("Error removing agency:", error);
       toast.error((error as any)?.message || "Failed to remove agency");
@@ -208,40 +218,80 @@ export default function AgencyVerificationReviewModal({
                 <Card>
                   <h3 className="text-lg font-medium text-gray-900 mb-4">Uploaded Documents</h3>
                   <div className="space-y-3">
-                    {agencyDetails?.documents?.map((doc: any, index: number) => (
-                      <div key={index} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
-                        <div className="flex items-center gap-3">
-                          <div className="flex-shrink-0">
-                            {doc.type?.includes('image') ? (
-                              <svg className="w-8 h-8 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
-                                <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
-                              </svg>
+                    {agencyDetails?.documents?.map((doc: any, index: number) => {
+                      const fileName = doc.name || `Document ${index + 1}`;
+                      const fileExtension = fileName.split('.').pop()?.toLowerCase() || '';
+                      
+                      // Construct full URL - handle both relative and absolute URLs
+                      const getFullUrl = (url: string) => {
+                        if (!url) return '';
+                        // If URL already starts with http/https, return as is
+                        if (url.startsWith('http://') || url.startsWith('https://')) {
+                          return url;
+                        }
+                        // If it starts with /, prepend the base URL
+                        if (url.startsWith('/')) {
+                          return `${API_BASE_URL}${url}`;
+                        }
+                        // Otherwise, add both / and base URL
+                        return `${API_BASE_URL}/${url}`;
+                      };
+                      
+                      const fullDocUrl = getFullUrl(doc.url);
+                      
+                      const getFileIcon = () => {
+                        if (doc.type?.includes('image') || ['jpg', 'jpeg', 'png', 'gif'].includes(fileExtension)) {
+                          return (
+                            <svg className="w-8 h-8 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
+                            </svg>
+                          );
+                        } else if (fileExtension === 'pdf') {
+                          return (
+                            <svg className="w-8 h-8 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
+                            </svg>
+                          );
+                        } else {
+                          return (
+                            <svg className="w-8 h-8 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
+                            </svg>
+                          );
+                        }
+                      };
+                      
+                      return (
+                        <div key={index} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:border-blue-300 transition-colors">
+                          <div className="flex items-center gap-3">
+                            <div className="flex-shrink-0">
+                              {getFileIcon()}
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium text-gray-900">{fileName}</p>
+                              <p className="text-xs text-gray-500">
+                                {fileExtension ? `${fileExtension.toUpperCase()} Document` : 'Document'}
+                                {doc.size && ` • ${(doc.size / 1024 / 1024).toFixed(1)} MB`}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {fullDocUrl ? (
+                              <a
+                                href={fullDocUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="px-3 py-1 text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors"
+                              >
+                                View
+                              </a>
                             ) : (
-                              <svg className="w-8 h-8 text-red-500" fill="currentColor" viewBox="0 0 20 20">
-                                <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
-                              </svg>
+                              <span className="text-xs text-gray-400">No URL available</span>
                             )}
                           </div>
-                          <div>
-                            <p className="text-sm font-medium text-gray-900">{doc.name}</p>
-                            <p className="text-xs text-gray-500">{(doc.size / 1024 / 1024).toFixed(1)} MB</p>
-                          </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                          {doc.type?.includes('image') && (
-                            <button className="text-blue-600 hover:text-blue-800 text-sm font-medium">
-                              Preview
-                            </button>
-                          )}
-                          <button className="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center gap-1">
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                            </svg>
-                            Download
-                          </button>
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                     {(!agencyDetails?.documents || agencyDetails.documents.length === 0) && (
                       <p className="text-gray-500 text-center py-4">No documents uploaded</p>
                     )}
@@ -258,23 +308,51 @@ export default function AgencyVerificationReviewModal({
 <Card>
   <h3 className="text-lg font-medium text-gray-900 mb-4">Verification Actions</h3>
   <div className="space-y-3">
-    {isApproved ? (
-      <Button
-        onClick={handleRemove}
-        className="w-full border-red-300 text-red-700 hover:bg-red-50 flex items-center justify-center gap-2"
-        disabled={loading}
-      >
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M1 7h22" />
-        </svg>
-        Remove Agency
-      </Button>
+    {isAlreadyProcessed ? (
+      <div className="space-y-3">
+        {/* Status Message */}
+        <div className={`p-4 rounded-lg ${isApproved ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
+          <div className="flex items-start gap-3">
+            {isApproved ? (
+              <svg className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              </svg>
+            ) : (
+              <svg className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              </svg>
+            )}
+            <div>
+              <p className={`text-sm font-medium ${isApproved ? 'text-green-900' : 'text-red-900'}`}>
+                Agency {isApproved ? 'Approved' : 'Rejected'}
+              </p>
+              <p className={`text-xs mt-1 ${isApproved ? 'text-green-700' : 'text-red-700'}`}>
+                This agency has already been {isApproved ? 'approved' : 'rejected'}. No further action can be taken.
+              </p>
+            </div>
+          </div>
+        </div>
+        
+        {/* Remove button only visible for approved agencies */}
+        {isApproved && (
+          <Button
+            onClick={handleRemove}
+            className="w-full border-red-300 text-red-700 hover:bg-red-50 flex items-center justify-center gap-2"
+            disabled={loading}
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M1 7h22" />
+            </svg>
+            Remove Agency
+          </Button>
+        )}
+      </div>
     ) : (
       <>
         <Button
           onClick={() => setIsApproveModalOpen(true)}
           className="w-full bg-green-600 hover:bg-green-700 text-white flex items-center justify-center gap-2"
-          disabled={isApproved}
+          disabled={loading}
         >
           <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" aria-hidden>
             <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
@@ -285,7 +363,7 @@ export default function AgencyVerificationReviewModal({
         <Button
           onClick={() => setIsRejectModalOpen(true)}
           className="w-full border-red-300 text-red-700 hover:bg-red-50 flex items-center justify-center gap-2"
-          disabled={isRejected}
+          disabled={loading}
         >
           <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" aria-hidden>
             <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />

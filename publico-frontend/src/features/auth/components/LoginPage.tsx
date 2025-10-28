@@ -30,12 +30,22 @@ const LoginPage = () => {
         title="Welcome Back"
         subtitle="Sign in to access your transparency portal"
         footer={
-          <p className="mt-6 text-center text-sm text-gray-600">
-            Don&apos;t have an account?{" "}
-            <Link to="/signup" className="font-semibold text-blue-600 hover:text-blue-700 transition-colors">
-              Create account
-            </Link>
-          </p>
+          <div className="mt-6 space-y-3">
+            <p className="text-center text-sm text-gray-600">
+              Don&apos;t have an agency account?{" "}
+              <Link to="/signup" className="font-semibold text-blue-600 hover:text-blue-700 transition-colors">
+                Register your agency
+              </Link>
+            </p>
+            <div className="pt-3 border-t border-gray-200">
+              <p className="text-center text-xs text-gray-500">
+                <span className="font-medium">For Citizens:</span> No account needed!{" "}
+                <Link to="/citizen" className="text-blue-600 hover:text-blue-700 font-semibold">
+                  Access public portal →
+                </Link>
+              </p>
+            </div>
+          </div>
         }
       >
         {error && (

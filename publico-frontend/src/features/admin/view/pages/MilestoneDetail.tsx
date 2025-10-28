@@ -56,10 +56,16 @@ interface ProofOfWorkModalProps {
   proof: ProofOfWork
   onClose: () => void
   onVerify: (status: "Verified" | "Rejected", reason?: string) => void
+  projectName?: string
+  agencyName?: string
 }
 
-const ProofOfWorkModal: React.FC<ProofOfWorkModalProps> = ({ proof, onClose, onVerify }) => {
+const ProofOfWorkModal: React.FC<ProofOfWorkModalProps> = ({ proof, onClose, onVerify, projectName, agencyName }) => {
   const [rejectionReason, setRejectionReason] = useState("")
+  
+  const fileUrl = proof.fileUrl?.startsWith('http') 
+    ? proof.fileUrl 
+    : `http://localhost:5000${proof.fileUrl}`;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -67,6 +73,18 @@ const ProofOfWorkModal: React.FC<ProofOfWorkModalProps> = ({ proof, onClose, onV
         <h3 className="text-lg font-semibold mb-4">{proof.description}</h3>
 
         <div className="space-y-3 mb-4">
+          {projectName && (
+            <div>
+              <span className="text-sm text-gray-600">Project:</span>
+              <span className="ml-2 font-medium text-blue-600">{projectName}</span>
+            </div>
+          )}
+          {agencyName && (
+            <div>
+              <span className="text-sm text-gray-600">Agency:</span>
+              <span className="ml-2 font-medium">{agencyName}</span>
+            </div>
+          )}
           <div>
             <span className="text-sm text-gray-600">Uploaded by:</span>
             <span className="ml-2 font-medium">{proof.uploadedBy}</span>
@@ -77,7 +95,7 @@ const ProofOfWorkModal: React.FC<ProofOfWorkModalProps> = ({ proof, onClose, onV
           </div>
           <div>
             <span className="text-sm text-gray-600">File size:</span>
-            <span className="ml-2">{(proof.fileSize / 1024 / 1024).toFixed(1)} MB</span>
+            <span className="ml-2">{(proof.fileSize / 1024).toFixed(1)} KB</span>
           </div>
           <div>
             <span className="text-sm text-gray-600">Status:</span>
@@ -91,7 +109,7 @@ const ProofOfWorkModal: React.FC<ProofOfWorkModalProps> = ({ proof, onClose, onV
 
         <div className="flex gap-2 mb-4">
           <button
-            onClick={() => window.open(proof.fileUrl, "_blank")}
+            onClick={() => window.open(fileUrl, "_blank")}
             className="flex-1 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 flex items-center justify-center gap-2"
           >
             <Eye />
@@ -419,59 +437,91 @@ export default function MilestoneDetail() {
             <h2 className="text-base font-semibold text-gray-900">Proof of Work</h2>
           </div>
           <div className="space-y-3">
-            {milestone.phases
-              .flatMap((phase) => phase.proofOfWork)
-              .map((proof) => (
-                <div
-                  key={proof.documentId}
-                  className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-blue-50 rounded flex items-center justify-center">
-                      <svg className="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                        />
-                      </svg>
-                    </div>
-                    <div>
-                      <div className="font-medium text-gray-900">{proof.description}</div>
-                      <div className="text-sm text-gray-600">
-                        Uploaded:{" "}
-                        {new Date(proof.uploadedAt).toLocaleDateString("en-US", {
-                          month: "short",
-                          day: "numeric",
-                          year: "numeric",
-                        })}{" "}
-                        • {(proof.fileSize / 1024 / 1024).toFixed(1)} MB
+            {milestone.phases.flatMap((phase) => phase.proofOfWork).length > 0 ? (
+              milestone.phases
+                .flatMap((phase) => phase.proofOfWork)
+                .map((proof) => {
+                  const isImage = proof.fileUrl?.match(/\.(jpg|jpeg|png|gif|webp)$/i);
+                  const imageUrl = proof.fileUrl?.startsWith('http') 
+                    ? proof.fileUrl 
+                    : `http://localhost:5000${proof.fileUrl}`;
+                  return (
+                    <div
+                      key={proof.documentId}
+                      className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        {isImage ? (
+                          <img 
+                            src={imageUrl}
+                            alt={proof.description}
+                            className="w-16 h-16 object-cover rounded border border-gray-200"
+                          />
+                        ) : (
+                          <div className="w-10 h-10 bg-blue-50 rounded flex items-center justify-center">
+                            <svg className="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                              />
+                            </svg>
+                          </div>
+                        )}
+                        <div>
+                          <div className="font-medium text-gray-900">{proof.description}</div>
+                          <div className="text-sm text-gray-600">
+                            Uploaded:{" "}
+                            {new Date(proof.uploadedAt).toLocaleDateString("en-US", {
+                              month: "short",
+                              day: "numeric",
+                              year: "numeric",
+                            })}{" "}
+                            • {(proof.fileSize / 1024).toFixed(1)} KB
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        {proof.verificationStatus === "Verified" && <Pill tone="green">Verified</Pill>}
+                        {proof.verificationStatus === "Pending Verification" && (
+                          <Pill tone="yellow">Pending Verification</Pill>
+                        )}
+                        {proof.verificationStatus === "Rejected" && <Pill tone="red">Rejected</Pill>}
+                        <button
+                          onClick={() => setSelectedProof(proof)}
+                          className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                        >
+                          <Eye className="w-4 h-4 text-gray-600" />
+                        </button>
                       </div>
                     </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    {proof.verificationStatus === "Verified" && <Pill tone="green">Verified</Pill>}
-                    {proof.verificationStatus === "Pending Verification" && (
-                      <Pill tone="yellow">Pending Verification</Pill>
-                    )}
-                    {proof.verificationStatus === "Rejected" && <Pill tone="red">Rejected</Pill>}
-                    <button
-                      onClick={() => setSelectedProof(proof)}
-                      className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                    >
-                      <Eye className="w-4 h-4 text-gray-600" />
-                    </button>
-                  </div>
+                  );
+                })
+            ) : (
+              <div className="text-center py-8 text-gray-500">
+                <div className="mb-3">
+                  <svg className="w-16 h-16 mx-auto text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
                 </div>
-              ))}
+                <p className="text-sm">No proof of work uploaded yet.</p>
+                <p className="text-xs mt-1">The agency will upload proof documents here.</p>
+              </div>
+            )}
           </div>
         </div>
       </div>
 
       {/* Proof of Work Modal */}
       {selectedProof && (
-        <ProofOfWorkModal proof={selectedProof} onClose={() => setSelectedProof(null)} onVerify={handleVerifyProof} />
+        <ProofOfWorkModal 
+          proof={selectedProof} 
+          onClose={() => setSelectedProof(null)} 
+          onVerify={handleVerifyProof}
+          projectName={milestone?.projectName}
+          agencyName={milestone?.proposedBy}
+        />
       )}
     </div>
   )

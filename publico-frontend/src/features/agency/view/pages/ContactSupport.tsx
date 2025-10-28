@@ -166,7 +166,7 @@ export default function ContactSupport() {
               type="file" 
               className="hidden" 
               onChange={onPick}
-              accept=".jpg,.jpeg,.png,.gif,.pdf,.doc,.docx,.txt,.zip,.rar"
+              accept="image/png,image/jpeg,image/jpg,image/gif,application/pdf,.doc,.docx,.txt,.zip,.rar"
             />
           </div>
           <div className="col-span-2">

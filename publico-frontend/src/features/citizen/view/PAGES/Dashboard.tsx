@@ -323,10 +323,24 @@ const transformCategoryData = (categories: any[]): UiCategoryData[] =>
 const transformProjects = (projects: any[]): UiProject[] =>
   (projects ?? []).map((project: any) => {
     const spent = Number(project.spent ?? 0);
-    const budget = Number(project.budget ?? 0);
-    const percentage = budget > 0 
-      ? Math.min(100, Math.round((spent / budget) * 100)) 
-      : (project.progress ?? 0);
+    const budget = Number(project.budget ?? project.totalBudget ?? 0);
+    
+    // Check if milestone has overallProgress (from backend calculation)
+    let percentage = project.overallProgress ?? project.progress ?? 0;
+    
+    // If no progress field, calculate from phases
+    if (percentage === 0 && project.phases) {
+      const totalPhasesBudget = project.phases.reduce((sum: number, p: any) => sum + (p.budget || 0), 0);
+      const totalPhasesSpent = project.phases.reduce((sum: number, p: any) => sum + (p.spent || 0), 0);
+      if (totalPhasesBudget > 0) {
+        percentage = Math.min(100, Math.round((totalPhasesSpent / totalPhasesBudget) * 100));
+      }
+    }
+    
+    // Fallback: Calculate from spent/budget if available
+    if (percentage === 0 && budget > 0) {
+      percentage = Math.min(100, Math.round((spent / budget) * 100));
+    }
     
     return {
       id: String(project._id ?? project.id ?? Math.random()),

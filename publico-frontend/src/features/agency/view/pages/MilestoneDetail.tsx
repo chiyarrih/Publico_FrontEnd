@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, Pill } from '../../../../shared/ui';
 import {useMilestoneId} from '@agency/controller/hooks/useMilestoneId';
@@ -129,17 +129,29 @@ interface ProofOfWorkModalProps {
 const ProofOfWorkModal: React.FC<ProofOfWorkModalProps> = ({ phaseNumber, phaseName, onClose, onUpload }) => {
   const [file, setFile] = useState<File | null>(null);
   const [description, setDescription] = useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleSubmit = () => {
+  const handleFileClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0] || null;
+    setFile(selectedFile);
+  };
+
+  const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
     if (file && description) {
-      onUpload(file, description);
+      await onUpload(file, description);
       onClose();
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="w-full max-w-md p-6 mx-4 bg-white rounded-lg">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50" onClick={onClose}>
+      <div className="w-full max-w-md p-6 mx-4 bg-white rounded-lg shadow-lg" onClick={(e) => e.stopPropagation()}>
         <h3 className="mb-4 text-lg font-semibold">Upload Proof of Work - Phase {phaseNumber}</h3>
         <p className="mb-4 text-sm text-gray-600">{phaseName}</p>
         
@@ -161,12 +173,38 @@ const ProofOfWorkModal: React.FC<ProofOfWorkModalProps> = ({ phaseNumber, phaseN
             <label className="block mb-1 text-sm font-medium text-gray-700">
               Upload Document
             </label>
-            <input
-              type="file"
-              onChange={(e) => setFile(e.target.files?.[0] || null)}
-              className="w-full px-3 py-2 text-sm border rounded"
-              accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-            />
+            <div className="relative">
+              <label 
+                htmlFor="file-upload-input"
+                onClick={(e) => e.stopPropagation()}
+                className="block w-full px-3 py-3 text-sm border-2 border-dashed border-gray-300 rounded cursor-pointer hover:border-blue-500 hover:bg-blue-50 active:bg-blue-100 text-center transition-all"
+              >
+                {file ? (
+                  <div className="flex items-center justify-center gap-2">
+                    <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span className="text-gray-700 font-medium truncate max-w-xs">{file.name}</span>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center gap-1">
+                    <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                    </svg>
+                    <span className="text-gray-600">Click to choose file...</span>
+                    <span className="text-xs text-gray-400">PNG, JPG, PDF, DOC</span>
+                  </div>
+                )}
+              </label>
+              <input
+                id="file-upload-input"
+                ref={fileInputRef}
+                type="file"
+                onChange={handleFileChange}
+                className="hidden"
+                accept="image/png,image/jpeg,image/jpg,application/pdf,.doc,.docx"
+              />
+            </div>
           </div>
         </div>
         
@@ -196,7 +234,7 @@ export default function MilestoneDetail() {
   const navigate = useNavigate();
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [selectedPhase, setSelectedPhase] = useState<any>(null);
-  const {milestoneId, loading, error} = useMilestoneId({id:id});
+  const {milestoneId, loading, error, refetch} = useMilestoneId({id:id});
   // In real app, this would fetch from API based on id
   const milestone = milestoneId;
 
@@ -222,23 +260,28 @@ export default function MilestoneDetail() {
       
       console.log('Uploading file:', file.name, 'Description:', description);
       
-      await apiClient.post('/milestone/upload-proof', formData, {
-        headers: { 
-          'Content-Type': 'multipart/form-data',
-          'Authorization': `Bearer ${localStorage.getItem('publico_auth_token')}`
+      // Use upload method for file uploads with proper content type
+      const response = await apiClient.post('/milestone/upload-proof', formData, {
+        headers: {
+          // Let browser set Content-Type with boundary for multipart/form-data
         }
       });
       
       toast.success('Proof of work uploaded successfully');
       
-      // Refresh milestone data
-      if (milestoneId && typeof milestoneId === 'object' && 'refetch' in milestoneId) {
-        milestoneId.refetch();
+      // Refresh milestone data by calling refetch
+      console.log('🔄 Refreshing milestone data...');
+      if (refetch) {
+        await refetch();
+        console.log('✅ Milestone data refreshed');
+      } else {
+        console.warn('⚠️ No refetch function available');
       }
       
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error uploading proof of work:', error);
-      toast.error('Failed to upload proof of work. Please try again.');
+      const errorMsg = error?.message || 'Failed to upload proof of work';
+      toast.error(errorMsg);
     }
   };
 
@@ -366,25 +409,7 @@ export default function MilestoneDetail() {
                 {phase.proofOfWork.length > 0 ? `${phase.proofOfWork.length} uploaded` : 'None'}
               </div>
               <div className="flex items-center gap-2">
-                {phase.status === 'Under Review' && (
-                  <>
-                    <button
-                      onClick={() => handleUploadProof(phase)}
-                      className="inline-flex items-center gap-1 px-3 py-1 text-xs text-white bg-blue-600 rounded hover:bg-blue-700"
-                    >
-                      <Upload className="w-3 h-3" />
-                      Upload Proof
-                    </button>
-                    <button className="inline-flex items-center gap-1 px-3 py-1 text-xs text-blue-600 rounded hover:bg-blue-50">
-                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                      </svg>
-                      View F
-                    </button>
-                  </>
-                )}
-                {phase.status === 'Pending' && (
+                {(phase.status === 'In Progress' || phase.status === 'Pending') && (
                   <button
                     onClick={() => handleUploadProof(phase)}
                     className="inline-flex items-center gap-1 px-3 py-1 text-xs text-white bg-blue-600 rounded hover:bg-blue-700"
@@ -393,7 +418,7 @@ export default function MilestoneDetail() {
                     Upload Proof
                   </button>
                 )}
-                {phase.status === 'Approved' && (
+                {phase.proofOfWork.length > 0 && (
                   <button className="inline-flex items-center gap-1 px-3 py-1 text-xs text-blue-600 rounded hover:bg-blue-50">
                     <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -453,45 +478,73 @@ export default function MilestoneDetail() {
       <div className="p-6 bg-white border border-gray-200 rounded-lg">
         <h2 className="mb-4 text-lg font-semibold">Proof of Work</h2>
         
-        <div className="space-y-4">
-          {milestone.phases?.[1]?.proofOfWork?.map((proof:any) => (
-            <div key={proof.documentId} className="flex items-start gap-4 p-4 border border-gray-200 rounded-lg">
-              <div className="flex-shrink-0">
-                <div className="flex items-center justify-center w-10 h-10 bg-gray-100 rounded">
-                  <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
+        <div className="space-y-6">
+          {milestone.phases?.map((phase:any, phaseIdx: number) => {
+            if (!phase.proofOfWork || phase.proofOfWork.length === 0) {
+              return null;
+            }
+            return (
+              <div key={phaseIdx} className="border-b border-gray-200 last:border-b-0 pb-6 last:pb-0">
+                <h3 className="mb-4 text-md font-semibold text-gray-700">Phase {phase.phaseNumber}: {phase.phaseName}</h3>
+                <div className="space-y-4">
+                  {phase.proofOfWork.map((proof:any) => {
+                    const isImage = proof.fileUrl?.match(/\.(jpg|jpeg|png|gif|webp)$/i);
+                    const imageUrl = proof.fileUrl?.startsWith('http') 
+                      ? proof.fileUrl 
+                      : `http://localhost:5000${proof.fileUrl}`;
+                    return (
+                      <div key={proof.documentId} className="flex items-start gap-4 p-4 border border-gray-200 rounded-lg">
+                        {isImage && (
+                          <div className="flex-shrink-0">
+                            <img 
+                              src={imageUrl}
+                              alt={proof.description}
+                              className="w-24 h-24 object-cover rounded border border-gray-200"
+                            />
+                          </div>
+                        )}
+                        {!isImage && (
+                          <div className="flex-shrink-0">
+                            <div className="flex items-center justify-center w-10 h-10 bg-gray-100 rounded">
+                              <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                              </svg>
+                            </div>
+                          </div>
+                        )}
+                        
+                        <div className="flex-1">
+                          <h3 className="mb-1 font-medium text-gray-900">{proof.description}</h3>
+                          <div className="mb-3 text-xs text-gray-500">
+                            Uploaded {new Date(proof.uploadedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })} by {proof.uploadedBy} • {(proof.fileSize / 1024).toFixed(1)} KB
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                              proof.verificationStatus === 'Verified' ? 'bg-green-100 text-green-800' :
+                              proof.verificationStatus === 'Pending Verification' ? 'bg-yellow-100 text-yellow-800' :
+                              'bg-red-100 text-red-800'
+                            }`}>
+                              {proof.verificationStatus}
+                            </span>
+                            <button
+                              onClick={() => window.open(imageUrl, '_blank')}
+                              className="inline-flex items-center gap-1 px-3 py-1 text-xs text-blue-600 rounded hover:bg-blue-50"
+                            >
+                              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                              </svg>
+                              View
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
-              
-              <div className="flex-1">
-                <h3 className="mb-1 font-medium text-gray-900">{proof.description}</h3>
-                <p className="mb-2 text-sm text-gray-600">{proof.description}</p>
-                <div className="mb-3 text-xs text-gray-500">
-                  Uploaded {new Date(proof.uploadedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })} by {proof.uploadedBy} • {(proof.fileSize / 1024 / 1024).toFixed(1)} MB
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                    proof.verificationStatus === 'Verified' ? 'bg-green-100 text-green-800' :
-                    proof.verificationStatus === 'Pending Verification' ? 'bg-yellow-100 text-yellow-800' :
-                    'bg-red-100 text-red-800'
-                  }`}>
-                    {proof.verificationStatus}
-                  </span>
-                  <button
-                    onClick={() => window.open(proof.fileUrl, '_blank')}
-                    className="inline-flex items-center gap-1 px-3 py-1 text-xs text-blue-600 rounded hover:bg-blue-50"
-                  >
-                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                    </svg>
-                    View
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
