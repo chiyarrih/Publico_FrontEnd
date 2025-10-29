@@ -1,7 +1,6 @@
 import { useMemo, useState, useEffect } from "react";
 import { useDashboardData } from "./useDashboardData";
 import useMilestone from "./useMilestone";
-import { apiClient } from "../../../config/api";
 
 export type Alert = { color: string; icon: string; title: string; desc: string; date: string };
 export type Kpi = { label: string; value: string | number; delta?: string; up?: boolean };
@@ -92,7 +91,7 @@ export function useAgencyDashboard() {
     
     milestones.forEach(m => {
       if (!m) return;
-      const spent = m.phases?.reduce((sum, p) => {
+      const spent = m.phases?.reduce((sum: number, p: any) => {
         if (!p || !p.spent) return sum;
         return sum + (p.spent || 0);
       }, 0) || 0;
@@ -164,7 +163,7 @@ export function useAgencyDashboard() {
     if (!milestones || !Array.isArray(milestones)) return [];
     return milestones.slice(0, 4).map(m => {
       if (!m) return null;
-      const spent = m.phases?.reduce((sum, p) => {
+      const spent = m.phases?.reduce((sum: number, p: any) => {
         if (!p || !p.spent) return sum;
         return sum + (p.spent || 0);
       }, 0) || 0;

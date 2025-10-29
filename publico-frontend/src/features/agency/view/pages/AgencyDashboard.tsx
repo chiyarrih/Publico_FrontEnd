@@ -121,7 +121,7 @@ const AgencyDashboard: React.FC = () => {
         </button>}
         variant="elevated">
         <div className="space-y-3">
-          {alerts && Array.isArray(alerts) ? (
+          {alerts && Array.isArray(alerts) && alerts.length > 0 ? (
             alerts.map((a, index) =>
               a && a.resolved === false ? (
                 <Card key={index} className={`${bar(formatSeverity(a.severity))} border`}>
