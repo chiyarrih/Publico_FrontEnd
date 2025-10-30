@@ -90,7 +90,6 @@ const today = new Date().toISOString().split("T")[0]
                   <option value="City Legal Office">City Legal Office</option>
                   <option value="Management Information System Office">Management Information System Office</option>
                   <option value="Human Resources Office">Human Resources Office</option>
-                  <option value="City Budget Office">City Budget Office</option>
                   <option value="City Information Office">City Information Office</option>
                 </optgroup>
                 

@@ -4,6 +4,7 @@ import { Toaster } from "react-hot-toast";
 import { Input, Ghost } from "../ui/blocks";
 import { logout } from "../../../../utils/auth";
 import ErrorBoundary from "@/shared/components/layout/ErrorBoundary";
+import LogoutConfirmationModal from "@/shared/components/LogoutConfirmationModal";
 
 /* Icons matching the sidebar UI */
 const I = {
@@ -97,14 +98,25 @@ function SidebarItem({ to, icon, label, end }: { to: string; icon: React.ReactNo
 }
 
 export default function AdminLayout() {
+  const [mobileOpen, setMobileOpen] = React.useState(false);
+  const [showLogoutModal, setShowLogoutModal] = React.useState(false);
+
   const handleLogout = () => {
+    setShowLogoutModal(true);
+  };
+
+  const confirmLogout = () => {
+    setShowLogoutModal(false);
     logout();
   };
 
-  const [mobileOpen, setMobileOpen] = React.useState(false);
-
   return (
     <div className="min-h-screen bg-slate-50">
+      <LogoutConfirmationModal 
+        isOpen={showLogoutModal}
+        onClose={() => setShowLogoutModal(false)}
+        onConfirm={confirmLogout}
+      />
       <Toaster 
         position="top-center"
         toastOptions={{
@@ -146,7 +158,6 @@ export default function AdminLayout() {
               <SidebarItem to="/admin/requests" icon={I.folder} label="Budget Requests" />
 
               {/* Secondary */}
-              <SidebarItem to="/admin/analytics" icon={I.chart} label="Analytics & Reports" />
               <SidebarItem to="/admin/transactions" icon={I.ledger} label="Transaction Ledger" />
               <SidebarItem to="/admin/milestones" icon={I.milestone} label="Project Milestones" />
               <SidebarItem to="/admin/alerts" icon={I.bell} label="Smart Contract Alerts" />
@@ -182,7 +193,6 @@ export default function AdminLayout() {
                 <nav className="space-y-3" onClick={() => setMobileOpen(false)}>
                   <SidebarItem to="/admin/dashboard" end icon={I.dashboard} label="Dashboard" />
                   <SidebarItem to="/admin/requests" icon={I.folder} label="Budget Requests" />
-                  <SidebarItem to="/admin/analytics" icon={I.chart} label="Analytics & Reports" />
                   <SidebarItem to="/admin/transactions" icon={I.ledger} label="Transaction Ledger" />
                   <SidebarItem to="/admin/milestones" icon={I.milestone} label="Project Milestones" />
                   <SidebarItem to="/admin/alerts" icon={I.bell} label="Smart Contract Alerts" />

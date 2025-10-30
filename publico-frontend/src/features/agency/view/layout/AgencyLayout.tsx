@@ -16,6 +16,7 @@ import { I } from "@/utils/helpers"
 import SidebarInner from "../components/SidebarInner"
 import Header from "../components/Header"
 import { BudgetsInner } from "../components/BudgetsInner"
+import LogoutConfirmationModal from "@/shared/components/LogoutConfirmationModal"
 function linkClass({ isActive }: { isActive: boolean }) {
   return [
     "flex items-center gap-3 rounded-md px-4 py-2 text-sm font-medium transition",
@@ -38,10 +39,27 @@ export default function AgencyLayout() {
         setNotificationsEnabled,
         menuRef,
       } = useSwitch();
+  
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+
+  const handleLogout = () => {
+    setShowLogoutModal(true);
+  };
+
+  const confirmLogout = () => {
+    setShowLogoutModal(false);
+    logout();
+  };
+
   return (
     <div className="w-full min-h-screen bg-slate-50">
+      <LogoutConfirmationModal 
+        isOpen={showLogoutModal}
+        onClose={() => setShowLogoutModal(false)}
+        onConfirm={confirmLogout}
+      />
       {/* Header */}
-       <Header notificationsEnabled={notificationsEnabled} setSidebarOpen={()=>setSidebarOpen(true)} setNotificationsEnabled={()=>setNotificationsEnabled(!notificationsEnabled)} menuOpen={menuOpen} logout={logout} profile={profile} menuRef={menuRef} setMenuOpen={()=> setMenuOpen((v) => !v)}/>
+       <Header notificationsEnabled={notificationsEnabled} setSidebarOpen={()=>setSidebarOpen(true)} setNotificationsEnabled={()=>setNotificationsEnabled(!notificationsEnabled)} menuOpen={menuOpen} logout={handleLogout} profile={profile} menuRef={menuRef} setMenuOpen={()=> setMenuOpen((v) => !v)}/>
 
       {/* Mobile sidebar overlay — reuse existing sidebar content */}
       {sidebarOpen && (

@@ -326,7 +326,7 @@ export default function Transactions() {
 
       {/* Footer Note */}
       <div className="p-3 text-xs bg-white border rounded-lg border-slate-200 text-slate-600">
-        ✅ All transactions are immutably recorded on the blockchain for complete
+        All transactions are immutably recorded on the blockchain for complete
         transparency.
       </div>
     </div>

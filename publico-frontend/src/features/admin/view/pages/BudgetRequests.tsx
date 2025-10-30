@@ -199,10 +199,10 @@ export default function BudgetRequests() {
       const csvHeaders = ['Project ID', 'Date', 'Department', 'Project Name', 'Amount', 'Current Spending', 'Status'];
       const csvRows = filtered.map(item => [
         item.projectId || '',
-        new Date(item.date).toLocaleDateString(),
+        new Date(item.createdAt).toLocaleDateString(),
         item.department || '',
         item.projectName || '',
-        `₱${(item.amount || 0).toLocaleString()}`,
+        `₱${(item.amountRequested || 0).toLocaleString()}`,
         `₱${(item.currentSpending || 0).toLocaleString()}`,
         item.status || ''
       ]);

@@ -122,7 +122,7 @@ export default function Documents() {
 
       <div className="flex items-center justify-between p-3 text-xs bg-white border rounded-lg border-slate-200 text-slate-600">
         <span>
-          🔐 All documents are verified and secured on the blockchain for
+          All documents are verified and secured on the blockchain for
           complete transparency.
         </span>
         <Link to={`https://etherscan.io/`}>

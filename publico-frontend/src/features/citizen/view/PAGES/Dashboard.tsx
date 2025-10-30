@@ -17,6 +17,11 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useDepartmentFilter } from "../context/DepartmentFilterContext";
 import { useCitizenDashboard } from "../../controller/hooks/useCitizenDashboard";
+import useContractAlerts from "@/features/admin/controller/hooks/useContractAlerts";
+import { formatAlertTimestamp, formatAlertType, formatSeverity } from "@/utils/serializers";
+import { bar, IconForSeverity, tone } from "@/features/admin/view/pages/SmartAlerts";
+import { Card } from "@/shared/ui/card";
+import { Badge } from "@/features/admin/view/ui/blocks";
 // Simplified loading components
 
 // ============================================================================
@@ -465,6 +470,7 @@ export default function Dashboard() {
   // ============================================================================
   
   const uiAlerts = useMemo(() => transformAlerts(alerts), [alerts]);
+  const {alertsAll} = useContractAlerts()
   const uiSpending = useMemo(() => transformSpendingData(monthly), [monthly]);
   const uiAllocation = useMemo(() => transformCategoryData(categories), [categories]);
   const uiProjects = useMemo(() => transformProjects(projects), [projects]);
@@ -576,23 +582,27 @@ export default function Dashboard() {
               <span className="text-sm font-medium">No alerts at this time</span>
             </div>
           )}
-          {uiAlerts.map((alert) => (
-            <div key={alert.key} className={`rounded-lg border border-gray-200 ${alert.color} p-4`}>
-              <div className="flex items-start gap-2 w-full">
-                <div className="flex-1">
-                  <div className="mb-1">
-                    <span className="font-semibold text-sm text-gray-900">{alert.title}</span>
-                  </div>
-                  {alert.desc && (
-                    <div className="text-sm text-gray-600">{alert.desc}</div>
-                  )}
-                  {alert.date && (
-                    <div className="text-xs text-gray-500 mt-1">{alert.date}</div>
-                  )}
-                </div>
-              </div>
-            </div>
-          ))}
+          {alertsAll.map((a, index) => (
+                        <Card key={index} className={`${bar(formatSeverity(a.severity))} border`}>
+                          <div className="flex items-start gap-3">
+                            <IconForSeverity severity={formatSeverity(a.severity)} />
+            
+                            <div className="flex-1">
+                              <div className="flex items-center justify-between">
+                                <div className="font-medium">{formatAlertType(a.alertType)}</div>
+                                <div className="text-xs text-slate-500">{formatAlertTimestamp(a.timestamp)}</div>
+                              </div>
+            
+                              <div className="mt-1 text-sm text-slate-600">{a.description}</div>
+            
+                              <div className="flex gap-2 mt-2">
+                                <Badge tone={tone(formatSeverity(a.severity))}>{formatSeverity(a.severity)}</Badge>
+                              </div>
+                            </div>
+                          </div>
+                        </Card>
+                      ),
+          )}
         </div>
       </DashboardCard>
 
